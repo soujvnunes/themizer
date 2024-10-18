@@ -7,18 +7,18 @@ export default function generateVars<Aliases extends object>(
 ): Vars<Aliases> {
   return Object.entries(aliases).reduce((acc, [key, value]) => {
     const keysUnifier = '-';
-    const keysPrefix = options?.keysPrefix
-      ? `${options.keysPrefix}${keysUnifier}`
+    const prefixKeys = options?.prefixKeys
+      ? `${options.prefixKeys}${keysUnifier}`
       : '';
     const adjustor = __adjustor ? `${__adjustor}${keysUnifier}` : '';
-    const path = `${keysPrefix}${adjustor}${key}`;
+    const path = `${prefixKeys}${adjustor}${key}`;
     const finalPath = `--${path}`;
 
     if (typeof value === 'object' && value != null) {
       const vars = generateVars(
         value,
         {
-          keysPrefix: '',
+          prefixKeys: '',
         },
         path,
       );

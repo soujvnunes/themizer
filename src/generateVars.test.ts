@@ -45,7 +45,7 @@ it('should prefix generated vars correctly', () => {
       },
     },
     {
-      keysPrefix: 'tokens',
+      prefixKeys: 'tokens',
     },
   );
 

@@ -9,5 +9,5 @@ export interface Vars<Aliases extends object> {
 
 export interface ThemeOptions<Tokens extends object = object> {
   tokens: Tokens;
-  keysPrefix?: string;
+  prefixKeys?: string;
 }

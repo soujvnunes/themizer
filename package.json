@@ -2,7 +2,8 @@
   "name": "ui-tokens",
   "version": "1.0.0",
   "description": "Give it an object reference and receive a flexible one with all CSS custom properties to be injected in the DOM the way you want.",
-  "main": "index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "keywords": [
     "design-system",
     "design-tokens",

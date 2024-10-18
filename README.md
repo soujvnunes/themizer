@@ -5,19 +5,24 @@ Give it an object reference and receive a flexible one with all CSS custom prope
 ## API
 
 ```ts
-// Basic CSS Variables generation
-generateCSSVariables(aliases: object): void;
-
-// Full API
-generateCSSVariables(
-  aliases: object | (tokens: object) => object,
+getTheme<
+  Screens extends string,
+  Tokens extends object,
+  Values extends string | number | Record<Screens, string | number>,
+  Aliases extends object,
+>(
+  aliases: Aliases | (tokens: Tokens) => Aliases,
   options: {
     keysPrefix: string;
     keysWrapper: (key: string) => string;
-    screens: Record<string, `@media ${string}: ${string}`>,
-    tokens: object;
+    screens: Record<Screens, `@media ${string}: ${string}`>,
+    tokens: Tokens;
   };
-): void;
+): {
+  aliases: Aliases;
+  screens: Screens;
+  tokens: Tokens;
+};
 
 ```
 
@@ -32,12 +37,12 @@ export default function rgba(color: string, alpha: string) {
   return `color-mix(in srgb, ${color} calc(${alpha} * 100), transparent)`;
 }
 
-// src/app/theme.ts
+// src/lib/theme.ts
 
-import { generateTheme } from 'ui-tokens';
+import { getTheme } from 'ui-tokens';
 import rgba from 'helpers/rgba';
 
-generateTheme(
+const theme = getTheme(
   (tokens) => ({
     colors: {
       main: tokens.colors.amber[500],
@@ -222,9 +227,6 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 // Import the generated CSS files containing its variables
 import 'ui-tokens/variables.css';
 
-// Initialize the theme generator
-import 'app/theme';
-
 export default function RootLayout({ children }: React.PropsWithChildren) {
   return (
     <html lang="en">
@@ -247,7 +249,7 @@ Then, the tokens and aliases will be available in the entire project.
 
 'use client';
 
-import { tokens, aliases, screens } from 'ui-tokens';
+import theme from 'ui-tokens';
 
 export default function Page() {
   return (
@@ -256,18 +258,18 @@ export default function Page() {
       <style jsx>{`
         .container {
           width: grid;
-          margin: ${aliases.spaces.margin};
-          gap: ${aliases.spaces.padding};
+          margin: ${theme.aliases.spaces.margin};
+          gap: ${theme.aliases.spaces.padding};
         }
 
         .title {
-          font-size: ${aliases.font.sizes.lg};
-          font-weight: ${tokens.font.weight.bold};
+          font-size: ${theme.aliases.font.sizes.lg};
+          font-weight: ${theme.tokens.font.weight.bold};
         }
 
-        ${screens.desktop} {
+        ${theme.screens.desktop} {
           .container {
-            gap: ${tokens.dimenstions[16]};
+            gap: ${theme.tokens.dimenstions[16]};
           }
         }
       `}</style>

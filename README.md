@@ -13,8 +13,8 @@ getTheme<
 >(
   aliases: Aliases | (tokens: Tokens) => Aliases,
   options: {
-    keysPrefix: string;
-    keysWrapper: (key: string) => string;
+    prefixKeys: string;
+    wrapKeys: (key: string) => string;
     screens: Record<Screens, `@media ${string}: ${string}`>,
     tokens: Tokens;
   };
@@ -84,8 +84,7 @@ const theme = getTheme(
     },
   }),
   {
-    keysPrefix: 'ds',
-    keysWrapper: (key) => `var(${key})`,
+    prefixKeys: 'ds',
     screens: {
       desktop: '@media (min-width: 1024px)',
       dark: '@media (prefers-color-scheme: dark)',
@@ -137,7 +136,7 @@ In this example, `theme` has two properties: `tokens` and `aliases`. They serves
 ```css
 /*
  * The generated custom properties from the last example would look like this.
- * Note that the provided `keysPrefix` ("ds") is being used.
+ * Note that the provided `prefixKeys` ("ds") is being used.
  * Otherwise, these custom properties would be just like
  * `--tokens-*` for tokens and `--aliases-*` for aliases.
  */

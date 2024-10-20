@@ -73,18 +73,21 @@ it("should replace correspondent responsive vars' media queries correctly", () =
       colors: {
         black: '#111',
         gray: [{ print: '#fff' }, '#ddd'],
-        white: [{ dark: '#333' }, '#fff'],
+        white: [{ dark: '#333', printOnDark: '#000' }, '#fff'],
         red: {
           500: [{ print: '#000' }, '#f00'],
         },
       },
       spaces: {
-        md: [{ desktop: '1.5rem' }, '1rem'],
+        md: [{ desktop: '1.5rem', tablet: '1.25rem' }, '1rem'],
       },
       font: {
         sans: 'sofia-pro',
         sizes: {
           xl: [{ desktop: '3rem' }, '2rem'],
+        },
+        weight: {
+          500: [{ desktop: 800, tablet: 600 }, 400],
         },
       },
       alphas: {
@@ -98,10 +101,12 @@ it("should replace correspondent responsive vars' media queries correctly", () =
     },
     {
       medias: {
+        tablet: '@media (min-width: 512px)',
         desktop: '@media (min-width: 1024px)',
         dark: '@media (prefers-color-scheme: dark)',
         motion: '@media (prefers-reduced-motion: no-preference)',
         print: '@media print',
+        printOnDark: '@media print and (prefers-color-scheme: dark)',
       },
     } as const,
   );
@@ -114,6 +119,7 @@ it("should replace correspondent responsive vars' media queries correctly", () =
     '--spaces-md': '1rem',
     '--font-sizes-xl': '2rem',
     '--font-sans': 'sofia-pro',
+    '--font-weight-500': 400,
     '--alphas-primary': 0.8,
     '--alphas-secondary': 0.6,
     '@media (prefers-color-scheme: dark)': {
@@ -127,10 +133,18 @@ it("should replace correspondent responsive vars' media queries correctly", () =
     '@media (min-width: 1024px)': {
       '--spaces-md': '1.5rem',
       '--font-sizes-xl': '3rem',
+      '--font-weight-500': 800,
     },
     '@media (prefers-reduced-motion: no-preference)': {
       '--trans-bounce': '200ms cubic-bezier(0.5, -0.5, 0.25, 1.5)',
       '--trans-ease': '200ms cubic-bezier(0.25, 0.1, 0.25, 1)',
+    },
+    '@media print and (prefers-color-scheme: dark)': {
+      '--colors-white': '#000',
+    },
+    '@media (min-width: 512px)': {
+      '--spaces-md': '1.25rem',
+      '--font-weight-500': 600,
     },
   });
   expect(vars.reference).toMatchObject({

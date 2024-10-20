@@ -1,9 +1,13 @@
 import isPrimitive from './isPrimitive';
-import type { GenerateVarsOptions, Schema, Vars } from './types';
+import type {
+  CSSCustomProperties,
+  GenerateVarsOptions,
+  Schema,
+  Vars,
+} from './types';
 
 const PROPERTIES_UNIFIER = '-';
-
-let cssCustomProperties = {};
+let CSS_CUSTOM_PROPERTIES = {};
 
 export default function generateVars<
   M extends string = never,
@@ -41,15 +45,18 @@ export default function generateVars<
       const hasDefaultValue = isPrimitive(defaultValue);
       const resolvedDefaultValue = hasDefaultValue ? `, ${defaultValue}` : '';
 
-      // TODO: prefer using reduce and send it through another private parameter
       for (const [media, val] of Object.entries(medias)) {
         const mediaQuery = options?.medias?.[media as M] as string;
+        const currentMediaQuery = (
+          CSS_CUSTOM_PROPERTIES as CSSCustomProperties<M>
+        )[mediaQuery];
 
-        cssCustomProperties = {
-          ...cssCustomProperties,
+        if (isPrimitive(currentMediaQuery)) continue;
+
+        CSS_CUSTOM_PROPERTIES = {
+          ...CSS_CUSTOM_PROPERTIES,
           [mediaQuery]: {
-            // @ts-expect-error It's always an object
-            ...(cssCustomProperties as CSSCustomProperties<M>)[mediaQuery],
+            ...currentMediaQuery,
             [finalPath]: val,
           },
         };
@@ -62,7 +69,7 @@ export default function generateVars<
           ...(hasDefaultValue && {
             [finalPath]: defaultValue,
           }),
-          ...cssCustomProperties,
+          ...CSS_CUSTOM_PROPERTIES,
         },
         reference: {
           ...generatedVars.reference,

@@ -8,11 +8,12 @@ export interface Schema<M extends string = never> {
     | (M extends string ? [Medias<M>, (string | number)?] : never);
 }
 
-export interface CSSCustomProperties<M extends string = never> {
-  [key: string]:
-    | string
-    | number
-    | (M extends string ? CSSCustomProperties : never);
+export interface CSSCustomProperties {
+  [key: string]: string | number;
+}
+
+export interface ResponsiveCSSCustomProperties {
+  [key: string]: CSSCustomProperties;
 }
 
 export interface GenerateVarsOptions<M extends string = never> {
@@ -23,7 +24,9 @@ export interface GenerateVarsOptions<M extends string = never> {
 }
 
 export interface Vars<S, M extends string = never> {
-  value: CSSCustomProperties<M>;
+  value: CSSCustomProperties & M extends string
+    ? ResponsiveCSSCustomProperties
+    : never;
   // TODO: Remove Medias and strings (V extends [infer D, any] ? D extends string | number ? D : D extends object ? ObjectValue<D> : never : never )
   reference: S;
 }

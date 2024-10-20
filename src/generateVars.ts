@@ -41,19 +41,17 @@ export default function generateVars<
     }
 
     if (Array.isArray(value)) {
-      if (typeof options?.medias === 'undefined') return generatedVars;
-
       const [medias, defaultValue] = value;
       const resolvedDefaultValue = isPrimitive(defaultValue)
         ? `, ${defaultValue}`
         : '';
 
-      for (const [media, val] of Object.entries(medias)) {
-        const mediaQuery = options.medias[media as M];
+      for (const [media, responsiveValue] of Object.entries(medias)) {
+        const mediaQuery = options?.medias?.[media as M] as string;
 
         RESPONSIVE_VARS[mediaQuery] = {
           ...RESPONSIVE_VARS[mediaQuery],
-          [finalPath]: val,
+          [finalPath]: responsiveValue,
         };
       }
 

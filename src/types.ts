@@ -12,7 +12,7 @@ export interface CSSCustomProperties<M extends string = never> {
   [key: string]:
     | string
     | number
-    | (M extends string ? Record<string, string | number> : never);
+    | (M extends string ? CSSCustomProperties : never);
 }
 
 export interface GenerateVarsOptions<M extends string = never> {

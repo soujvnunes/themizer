@@ -5,25 +5,17 @@ Give it an object reference and receive a flexible one with all CSS custom prope
 ## API
 
 ```ts
-getTheme<
-  Screens extends string,
-  Tokens extends object,
-  Values extends string | number | Record<Screens, string | number>,
-  Aliases extends object,
->(
+getTheme(
   aliases: Aliases | (tokens: Tokens) => Aliases,
   options: {
-    prefixKeys: string;
-    wrapKeys: (key: string) => string;
-    screens: Record<Screens, `@media ${string}: ${string}`>,
-    tokens: Tokens;
+    prefixProperties: string;
+    medias: Medias;
   };
 ): {
   aliases: Aliases;
-  screens: Screens;
+  medias: Medias;
   tokens: Tokens;
 };
-
 ```
 
 ## Example
@@ -46,46 +38,40 @@ const theme = getTheme(
   (tokens) => ({
     colors: {
       main: tokens.colors.amber[500],
-      accent: {
-        default: tokens.colors.amber[600],
+      accent: [tokens.colors.amber[600], {
         dark: tokens.colors.amber[400],
-      },
+      }],
       text: {
-        primary: {
-          default: rgba(tokens.colors.black, tokens.alphas.primary),
+        primary: [rgba(tokens.colors.black, tokens.alphas.primary), {
           dark: tokens.colors.white,
-        },
-        secondary: {
-          default: rgba(tokens.colors.black, tokens.alphas.secondary),
+        }],
+        secondary: [rgba(tokens.colors.black, tokens.alphas.secondary), {
           dark: rgba(tokens.colors.white, tokens.alphas.secondary),
-        },
+        }],
       },
     },
     spaces: {
-      margin: {
-        default: tokens.dimensions[16],
+      margin: [tokens.dimensions[16], {
         desktop: tokens.dimensions[40],
-      },
+      }],
       padding: tokens.dimensions[8],
     },
     font: {
       sizes: {
-        lg: {
-          default: tokens.dimensions[40],
+        lg: [tokens.dimensions[40], {
           desktop: tokens.dimensions[64],
-        },
+        }],
         md: tokens.dimensions[16],
       },
     },
     trans: {
-      bounce: {
-        motion: `${tokens.trans.duration.fast} ${tokens.trans.timing.bounce}`,
-      },
+      bounce: [{ motion: `${tokens.trans.duration.fast} ${tokens.trans.timing.bounce}` }],
+      ease: [{ motion: `${tokens.trans.duration.fast} ${tokens.trans.timing.ease}` }],
     },
   }),
   {
-    prefixKeys: 'ds',
-    screens: {
+    prefixProperties: 'ds',
+    medias: {
       desktop: '@media (min-width: 1024px)',
       dark: '@media (prefers-color-scheme: dark)',
       motion: '@media (prefers-reduced-motion: no-preference)',
@@ -121,6 +107,7 @@ const theme = getTheme(
       trans: {
         timing: {
           bounce: 'cubic-bezier(0.5, -0.5, 0.25, 1.5)',
+          ease: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
         },
         duration: {
           fast: '200ms',
@@ -136,7 +123,7 @@ In this example, `theme` has two properties: `tokens` and `aliases`. They serves
 ```css
 /*
  * The generated custom properties from the last example would look like this.
- * Note that the provided `prefixKeys` ("ds") is being used.
+ * Note that the provided `prefixProperties` ("ds") is being used.
  * Otherwise, these custom properties would be just like
  * `--tokens-*` for tokens and `--aliases-*` for aliases.
  */
@@ -266,7 +253,7 @@ export default function Page() {
           font-weight: ${theme.tokens.font.weight.bold};
         }
 
-        ${theme.screens.desktop} {
+        ${theme.medias.desktop} {
           .container {
             gap: ${theme.tokens.dimenstions[16]};
           }

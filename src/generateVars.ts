@@ -1,13 +1,13 @@
 import isPrimitive from './isPrimitive';
 import type {
-  CSSCustomProperties,
   GenerateVarsOptions,
+  ResponsiveCSSCustomProperties,
   Schema,
   Vars,
 } from './types';
 
 const PROPERTIES_UNIFIER = '-';
-let CSS_CUSTOM_PROPERTIES = {};
+const RESPONSIVE_VARS: ResponsiveCSSCustomProperties = {};
 
 export default function generateVars<
   M extends string = never,
@@ -41,24 +41,19 @@ export default function generateVars<
     }
 
     if (Array.isArray(value)) {
+      if (typeof options?.medias === 'undefined') return generatedVars;
+
       const [medias, defaultValue] = value;
-      const hasDefaultValue = isPrimitive(defaultValue);
-      const resolvedDefaultValue = hasDefaultValue ? `, ${defaultValue}` : '';
+      const resolvedDefaultValue = isPrimitive(defaultValue)
+        ? `, ${defaultValue}`
+        : '';
 
       for (const [media, val] of Object.entries(medias)) {
-        const mediaQuery = options?.medias?.[media as M] as string;
-        const currentMediaQuery = (
-          CSS_CUSTOM_PROPERTIES as CSSCustomProperties<M>
-        )[mediaQuery];
+        const mediaQuery = options.medias[media as M];
 
-        if (isPrimitive(currentMediaQuery)) continue;
-
-        CSS_CUSTOM_PROPERTIES = {
-          ...CSS_CUSTOM_PROPERTIES,
-          [mediaQuery]: {
-            ...currentMediaQuery,
-            [finalPath]: val,
-          },
+        RESPONSIVE_VARS[mediaQuery] = {
+          ...RESPONSIVE_VARS[mediaQuery],
+          [finalPath]: val,
         };
       }
 
@@ -66,10 +61,10 @@ export default function generateVars<
         ...generatedVars,
         value: {
           ...generatedVars.value,
-          ...(hasDefaultValue && {
+          ...(isPrimitive(defaultValue) && {
             [finalPath]: defaultValue,
           }),
-          ...CSS_CUSTOM_PROPERTIES,
+          ...RESPONSIVE_VARS,
         },
         reference: {
           ...generatedVars.reference,

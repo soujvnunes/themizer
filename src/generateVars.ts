@@ -1,13 +1,13 @@
 import isPrimitive from './isPrimitive';
 import type {
   GenerateVarsOptions,
-  ResponsiveCSSCustomProperties,
+  ResponsiveVars,
   Schema,
-  Vars,
+  GeneratedVars,
 } from './types';
 
 const PROPERTIES_UNIFIER = '-';
-const RESPONSIVE_VARS: ResponsiveCSSCustomProperties = {};
+const RESPONSIVE_VARS: ResponsiveVars = {};
 
 export default function generateVars<
   M extends string = never,
@@ -16,7 +16,7 @@ export default function generateVars<
   schema: S,
   options?: GenerateVarsOptions<M>,
   __adjustor?: string,
-): Vars<S, M> {
+): GeneratedVars<S, M> {
   const prefixProperties = options?.prefixProperties
     ? `${options.prefixProperties}${PROPERTIES_UNIFIER}`
     : '';
@@ -91,5 +91,5 @@ export default function generateVars<
         [property]: vars.reference,
       },
     };
-  }, {} as Vars<S, M>);
+  }, {} as GeneratedVars<S, M>);
 }

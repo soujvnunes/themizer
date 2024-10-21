@@ -22,11 +22,14 @@ export default function getTheme<
     });
   }
 
-  // TODO: inject aliasesVars.value tokensVars?.value in a css file w
-
   return {
     aliases: aliasesVars.reference,
     tokens: tokensVars?.reference,
     medias: options?.medias,
+    // TODO: inject aliasesVars.value tokensVars?.value in a css file w
+    vars: {
+      ...aliasesVars.value,
+      ...tokensVars?.value,
+    },
   };
 }

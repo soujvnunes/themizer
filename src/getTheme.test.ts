@@ -22,6 +22,9 @@ it('should return prefixed aliases correctly', () => {
         },
       },
     },
+    vars: {
+      '--my-design-system-aliases-font-sizes-md': 16,
+    },
   });
 });
 
@@ -52,6 +55,9 @@ it('should return medias correctly', () => {
     },
     medias: {
       dark: '@media (prefers-scheme-color: dark)',
+    },
+    vars: {
+      '--my-design-system-aliases-font-sizes-md': 16,
     },
   });
 });
@@ -98,6 +104,14 @@ it('should return tokens and handle callable aliases correctly', () => {
           md: 'var(--my-design-system-tokens-font-sizes-md, 16)',
           lg: 'var(--my-design-system-tokens-font-sizes-lg, 24)',
         },
+      },
+    },
+    vars: {
+      '--my-design-system-aliases-font-sizes-md': 16,
+      '--my-design-system-tokens-font-sizes-md': 16,
+      '--my-design-system-tokens-font-sizes-lg': 24,
+      '@media (prefers-scheme-color: dark)': {
+        '--my-design-system-aliases-font-sizes-md': 24,
       },
     },
   });

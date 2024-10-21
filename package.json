@@ -1,14 +1,15 @@
 {
   "name": "ui-tokens",
-  "version": "1.0.0",
-  "description": "Give it an object reference and receive a flexible one with all CSS custom properties to be injected in the DOM the way you want.",
+  "version": "0.0.0",
+  "description": "Generate CSS3 custom properties based on a given theme with tokens and aliases serving as a reference.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "keywords": [
-    "design-system",
-    "design-tokens",
-    "CSS3",
-    "Responsive"
+    "Design System",
+    "Design Tokens",
+    "Responsive Design",
+    "CSS3 Custom Properties",
+    "TypeScript"
   ],
   "author": "JV <soujvnunes@gmail.com> (https://soujvnunes.github.io)",
   "license": "ISC",

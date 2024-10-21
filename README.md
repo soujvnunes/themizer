@@ -57,10 +57,16 @@ const theme = getTheme(
   (tokens) => ({
     colors: {
       main: tokens.colors.amber[500],
-      accent: [{ dark: tokens.colors.amber[400] },tokens.colors.amber[600]],
+      accent: [{ dark: tokens.colors.amber[400] }, tokens.colors.amber[600]],
       text: {
-        primary: [{ dark: tokens.colors.white }, rgba(tokens.colors.black, tokens.alphas.primary)],
-        secondary: [{ dark: rgba(tokens.colors.white, tokens.alphas.secondary) }, rgba(tokens.colors.black, tokens.alphas.secondary)],
+        primary: [
+          { dark: tokens.colors.white },
+          rgba(tokens.colors.black, tokens.alphas.primary),
+        ],
+        secondary: [
+          { dark: rgba(tokens.colors.white, tokens.alphas.secondary) },
+          rgba(tokens.colors.black, tokens.alphas.secondary),
+        ],
       },
     },
     spaces: {
@@ -74,8 +80,14 @@ const theme = getTheme(
       },
     },
     trans: {
-      bounce: [{ motion: `${tokens.trans.duration.fast} ${tokens.trans.timing.bounce}` }],
-      ease: [{ motion: `${tokens.trans.duration.fast} ${tokens.trans.timing.ease}` }],
+      bounce: [
+        {
+          motion: `${tokens.trans.duration.fast} ${tokens.trans.timing.bounce}`,
+        },
+      ],
+      ease: [
+        { motion: `${tokens.trans.duration.fast} ${tokens.trans.timing.ease}` },
+      ],
     },
   }),
   {
@@ -128,73 +140,80 @@ const theme = getTheme(
 ```
 
 The generated custom properties from the last example would look like this.
+
 > Note that the provided `prefixProperties` ("ds") is being used. Otherwise, these custom properties would be just like `--tokens-*` for tokens and `--aliases-*` for aliases.
 
 ```css
-:root {
-  /* Generated tokens */
-  --ds-tokens-colors-amber-400: #fbbf24;
-  --ds-tokens-colors-amber-500: #f59e0b;
-  --ds-tokens-colors-amber-600: #d97706;
-  --ds-tokens-colors-white: #fff;
-  --ds-tokens-colors-black: #000;
+@layer theme;
 
-  --ds-tokens-alphas-primary: 0.8;
-  --ds-tokens-alphas-secondary: 0.6;
+@layer theme {
+  :root {
+    /* Generated tokens */
+    --ds-tokens-colors-amber-400: #fbbf24;
+    --ds-tokens-colors-amber-500: #f59e0b;
+    --ds-tokens-colors-amber-600: #d97706;
+    --ds-tokens-colors-white: #fff;
+    --ds-tokens-colors-black: #000;
 
-  --ds-tokens-dimensions-8: 0.5rem;
-  --ds-tokens-dimensions-16: 1rem;
-  --ds-tokens-dimensions-40: 2.5rem;
+    --ds-tokens-alphas-primary: 0.8;
+    --ds-tokens-alphas-secondary: 0.6;
 
-  --ds-tokens-font-sans: 'sofia-pro';
-  --ds-tokens-font-weight-regular: 400;
-  --ds-tokens-font-weight-semibold: 600;
-  --ds-tokens-font-weight-bold: 800;
+    --ds-tokens-dimensions-8: 0.5rem;
+    --ds-tokens-dimensions-16: 1rem;
+    --ds-tokens-dimensions-40: 2.5rem;
 
-  --ds-tokens-trans-timing-bounce: cubic-bezier(0.5, -0.5, 0.25, 1.5);
-  --ds-tokens-trans-duration-fast: 200ms;
+    --ds-tokens-font-sans: 'sofia-pro';
+    --ds-tokens-font-weight-regular: 400;
+    --ds-tokens-font-weight-semibold: 600;
+    --ds-tokens-font-weight-bold: 800;
 
-  /* Generated aliases */
-  --ds-aliases-colors-main: var(--ds-tokens-colors-amber-500);
-  --ds-aliases-colors-accent: var(--ds-tokens-colors-amber-600);
-  --ds-aliases-colors-text-primary: color-mix(
-    in srgb,
-    var(--ds-tokens-colors-black) calc(var(--ds-tokens-alphas-primary) * 100),
-    transparent
-  );
-  --ds-aliases-colors-text-secondary: color-mix(
-    in srgb,
-    var(--ds-tokens-colors-black) calc(var(--ds-tokens-alphas-secondary) * 100),
-    transparent
-  );
+    --ds-tokens-trans-timing-bounce: cubic-bezier(0.5, -0.5, 0.25, 1.5);
+    --ds-tokens-trans-duration-fast: 200ms;
 
-  --ds-aliases-spaces-margin: var(--ds-tokens-dimensions-16);
-  --ds-aliases-spaces-padding: var(--ds-tokens-dimensions-8);
-
-  --ds-aliases-font-sizes-md: var(--ds-tokens-dimensions-16);
-  --ds-aliases-font-sizes-lg: var(--ds-tokens-dimensions-40);
-
-  @media (prefers-color-aliases: dark) {
-    --ds-aliases-colors-accent: var(--ds-tokens-colors-amber-400);
-    --ds-aliases-colors-text-primary: var(--ds-tokens-colors-white);
+    /* Generated aliases */
+    --ds-aliases-colors-main: var(--ds-tokens-colors-amber-500);
+    --ds-aliases-colors-accent: var(--ds-tokens-colors-amber-600);
+    --ds-aliases-colors-text-primary: color-mix(
+      in srgb,
+      var(--ds-tokens-colors-black) calc(var(--ds-tokens-alphas-primary) * 100),
+      transparent
+    );
     --ds-aliases-colors-text-secondary: color-mix(
       in srgb,
-      var(--ds-tokens-colors-white) calc(
+      var(--ds-tokens-colors-black) calc(
           var(--ds-tokens-alphas-secondary) * 100
         ),
       transparent
     );
-  }
 
-  @media (min-width: 1024px) {
-    --ds-aliases-spaces-margin: var(--ds-tokens-dimensions-40);
-    --ds-aliases-font-sizes-lg: var(--ds-tokens-dimensions-64);
-  }
+    --ds-aliases-spaces-margin: var(--ds-tokens-dimensions-16);
+    --ds-aliases-spaces-padding: var(--ds-tokens-dimensions-8);
 
-  @media (prefers-reduced-motion: no-preference) {
-    --ds-aliases-trans-bounce: var(--ds-tokens-trans-duration-fast) var(
-        --ds-tokens-trans-timing-bounce
+    --ds-aliases-font-sizes-md: var(--ds-tokens-dimensions-16);
+    --ds-aliases-font-sizes-lg: var(--ds-tokens-dimensions-40);
+
+    @media (prefers-color-aliases: dark) {
+      --ds-aliases-colors-accent: var(--ds-tokens-colors-amber-400);
+      --ds-aliases-colors-text-primary: var(--ds-tokens-colors-white);
+      --ds-aliases-colors-text-secondary: color-mix(
+        in srgb,
+        var(--ds-tokens-colors-white) calc(
+            var(--ds-tokens-alphas-secondary) * 100
+          ),
+        transparent
       );
+    }
+
+    @media (min-width: 1024px) {
+      --ds-aliases-spaces-margin: var(--ds-tokens-dimensions-40);
+      --ds-aliases-font-sizes-lg: var(--ds-tokens-dimensions-64);
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      --ds-aliases-trans-bounce: var(--ds-tokens-trans-duration-fast) var(
+          --ds-tokens-trans-timing-bounce
+        );
+    }
   }
 }
 ```

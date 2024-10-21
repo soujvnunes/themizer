@@ -6,15 +6,34 @@ Give it an object reference and receive a flexible one with all CSS custom prope
 
 ```ts
 getTheme(
-  aliases: Aliases | (tokens: Tokens) => Aliases,
-  options: {
-    prefixProperties: string;
-    medias: Medias;
+  aliases: Aliases,
+  options?: {
+    prefixProperties?: string;
+  };
+): {
+  aliases: Aliases;
+};
+getTheme(
+  aliases: ResponsiveAliases,
+  options?: {
+    prefixProperties?: string;
+    medias?: Medias;
   };
 ): {
   aliases: Aliases;
   medias: Medias;
-  tokens: Tokens;
+};
+getTheme(
+  aliases: ResponsiveAliases | (tokens: Tokens) => ResponsiveAliases,
+  options?: {
+    prefixProperties?: string;
+    medias?: Medias;
+    tokens?: Tokens;
+  };
+): {
+  aliases: AliasesVars;
+  medias: Medias;
+  tokens: TokensVars;
 };
 ```
 
@@ -38,29 +57,19 @@ const theme = getTheme(
   (tokens) => ({
     colors: {
       main: tokens.colors.amber[500],
-      accent: [tokens.colors.amber[600], {
-        dark: tokens.colors.amber[400],
-      }],
+      accent: [{ dark: tokens.colors.amber[400] },tokens.colors.amber[600]],
       text: {
-        primary: [rgba(tokens.colors.black, tokens.alphas.primary), {
-          dark: tokens.colors.white,
-        }],
-        secondary: [rgba(tokens.colors.black, tokens.alphas.secondary), {
-          dark: rgba(tokens.colors.white, tokens.alphas.secondary),
-        }],
+        primary: [{ dark: tokens.colors.white }, rgba(tokens.colors.black, tokens.alphas.primary)],
+        secondary: [{ dark: rgba(tokens.colors.white, tokens.alphas.secondary) }, rgba(tokens.colors.black, tokens.alphas.secondary)],
       },
     },
     spaces: {
-      margin: [tokens.dimensions[16], {
-        desktop: tokens.dimensions[40],
-      }],
+      margin: [{ desktop: tokens.dimensions[40] }, tokens.dimensions[16]],
       padding: tokens.dimensions[8],
     },
     font: {
       sizes: {
-        lg: [tokens.dimensions[40], {
-          desktop: tokens.dimensions[64],
-        }],
+        lg: [{ desktop: tokens.dimensions[64] }, tokens.dimensions[40]],
         md: tokens.dimensions[16],
       },
     },
@@ -118,16 +127,10 @@ const theme = getTheme(
 );
 ```
 
-In this example, `theme` has two properties: `tokens` and `aliases`. They serves as a reference in JavaScript for the generated CSS custom properties.
+The generated custom properties from the last example would look like this.
+> Note that the provided `prefixProperties` ("ds") is being used. Otherwise, these custom properties would be just like `--tokens-*` for tokens and `--aliases-*` for aliases.
 
 ```css
-/*
- * The generated custom properties from the last example would look like this.
- * Note that the provided `prefixProperties` ("ds") is being used.
- * Otherwise, these custom properties would be just like
- * `--tokens-*` for tokens and `--aliases-*` for aliases.
- */
-
 :root {
   /* Generated tokens */
   --ds-tokens-colors-amber-400: #fbbf24;
@@ -198,7 +201,7 @@ In this example, `theme` has two properties: `tokens` and `aliases`. They serves
 
 ### Usage
 
-The created theme and generated CSS variables needs to be indexed at the project's top-level file.
+The generated CSS custom properties needs to be indexed at the project's top-level file.
 
 #### Next.js
 

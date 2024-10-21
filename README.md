@@ -1,41 +1,62 @@
 # ui-tokens
 
-Give it an object reference and receive a flexible one with all CSS custom properties to be injected in the DOM the way you want.
+Generate CSS3 custom properties based on a given theme with tokens and aliases serving as a reference.
 
 ## API
 
 ```ts
-getTheme(
-  aliases: Aliases,
-  options?: {
-    prefixProperties?: string;
-  };
-): {
-  aliases: Aliases;
-};
-getTheme(
-  aliases: ResponsiveAliases,
-  options?: {
-    prefixProperties?: string;
-    medias?: Medias;
-  };
-): {
-  aliases: Aliases;
-  medias: Medias;
-};
-getTheme(
-  aliases: ResponsiveAliases | (tokens: Tokens) => ResponsiveAliases,
-  options?: {
-    prefixProperties?: string;
-    medias?: Medias;
-    tokens?: Tokens;
-  };
-): {
-  aliases: AliasesVars;
-  medias: Medias;
-  tokens: TokensVars;
-};
+  const { aliases, medias, tokens, vars } = getTheme(aliases, options?);
 ```
+
+### Parameters
+
+- **aliases**
+
+  Object for basic `theme.vars` generation, and `theme.aliases` as a JavaScript reference.
+
+  It's a function if `options.tokens` is provided, being passed as `aliases` parameter.
+
+- **options?**
+
+  - prefixProperties?
+
+    String to prefix all the generated CSS custom properties, accessed in `theme.vars`.
+
+  - medias?
+
+    Object with values as media queries and properties serving as its aliases.
+
+    It's used to replace the responsive properties in the `aliases` object values.
+
+    It's also accessed throught `theme.medias` as it is.
+
+  - tokens?
+
+    Object for advanced `theme.aliases` as function.
+
+    It's also generates variables that can be referenced by `theme.tokens` in JavaScript.
+
+### Return
+
+- **theme**
+
+  - aliases
+
+    Object containing the same keys as `aliases` parameter, but returning its CSS custom properties.
+
+  - medias?
+
+    Object containing the `options.medias` to be also used as reference in JavaScript.
+
+  - tokens?
+
+    Object containing the same keys as `options.tokens` parameter, but returning its CSS custom properties.
+
+  - vars
+
+    Object containing all the CSS custom properties generated from `aliases` and `options.tokens`.
+
+    > Needs to be injected at the top-level page application.
 
 ## Example
 
@@ -59,14 +80,8 @@ const theme = getTheme(
       main: tokens.colors.amber[500],
       accent: [{ dark: tokens.colors.amber[400] }, tokens.colors.amber[600]],
       text: {
-        primary: [
-          { dark: tokens.colors.white },
-          rgba(tokens.colors.black, tokens.alphas.primary),
-        ],
-        secondary: [
-          { dark: rgba(tokens.colors.white, tokens.alphas.secondary) },
-          rgba(tokens.colors.black, tokens.alphas.secondary),
-        ],
+        primary: [{ dark: tokens.colors.white }, rgba(tokens.colors.black, tokens.alphas.primary)],
+        secondary: [{ dark: rgba(tokens.colors.white, tokens.alphas.secondary) }, rgba(tokens.colors.black, tokens.alphas.secondary)],
       },
     },
     spaces: {
@@ -80,14 +95,8 @@ const theme = getTheme(
       },
     },
     trans: {
-      bounce: [
-        {
-          motion: `${tokens.trans.duration.fast} ${tokens.trans.timing.bounce}`,
-        },
-      ],
-      ease: [
-        { motion: `${tokens.trans.duration.fast} ${tokens.trans.timing.ease}` },
-      ],
+      bounce: [{ motion: `${tokens.trans.duration.fast} ${tokens.trans.timing.bounce}` }],
+      ease: [{ motion: `${tokens.trans.duration.fast} ${tokens.trans.timing.ease}` }],
     },
   }),
   {
@@ -173,18 +182,18 @@ The generated custom properties from the last example would look like this.
     /* Generated aliases */
     --ds-aliases-colors-main: var(--ds-tokens-colors-amber-500);
     --ds-aliases-colors-accent: var(--ds-tokens-colors-amber-600);
-    --ds-aliases-colors-text-primary: color-mix(
-      in srgb,
-      var(--ds-tokens-colors-black) calc(var(--ds-tokens-alphas-primary) * 100),
-      transparent
-    );
-    --ds-aliases-colors-text-secondary: color-mix(
-      in srgb,
-      var(--ds-tokens-colors-black) calc(
-          var(--ds-tokens-alphas-secondary) * 100
-        ),
-      transparent
-    );
+    --ds-aliases-colors-text-primary:
+      color-mix(
+        in srgb,
+        var(--ds-tokens-colors-black) calc(var(--ds-tokens-alphas-primary) * 100),
+        transparent
+      );
+    --ds-aliases-colors-text-secondary:
+      color-mix(
+        in srgb,
+        var(--ds-tokens-colors-black) calc(var(--ds-tokens-alphas-secondary) * 100),
+        transparent
+      );
 
     --ds-aliases-spaces-margin: var(--ds-tokens-dimensions-16);
     --ds-aliases-spaces-padding: var(--ds-tokens-dimensions-8);
@@ -195,13 +204,12 @@ The generated custom properties from the last example would look like this.
     @media (prefers-color-aliases: dark) {
       --ds-aliases-colors-accent: var(--ds-tokens-colors-amber-400);
       --ds-aliases-colors-text-primary: var(--ds-tokens-colors-white);
-      --ds-aliases-colors-text-secondary: color-mix(
-        in srgb,
-        var(--ds-tokens-colors-white) calc(
-            var(--ds-tokens-alphas-secondary) * 100
-          ),
-        transparent
-      );
+      --ds-aliases-colors-text-secondary:
+        color-mix(
+          in srgb,
+          var(--ds-tokens-colors-white) calc(var(--ds-tokens-alphas-secondary) * 100),
+          transparent
+        );
     }
 
     @media (min-width: 1024px) {
@@ -210,9 +218,9 @@ The generated custom properties from the last example would look like this.
     }
 
     @media (prefers-reduced-motion: no-preference) {
-      --ds-aliases-trans-bounce: var(--ds-tokens-trans-duration-fast) var(
-          --ds-tokens-trans-timing-bounce
-        );
+      --ds-aliases-trans-bounce:
+        var(--ds-tokens-trans-duration-fast)
+        var(--ds-tokens-trans-timing-bounce);
     }
   }
 }
@@ -257,7 +265,7 @@ Then, the tokens and aliases will be available in the entire project.
 
 'use client';
 
-import theme from 'ui-tokens';
+import theme from './lib/theme';
 
 export default function Page() {
   return (

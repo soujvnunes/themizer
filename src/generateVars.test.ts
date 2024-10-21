@@ -13,12 +13,12 @@ it('should generate vars correctly', () => {
     },
   });
 
-  expect(vars.value).toMatchObject({
+  expect(vars.value).toEqual({
     '--colors-white': '#fff',
     '--colors-red-500': '#f00',
     '--spaces-md': '1rem',
   });
-  expect(vars.reference).toMatchObject({
+  expect(vars.reference).toEqual({
     colors: {
       white: 'var(--colors-white, #fff)',
       red: {
@@ -49,12 +49,12 @@ it('should prefix generated vars correctly', () => {
     },
   );
 
-  expect(vars.value).toMatchObject({
+  expect(vars.value).toEqual({
     '--tokens-colors-white': '#fff',
     '--tokens-colors-red-500': '#f00',
     '--tokens-spaces-md': '1rem',
   });
-  expect(vars.reference).toMatchObject({
+  expect(vars.reference).toEqual({
     colors: {
       white: 'var(--tokens-colors-white, #fff)',
       red: {
@@ -111,7 +111,7 @@ it("should replace correspondent responsive vars' media queries correctly", () =
     } as const,
   );
 
-  expect(vars.value).toMatchObject({
+  expect(vars.value).toEqual({
     '--colors-black': '#111',
     '--colors-gray': '#ddd',
     '--colors-white': '#fff',
@@ -147,7 +147,7 @@ it("should replace correspondent responsive vars' media queries correctly", () =
       '--font-weight-500': 600,
     },
   });
-  expect(vars.reference).toMatchObject({
+  expect(vars.reference).toEqual({
     colors: {
       black: 'var(--colors-black, #111)',
       gray: 'var(--colors-gray, #ddd)',
@@ -161,6 +161,9 @@ it("should replace correspondent responsive vars' media queries correctly", () =
     },
     font: {
       sans: 'var(--font-sans, sofia-pro)',
+      weight: {
+        '500': 'var(--font-weight-500, 400)',
+      },
       sizes: {
         xl: 'var(--font-sizes-xl, 2rem)',
       },

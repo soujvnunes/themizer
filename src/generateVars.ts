@@ -74,8 +74,8 @@ export default function generateVars<
     const vars = generateVars(
       value,
       {
+        ...options,
         prefixProperties: '',
-        medias: options?.medias,
       },
       path,
     );

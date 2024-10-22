@@ -1,27 +1,25 @@
+export type Primitive = string | number;
+
 export type ResponsiveSchema<M extends string> = {
-  [Media in M]: string | number;
+  [Media in M]: Primitive;
 };
 
 export interface Schema<M extends string = never> {
   [prop: string]:
-    | (string | number | Schema<M>)
-    | (M extends string ? [ResponsiveSchema<M>, (string | number)?] : never);
+    | (Primitive | Schema<M>)
+    | (M extends string ? [ResponsiveSchema<M>, Primitive?] : never);
 }
 
 export type PurifySchema<M extends string, S extends Schema<M>> = {
-  [Prop in keyof S]: S[Prop] extends [infer Media, infer Default]
-    ? Default extends string | number
-      ? Default
-      : Media extends ResponsiveSchema<M>
-      ? ResponsiveSchema<M>[M]
-      : never
+  [Prop in keyof S]: S[Prop] extends any[]
+    ? string
     : S[Prop] extends Schema<M>
     ? PurifySchema<M, S[Prop]>
     : S[Prop];
 };
 
 export interface Vars {
-  [key: string]: string | number;
+  [key: string]: Primitive;
 }
 
 export interface ResponsiveVars {
@@ -30,6 +28,7 @@ export interface ResponsiveVars {
 
 export interface GenerateVarsOptions<M extends string = never> {
   prefixProperties?: string;
+  // TODO: add selectors
   medias?: {
     [Media in M]: string;
   };

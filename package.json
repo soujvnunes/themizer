@@ -2,8 +2,13 @@
   "name": "ui-tokens",
   "version": "0.0.0",
   "description": "Generate CSS3 custom properties based on a given theme with tokens and aliases serving as a reference.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "author": "soujvnunes <soujvnunes@gmail.com> (https://soujvnunes.github.io)",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "./dist",
+    "./variables.css"
+  ],
   "keywords": [
     "Design System",
     "Design Tokens",
@@ -11,14 +16,13 @@
     "CSS3 Custom Properties",
     "TypeScript"
   ],
-  "author": "JV <soujvnunes@gmail.com> (https://soujvnunes.github.io)",
   "license": "ISC",
   "engines": {
     "node": ">= 16.0.0",
     "pnpm": ">= 8.0.0"
   },
   "scripts": {
-    "build": "rimraf ./dist && tsc",
+    "build": "rimraf ./dist && tsc --project tsconfig.build.json",
     "lint": "eslint 'src/**/*.{ts,tsx}' --fix",
     "format": "prettier --write 'src/**/*.{ts,tsx,json,md}'",
     "test": "jest",
@@ -26,6 +30,7 @@
   },
   "devDependencies": {
     "@types/jest": "^29.5.13",
+    "@types/node": "^22.7.9",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "eslint": "^8.57.1",

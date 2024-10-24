@@ -1,3 +1,4 @@
+import getVarsResolver from './getVarsResolver';
 import isPrimitive from './isPrimitive';
 import type {
   GenerateVarsOptions,
@@ -16,7 +17,7 @@ export default function generateVars<
   schema: S,
   options?: GenerateVarsOptions<M>,
   __adjustor?: string,
-): GeneratedVars<S, M> {
+): GeneratedVars<M, S> {
   const prefixProperties = options?.prefixProperties
     ? `${options.prefixProperties}${PROPERTIES_UNIFIER}`
     : '';
@@ -25,19 +26,13 @@ export default function generateVars<
   return Object.entries(schema).reduce((generatedVars, [property, value]) => {
     const path = `${prefixProperties}${adjustor}${property}`;
     const finalPath = `--${path}`;
+    const resolveVars = getVarsResolver<M, S>(generatedVars);
 
     if (isPrimitive(value)) {
-      return {
-        ...generatedVars,
-        value: {
-          ...generatedVars.value,
-          [finalPath]: value,
-        },
-        reference: {
-          ...generatedVars.reference,
-          [property]: `var(${finalPath}, ${value})`,
-        },
-      };
+      return resolveVars(
+        { [finalPath]: value },
+        { [property]: `var(${finalPath}, ${value})` },
+      );
     }
 
     if (Array.isArray(value)) {
@@ -55,41 +50,23 @@ export default function generateVars<
         };
       }
 
-      return {
-        ...generatedVars,
-        value: {
-          ...generatedVars.value,
+      return resolveVars(
+        {
           ...(isPrimitive(defaultValue) && {
             [finalPath]: defaultValue,
           }),
           ...RESPONSIVE_VARS,
         },
-        reference: {
-          ...generatedVars.reference,
-          [property]: `var(${finalPath}${resolvedDefaultValue})`,
-        },
-      };
+        { [property]: `var(${finalPath}${resolvedDefaultValue})` },
+      );
     }
 
     const vars = generateVars(
       value,
-      {
-        ...options,
-        prefixProperties: '',
-      },
+      { ...options, prefixProperties: '' },
       path,
     );
 
-    return {
-      ...generatedVars,
-      value: {
-        ...generatedVars.value,
-        ...vars.value,
-      },
-      reference: {
-        ...generatedVars.reference,
-        [property]: vars.reference,
-      },
-    };
-  }, {} as GeneratedVars<S, M>);
+    return resolveVars(vars.value, { [property]: vars.reference });
+  }, {} as GeneratedVars<M, S>);
 }

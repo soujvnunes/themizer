@@ -172,7 +172,6 @@ it("should replace correspondent responsive vars' media queries correctly", () =
       primary: 'var(--alphas-primary, 0.8)',
       secondary: 'var(--alphas-secondary, 0.6)',
     },
-    // No default value, because it's only value within `@media`
     trans: {
       bounce: 'var(--trans-bounce)',
       ease: 'var(--trans-ease)',

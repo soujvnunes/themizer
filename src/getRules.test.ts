@@ -8,7 +8,7 @@ it('should stringify primitive values correctly', () => {
   });
 
   expect(css).toContain(
-    `\n--tokens-colors-white: #fff;\n--tokens-colors-red-500: #f00;\n--tokens-spaces-md: 1rem;`,
+    `@layer theme;@layer theme{:root{--tokens-colors-white:#fff;--tokens-colors-red-500:#f00;--tokens-spaces-md:1rem;}}`,
   );
 });
 
@@ -23,6 +23,6 @@ it('should stringify responsive values correctly', () => {
   });
 
   expect(css).toContain(
-    `\n--tokens-colors-white: #fff;\n--tokens-spaces-md: 1rem;\n@media (prefers-color-scheme: dark) {\n\t--colors-white: #333;\n\t--alphas-primary: 1;\n}`,
+    `@layer theme;@layer theme{:root{--tokens-colors-white:#fff;--tokens-spaces-md:1rem;@media (prefers-color-scheme: dark){--colors-white:#333;--alphas-primary:1;}}}`,
   );
 });

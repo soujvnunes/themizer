@@ -1,24 +1,18 @@
 import isPrimitive from './isPrimitive';
-import type { Vars, Primitive } from './types';
+import type { FlattenVars } from './types';
 
-let RESPONSIVE_PROPS = '';
+let RESPONSIVE_VARS = '';
 
-export default function getRules(vars?: {
-  [key: string]: Primitive | Vars;
-}): string {
-  if (typeof vars === 'undefined') return '';
+export default function getRules(vars: FlattenVars): string {
+  const rules = Object.entries(vars).reduce((rules, [prop, value]) => {
+    if (isPrimitive(value)) return `${rules}${prop}:${value};`;
 
-  return Object.entries(vars).reduce((rules, [prop, value]) => {
-    if (isPrimitive(value)) return `${rules}\n${prop}: ${value};`;
-
-    const responsiveProps = Object.entries(value);
-
-    for (let index = 0; index < responsiveProps.length; index++) {
-      const [responsiveProp, responsiveValue] = responsiveProps[index];
-
-      RESPONSIVE_PROPS += `\t${responsiveProp}: ${responsiveValue};\n`;
+    for (const [responsiveProp, responsiveValue] of Object.entries(value)) {
+      RESPONSIVE_VARS += `${responsiveProp}:${responsiveValue};`;
     }
 
-    return `${rules}\n${prop} {\n${RESPONSIVE_PROPS}}\n`;
+    return `${rules}${prop}{${RESPONSIVE_VARS}}`;
   }, '');
+
+  return `@layer theme;@layer theme{:root{${rules}}}`;
 }

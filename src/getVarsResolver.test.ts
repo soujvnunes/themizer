@@ -1,47 +1,18 @@
 import getVarsResolver from './getVarsResolver';
 
-it('should spread value and reference keys correctly', () => {
-  const resolveVars = getVarsResolver<
-    'dark',
-    {
-      font: {
-        sizes: {
-          md: number;
-          lg: number;
-        };
-      };
-    }
-  >({
-    value: {
-      font: {
-        sizes: 1,
-      },
-    },
-    reference: {
-      font: {
-        sizes: {
-          md: 1,
-          lg: 0,
-        },
-      },
-    },
-  });
+describe('getVarsResolver', () => {
+  describe('when providing the generated vars parameter', () => {
+    it('returns the vars resolver to spread value and reference keys', () => {
+      const resolveVars = getVarsResolver({
+        value: { font: { sizes: 1 } },
+        reference: { font: { sizes: { md: 1, lg: 0 } } },
+      });
+      const resolvedVars = resolveVars({ hello: 'world' }, { foo: 'bar' });
 
-  expect(resolveVars({ hello: 'world' }, { foo: 'bar' })).toEqual({
-    value: {
-      font: {
-        sizes: 1,
-      },
-      hello: 'world',
-    },
-    reference: {
-      font: {
-        sizes: {
-          md: 1,
-          lg: 0,
-        },
-      },
-      foo: 'bar',
-    },
+      expect(resolvedVars).toEqual({
+        value: { font: { sizes: 1 }, hello: 'world' },
+        reference: { font: { sizes: { md: 1, lg: 0 } }, foo: 'bar' },
+      });
+    });
   });
 });

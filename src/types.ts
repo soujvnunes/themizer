@@ -26,15 +26,18 @@ export interface ResponsiveVars {
   [key: string]: Vars;
 }
 
+export interface FlattenVars {
+  [key: string]: Primitive | Vars;
+}
+
 export interface GenerateVarsOptions<M extends string = never> {
   prefixProperties?: string;
-  // TODO: add selectors
   medias?: {
     [Media in M]: string;
   };
 }
 
-export interface GeneratedVars<S extends Schema<M>, M extends string = never> {
+export interface GeneratedVars<M extends string, S extends Schema<M>> {
   value: Vars & M extends string ? ResponsiveVars : never;
   reference: PurifySchema<M, S>;
 }

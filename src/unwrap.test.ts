@@ -1,13 +1,43 @@
 import unwrap from './unwrap';
 
-it('should unwrap a custom property correctly', () => {
-  expect(unwrap('var(--test-a)')).toBe('--test-a');
-});
+describe('unwrap', () => {
+  describe('when providing the reference for the custom property', () => {
+    it('returns the custom property', () => {
+      const reference = {
+        a: {
+          b: {
+            c: 'var(--test-a)',
+          },
+        },
+      };
 
-it('should unwrap a custom property with default value correctly', () => {
-  expect(unwrap('var(--test-b, 78)')).toBe('--test-b');
-});
+      expect(unwrap(reference.a.b.c)).toBe('--test-a');
+    });
+  });
+  describe('when providing the reference for the custom property with default value', () => {
+    it('returns only the custom property', () => {
+      const reference = {
+        a: {
+          b: {
+            c: 'var(--test-b, 78)',
+          },
+        },
+      };
 
-it('should unwrap a custom property complex with default value correctly', () => {
-  expect(unwrap('var(--test-c, var(--test-b, 78))')).toBe('--test-c');
+      expect(unwrap(reference.a.b.c)).toBe('--test-b');
+    });
+  });
+  describe('when providing the reference for the custom property with complex default value', () => {
+    it('returns only the custom property', () => {
+      const reference = {
+        a: {
+          b: {
+            c: 'var(--test-c, var(--test-b, 78))',
+          },
+        },
+      };
+
+      expect(unwrap(reference.a.b.c)).toBe('--test-c');
+    });
+  });
 });

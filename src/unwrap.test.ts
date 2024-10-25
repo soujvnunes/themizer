@@ -1,7 +1,7 @@
 import unwrap from './unwrap';
 
 describe('unwrap', () => {
-  describe('when providing the reference for the custom property', () => {
+  describe('when providing the reference parameter', () => {
     it('returns the custom property', () => {
       const reference = {
         a: {
@@ -14,7 +14,7 @@ describe('unwrap', () => {
       expect(unwrap(reference.a.b.c)).toBe('--test-a');
     });
   });
-  describe('when providing the reference for the custom property with default value', () => {
+  describe('when providing the reference with default value parameter', () => {
     it('returns only the custom property', () => {
       const reference = {
         a: {
@@ -27,7 +27,7 @@ describe('unwrap', () => {
       expect(unwrap(reference.a.b.c)).toBe('--test-b');
     });
   });
-  describe('when providing the reference for the custom property with complex default value', () => {
+  describe('when providing the reference with complex default value parameter', () => {
     it('returns only the custom property', () => {
       const reference = {
         a: {

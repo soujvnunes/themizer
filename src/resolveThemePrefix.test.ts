@@ -1,13 +1,21 @@
 import resolveThemePrefix from './resolveThemePrefix';
 
-it('should return the fallback value if [prefixProperties] is undefined correctly', () => {
-  expect(resolveThemePrefix('test')).toBe('test');
-});
+describe('resolveThemePrefix', () => {
+  describe('when providing the prefix parameter', () => {
+    it('returns the default prefix', () => {
+      const resolvedThemePrefix = resolveThemePrefix('test');
 
-it('should return the prefixed property correctly', () => {
-  expect(
-    resolveThemePrefix('test', {
-      prefixProperties: 'prefix',
-    }),
-  ).toBe('prefix-test');
+      expect(resolvedThemePrefix).toBe('test');
+    });
+
+    describe('with the prefix properties options parameter', () => {
+      it('returns a prefixed default prefix LOL', () => {
+        const resolvedThemePrefix = resolveThemePrefix('test', {
+          prefixProperties: 'prefix',
+        });
+
+        expect(resolvedThemePrefix).toBe('prefix-test');
+      });
+    });
+  });
 });

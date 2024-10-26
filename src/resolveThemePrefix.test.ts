@@ -10,9 +10,7 @@ describe('resolveThemePrefix', () => {
 
     describe('with the prefix properties options parameter', () => {
       it('returns a prefixed default prefix LOL', () => {
-        const resolvedThemePrefix = resolveThemePrefix('test', {
-          prefixProperties: 'prefix',
-        });
+        const resolvedThemePrefix = resolveThemePrefix('test', 'prefix');
 
         expect(resolvedThemePrefix).toBe('prefix-test');
       });

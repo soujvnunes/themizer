@@ -2,9 +2,9 @@ import type { GenerateVarsOptions } from './types';
 
 export default function resolveThemePrefix<M extends string = never>(
   defaultPrefix: string,
-  options?: GenerateVarsOptions<M>,
+  prefixProperties?: GenerateVarsOptions<M>['prefixProperties'],
 ) {
-  if (typeof options?.prefixProperties === 'undefined') return defaultPrefix;
+  if (typeof prefixProperties === 'undefined') return defaultPrefix;
 
-  return `${options?.prefixProperties}-${defaultPrefix}`;
+  return `${prefixProperties}-${defaultPrefix}`;
 }

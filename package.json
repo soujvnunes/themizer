@@ -1,6 +1,6 @@
 {
   "name": "ui-tokens",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Generate CSS custom properties based on a given theme with tokens and aliases serving as a reference.",
   "author": "soujvnunes <soujvnunes@gmail.com> (https://soujvnunes.github.io)",
   "main": "./dist/index.js",

@@ -10,6 +10,6 @@
     "esModuleInterop": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*"],
+  "include": ["./src/**/*", "./variables.css"],
   "exclude": ["node_modules"]
 }

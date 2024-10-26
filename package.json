@@ -1,7 +1,7 @@
 {
   "name": "ui-tokens",
   "version": "0.0.0",
-  "description": "Generate CSS3 custom properties based on a given theme with tokens and aliases serving as a reference.",
+  "description": "Generate CSS custom properties based on a given theme with tokens and aliases serving as a reference.",
   "author": "soujvnunes <soujvnunes@gmail.com> (https://soujvnunes.github.io)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -12,8 +12,8 @@
   "keywords": [
     "Design System",
     "Design Tokens",
-    "Responsive Design",
-    "CSS3 Custom Properties",
+    "Responsive Web Design",
+    "CSS Custom Properties",
     "TypeScript"
   ],
   "license": "ISC",

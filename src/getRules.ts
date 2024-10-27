@@ -3,7 +3,7 @@ import type { FlattenVars } from './types';
 
 let RESPONSIVE_VARS = '';
 
-export default function getRules(vars: FlattenVars): string {
+export default function getRules(vars: FlattenVars) {
   const rules = Object.entries(vars).reduce((rules, [prop, value]) => {
     if (isPrimitive(value)) return `${rules}${prop}:${value};`;
 

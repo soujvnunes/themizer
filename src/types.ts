@@ -1,21 +1,21 @@
 export type Primitive = string | number;
 
-export type ResponsiveSchema<M extends string> = {
-  [Media in M]: Primitive;
-};
-
 export interface Schema<M extends string = never> {
   [prop: string]:
     | (Primitive | Schema<M>)
-    | (M extends string ? [ResponsiveSchema<M>, Primitive?] : never);
+    | (M extends string ? [Record<M, Primitive>, Primitive?] : never);
 }
 
-export type PurifySchema<M extends string, S extends Schema<M>> = {
-  [Prop in keyof S]: S[Prop] extends any[]
-    ? string
-    : S[Prop] extends Schema<M>
-    ? PurifySchema<M, S[Prop]>
-    : S[Prop];
+export type ResolveResponsiveSchema<M extends string, S extends Schema<M>> = {
+  [Key in keyof S]: S[Key] extends [infer ResponsiveMedia, infer DefaultValue]
+    ? DefaultValue extends Primitive
+      ? DefaultValue
+      : ResponsiveMedia extends Primitive
+      ? ResponsiveMedia
+      : never
+    : S[Key] extends Schema<M>
+    ? ResolveResponsiveSchema<M, S[Key]>
+    : S[Key];
 };
 
 export interface Vars {
@@ -32,14 +32,12 @@ export interface FlattenVars {
 
 export interface GenerateVarsOptions<M extends string = never> {
   prefixProperties?: string;
-  medias?: {
-    [Media in M]: string;
-  };
+  medias?: Record<M, string>;
 }
 
 export interface GeneratedVars<M extends string, S extends Schema<M>> {
   value: Vars & M extends string ? ResponsiveVars : never;
-  reference: PurifySchema<M, S>;
+  reference: ResolveResponsiveSchema<M, S>;
 }
 
 export interface ThemeOptions<M extends string, T extends Schema>

@@ -1,4 +1,4 @@
 export { default as getTheme } from './getTheme';
 export { default as generateVars } from './generateVars';
-export { default as unwrap } from './unwrap';
-export { default as resolve } from './resolve';
+export { default as unwrapVar } from './unwrapVar';
+export { default as resolveVar } from './resolveVar';

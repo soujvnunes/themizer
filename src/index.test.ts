@@ -5,8 +5,8 @@ describe('ui-tokens', () => {
     const exportedModules = [
       'generateVars',
       'getTheme',
-      'unwrap',
-      'resolve',
+      'unwrapVar',
+      'resolveVar',
     ] as const;
 
     it('returns its functions', () => {

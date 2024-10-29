@@ -1,22 +1,22 @@
-import resolve from './resolve';
+import resolveVar from './resolveVar';
 
-describe('resolve', () => {
+describe('resolveVar', () => {
   describe('when providing the wrapped custom property', () => {
     describe('without default value parameter', () => {
       it('throws an error', () => {
-        expect(() => resolve('var(--test-a)')).toThrow(
-          "ui-tokens/resolve: Expected wrapped custom property 'var(--test-a)' to have a default value.",
+        expect(() => resolveVar('var(--test-a)')).toThrow(
+          "ui-tokens/resolveVar: Expected wrapped custom property 'var(--test-a)' to have a default value.",
         );
       });
     });
     describe('with default value parameter', () => {
       it('returns only the custom property', () => {
-        expect(resolve('var(--test-b, 78)')).toBe(78);
-        expect(resolve('var(--test-b, 16px)')).toBe('16px');
+        expect(resolveVar('var(--test-b, 78)')).toBe('78');
+        expect(resolveVar('var(--test-b, 16px)')).toBe('16px');
       });
       describe('as custom property', () => {
         it('returns only the custom property', () => {
-          expect(resolve('var(--test-c, var(--test-b, 78))')).toBe(78);
+          expect(resolveVar('var(--test-c, var(--test-b, 78))')).toBe('78');
         });
       });
     });

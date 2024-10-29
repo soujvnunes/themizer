@@ -1,17 +1,19 @@
-import unwrap from './unwrap';
+import unwrapVar from './unwrapVar';
 
-describe('unwrap', () => {
+describe('unwrapVar', () => {
   describe('when providing the reference parameter', () => {
     it('returns the custom property', () => {
-      expect(unwrap('var(--test-a)')).toBe('--test-a');
+      expect(unwrapVar('var(--test-a)')).toBe('--test-a');
     });
     describe('with default value parameter', () => {
       it('returns only the custom property', () => {
-        expect(unwrap('var(--test-b, 78)')).toBe('--test-b');
+        expect(unwrapVar('var(--test-b, 78)')).toBe('--test-b');
       });
       describe('as custom property', () => {
         it('returns only the custom property', () => {
-          expect(unwrap('var(--test-c, var(--test-b, 78))')).toBe('--test-c');
+          expect(unwrapVar('var(--test-c, var(--test-b, 78))')).toBe(
+            '--test-c',
+          );
         });
       });
     });

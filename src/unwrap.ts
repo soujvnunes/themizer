@@ -1,3 +1,3 @@
-export default function unwrap(reference: string) {
-  return reference.match(/--[\w+\-{1}]+/g)?.[0];
+export default function unwrap(wrappedVariable: string) {
+  return wrappedVariable.match(/--[\w+\-{1}]+/g)?.[0];
 }

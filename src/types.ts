@@ -6,15 +6,11 @@ export interface Schema<M extends string = never> {
     | (M extends string ? [Record<M, Primitive>, Primitive?] : never);
 }
 
-export type ResolveResponsiveSchema<M extends string, S extends Schema<M>> = {
-  [Key in keyof S]: S[Key] extends [infer ResponsiveMedia, infer DefaultValue]
-    ? DefaultValue extends Primitive
-      ? DefaultValue
-      : ResponsiveMedia extends Primitive
-      ? ResponsiveMedia
-      : never
+export type ResolveSchema<M extends string, S extends Schema<M>> = {
+  [Key in keyof S]: S[Key] extends any[]
+    ? Primitive
     : S[Key] extends Schema<M>
-    ? ResolveResponsiveSchema<M, S[Key]>
+    ? ResolveSchema<M, S[Key]>
     : S[Key];
 };
 
@@ -31,16 +27,16 @@ export interface FlattenVars {
 }
 
 export interface GenerateVarsOptions<M extends string = never> {
-  prefixProperties?: string;
+  prefixVars?: string;
   medias?: Record<M, string>;
 }
 
 export interface GeneratedVars<M extends string, S extends Schema<M>> {
   value: Vars & M extends string ? ResponsiveVars : never;
-  reference: ResolveResponsiveSchema<M, S>;
+  reference: ResolveSchema<M, S>;
 }
 
 export interface ThemeOptions<M extends string, T extends Schema>
-  extends GenerateVarsOptions<M> {
-  tokens?: T;
+  extends Required<GenerateVarsOptions<M>> {
+  tokens: T;
 }

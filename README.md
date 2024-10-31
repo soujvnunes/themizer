@@ -18,7 +18,7 @@ Generate CSS3 custom properties based on a given theme with tokens and aliases s
 
 - **options?**
 
-  - prefixProperties?
+  - prefixVars?
 
     String to prefix all the generated CSS custom properties, accessed in `theme.vars`.
 
@@ -76,7 +76,7 @@ import rgba from 'helpers/rgba';
 
 const theme = getTheme(
   (tokens) => ({
-    colors: {
+    palette: {
       main: tokens.colors.amber[500],
       accent: [{ dark: tokens.colors.amber[400] }, tokens.colors.amber[600]],
       text: {
@@ -84,23 +84,21 @@ const theme = getTheme(
         secondary: [{ dark: rgba(tokens.colors.white, tokens.alphas.secondary) }, rgba(tokens.colors.black, tokens.alphas.secondary)],
       },
     },
-    spaces: {
+    grid: {
       margin: [{ desktop: tokens.dimensions[40] }, tokens.dimensions[16]],
-      padding: tokens.dimensions[8],
+      gutter: tokens.dimensions[8],
     },
-    font: {
-      sizes: {
-        lg: [{ desktop: tokens.dimensions[64] }, tokens.dimensions[40]],
-        md: tokens.dimensions[16],
-      },
+    typography: {
+      headline: [{ desktop: tokens.dimensions[64] }, tokens.dimensions[40]],
+      body: tokens.dimensions[16],
     },
-    trans: {
+    motion: {
       bounce: [{ motion: `${tokens.trans.duration.fast} ${tokens.trans.timing.bounce}` }],
       ease: [{ motion: `${tokens.trans.duration.fast} ${tokens.trans.timing.ease}` }],
     },
   }),
   {
-    prefixProperties: 'ds',
+    prefixVars: 'ds',
     medias: {
       desktop: '@media (min-width: 1024px)',
       dark: '@media (prefers-color-scheme: dark)',
@@ -150,7 +148,7 @@ const theme = getTheme(
 
 The generated custom properties from the last example would look like this.
 
-> Note that the provided `prefixProperties` ("ds") is being used. Otherwise, these custom properties would be just like `--tokens-*` for tokens and `--aliases-*` for aliases.
+> Note that the provided `prefixVars` ("ds") is being used. Otherwise, these custom properties would be just like `--tokens-*` for tokens and `--aliases-*` for aliases.
 
 ```css
 @layer theme;
@@ -180,31 +178,31 @@ The generated custom properties from the last example would look like this.
     --ds-tokens-trans-duration-fast: 200ms;
 
     /* Generated aliases */
-    --ds-aliases-colors-main: var(--ds-tokens-colors-amber-500);
-    --ds-aliases-colors-accent: var(--ds-tokens-colors-amber-600);
-    --ds-aliases-colors-text-primary:
+    --ds-aliases-palette-main: var(--ds-tokens-colors-amber-500);
+    --ds-aliases-palette-accent: var(--ds-tokens-colors-amber-600);
+    --ds-aliases-palette-text-primary:
       color-mix(
         in srgb,
         var(--ds-tokens-colors-black) calc(var(--ds-tokens-alphas-primary) * 100),
         transparent
       );
-    --ds-aliases-colors-text-secondary:
+    --ds-aliases-palette-text-secondary:
       color-mix(
         in srgb,
         var(--ds-tokens-colors-black) calc(var(--ds-tokens-alphas-secondary) * 100),
         transparent
       );
 
-    --ds-aliases-spaces-margin: var(--ds-tokens-dimensions-16);
-    --ds-aliases-spaces-padding: var(--ds-tokens-dimensions-8);
+    --ds-aliases-grid-margin: var(--ds-tokens-dimensions-16);
+    --ds-aliases-grid-gutter: var(--ds-tokens-dimensions-8);
 
-    --ds-aliases-font-sizes-md: var(--ds-tokens-dimensions-16);
-    --ds-aliases-font-sizes-lg: var(--ds-tokens-dimensions-40);
+    --ds-aliases-typography-body: var(--ds-tokens-dimensions-16);
+    --ds-aliases-typography-headline: var(--ds-tokens-dimensions-40);
 
     @media (prefers-color-aliases: dark) {
-      --ds-aliases-colors-accent: var(--ds-tokens-colors-amber-400);
-      --ds-aliases-colors-text-primary: var(--ds-tokens-colors-white);
-      --ds-aliases-colors-text-secondary:
+      --ds-aliases-palette-accent: var(--ds-tokens-colors-amber-400);
+      --ds-aliases-palette-text-primary: var(--ds-tokens-colors-white);
+      --ds-aliases-palette-text-secondary:
         color-mix(
           in srgb,
           var(--ds-tokens-colors-white) calc(var(--ds-tokens-alphas-secondary) * 100),
@@ -213,12 +211,12 @@ The generated custom properties from the last example would look like this.
     }
 
     @media (min-width: 1024px) {
-      --ds-aliases-spaces-margin: var(--ds-tokens-dimensions-40);
-      --ds-aliases-font-sizes-lg: var(--ds-tokens-dimensions-64);
+      --ds-aliases-grid-margin: var(--ds-tokens-dimensions-40);
+      --ds-aliases-typography-headline: var(--ds-tokens-dimensions-64);
     }
 
     @media (prefers-reduced-motion: no-preference) {
-      --ds-aliases-trans-bounce:
+      --ds-aliases-motion-bounce:
         var(--ds-tokens-trans-duration-fast)
         var(--ds-tokens-trans-timing-bounce);
     }
@@ -230,66 +228,130 @@ The generated custom properties from the last example would look like this.
 
 The generated CSS custom properties needs to be indexed at the project's top-level file.
 
-#### Next.js
+#### Next.js and styled-jsx (native CSS-in-JS solution)
 
-At the top-level layout's file, index both theme and generated CSS from `ui-tokens`.
+1. Create a **styled-jsx** [registry](https://nextjs.org/docs/app/building-your-application/styling/css-in-js#styled-jsx) to collect all CSS rules in a render and inject the theme rules in the document.
+
+```tsx
+// src/providers/StyledJsxProvider.tsx
+
+"use client";
+
+import { useState } from 'react';
+import { useServerInsertedHTML } from 'next/navigation';
+import { StyleRegistry, createStyleRegistry } from 'styled-jsx';
+import theme from 'lib/theme';
+
+export default function StyledJsxProvider({ children }: React.PropsWithChildren) {
+  const [styleRegistry] = useState(() => createStyleRegistry());
+
+  useServerInsertedHTML(() => {
+    const styles = styleRegistry.styles();
+
+    styleRegistry.flush();
+
+    return <>{styles}</>;
+  });
+
+  return (
+    <StyleRegistry registry={styleRegistry}>
+      <style jsx global>{`
+        ${theme.rules}
+
+        /* Other CSS styles, such as Reset, Normalize and so on. */
+      `}</style>
+      {children}
+    </StyleRegistry>
+  );
+}
+
+```
+
+2. Wrap the children of the root layout with the style registry component.
 
 ```tsx
 // src/app/layout.tsx
 
+import type { Viewport } from "next";
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import StyledJsxProvider from 'providers/StyledJsxProvider';
+// There are also cool helper functions to get a custom property name or value.
+import { resolveVar, unwrapVar } from 'ui-tokens';
 
-// Import the generated CSS files containing its variables
-import 'ui-tokens/variables.css';
+export const viewport: Viewport = {
+  themeColor: [
+    {
+      media: "(prefers-color-scheme: dark)",
+      color: resolveVar(theme.tokens.colors.amber[400]), // #fbbf24
+    },
+    {
+      media: "(prefers-color-scheme: light)",
+      color: resolveVar(theme.tokens.colors.amber[600]), // #d97706
+    },
+  ],
+};
 
 export default function RootLayout({ children }: React.PropsWithChildren) {
   return (
-    <html lang="en">
+    <html
+      lang="en"
+      style={{ 
+        [unwrapVar(trans.duration.fast)/* --ds-tokens-trans-duration-fast */]: '400ms',
+      }}>
       <body>
-        {children}
-        <Analytics />
-        <SpeedInsights />
+        <StyledJsxProvider>
+          {children}
+          <Analytics />
+          <SpeedInsights />
+        </StyledJsxProvider>
       </body>
     </html>
   );
 }
 ```
 
-##### styled-jx
-
-Then, the tokens and aliases will be available in the entire project.
+3. Implement components using the generated theme.
 
 ```tsx
-// src/app/page.tsx
+// src/components/Title.tsx
 
 'use client';
 
 import theme from './lib/theme';
 
-export default function Page() {
+export default function Title({ children, className = '', ...props }: React.ComponentPropsWithoutRef<'h1'>) {
   return (
-    <div className="container">
-      <h1 className="title">Styled with Styled JSX</h1>
-      <style jsx>{`
-        .container {
-          width: grid;
-          margin: ${theme.aliases.spaces.margin};
-          gap: ${theme.aliases.spaces.padding};
-        }
-
+    <h1 className={`title ${className}`} {...props}>
+      {children}
+       <style jsx>{`
         .title {
-          font-size: ${theme.aliases.font.sizes.lg};
-          font-weight: ${theme.tokens.font.weight.bold};
-        }
-
-        ${theme.medias.desktop} {
-          .container {
-            gap: ${theme.tokens.dimenstions[16]};
-          }
+          font-size: ${theme.aliases.typography.headline}; /* var(--ds-aliases-typography-headline, var(--ds-tokens-dimensions-40, 2.5rem)) */
+          font-weight: ${theme.tokens.font.weight.bold}; /* var(--ds-tokens-font-weight-bold, 800) */
         }
       `}</style>
-    </div>
+    </h1>
   );
 }
 ```
+
+4. Or anywhere else it's needed.
+> No need to change de directive of a file to use theme.
+
+```tsx
+// src/app/page.tsx
+
+import Title from 'components/Title';
+import theme from 'lib/theme';
+
+export default function Page() {
+  return (
+    <main>
+      <Title>Styled with Styled JSX</Title>
+    </main>
+  );
+}
+```
+#### Next.js and styled-jsx (native CSS-in-JS solution)
+
+*Soon!*

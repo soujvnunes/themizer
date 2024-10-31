@@ -1,40 +1,27 @@
-import type { GeneratedVars, Schema, ThemeOptions } from './types';
+import type { ResolveSchema, Schema, ThemeOptions } from './types';
 import generateVars from './generateVars';
-import resolveThemePrefix from './resolveThemePrefix';
 import getRules from './getRules';
 
-export default function getTheme<
-  M extends string,
-  T extends Schema,
-  A extends Schema<M>,
-  // TODO: create overloads to handle scenaries in which there's no tokens to be passed by aliases parameter
->(aliases: A | ((tokens: T) => A), options?: ThemeOptions<M, T>) {
-  let tokensVars: GeneratedVars<never, T> | undefined;
-
-  if (typeof options?.tokens !== 'undefined') {
-    tokensVars = generateVars(options.tokens, {
-      prefixProperties: resolveThemePrefix('tokens', options?.prefixProperties),
-    });
-  }
-
-  const resolvedAliases =
-    typeof aliases === 'function'
-      ? aliases(tokensVars?.reference as T)
-      : aliases;
-  const aliasesVars = generateVars<M, A>(resolvedAliases, {
+export default function getTheme<M extends string, T extends Schema>(
+  aliases: (tokens: ResolveSchema<never, T>) => Schema<M>,
+  options: ThemeOptions<M, T>,
+) {
+  const tokensVars = generateVars(options.tokens, {
+    prefixVars: `${options.prefixVars}-tokens`,
+  });
+  const aliasesVars = generateVars(aliases(tokensVars.reference), {
     ...options,
-    prefixProperties: resolveThemePrefix('aliases', options?.prefixProperties),
+    prefixVars: `${options.prefixVars}-aliases`,
   });
   const rules = getRules({
-    ...tokensVars?.value,
+    ...tokensVars.value,
     ...aliasesVars.value,
   });
 
   return {
-    // TODO: use wyw-in-js to process those rules into a css file
     rules,
     aliases: aliasesVars.reference,
-    tokens: tokensVars?.reference,
-    medias: options?.medias,
+    tokens: tokensVars.reference,
+    medias: options.medias,
   };
 }

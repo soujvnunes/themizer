@@ -1,29 +1,6 @@
 import getTheme from './getTheme';
 
 describe('getTheme', () => {
-  describe('taking aliases', () => {
-    const theme = getTheme({
-      font: {
-        sizes: {
-          md: '16px',
-        },
-      },
-    });
-
-    it('returns its reference', () => {
-      expect(theme).toEqual({
-        aliases: {
-          font: {
-            sizes: {
-              md: 'var(--aliases-font-sizes-md, 16px)',
-            },
-          },
-        },
-        rules:
-          '@layer theme;@layer theme{:root{--aliases-font-sizes-md:16px;}}',
-      });
-    });
-  });
   describe('taking aliases with options', () => {
     const theme = getTheme(
       (tokens) => ({
@@ -32,7 +9,7 @@ describe('getTheme', () => {
         },
       }),
       {
-        prefixProperties: 'ds',
+        prefixVars: 'ds',
         medias: {
           dark: '@media (prefers-scheme-color: dark)',
         },
@@ -47,7 +24,7 @@ describe('getTheme', () => {
       },
     );
 
-    it('returns its reference and tokens prefixed with medias one', () => {
+    it('returns its prefixed reference and tokens one with specified media and CSS rules', () => {
       expect(theme).toEqual({
         aliases: {
           palette: {

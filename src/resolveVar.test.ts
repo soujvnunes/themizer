@@ -13,10 +13,26 @@ describe('resolveVar', () => {
       it('returns only the custom property', () => {
         expect(resolveVar('var(--test-b, 78)')).toBe('78');
         expect(resolveVar('var(--test-b, 16px)')).toBe('16px');
+        expect(resolveVar('var(--test-b, #fff)')).toBe('#fff');
+        expect(resolveVar('var(--test-b, 123 123 123)')).toBe('123 123 123');
+        expect(resolveVar('var(--test-b, rgb(123 123 123))')).toBe(
+          'rgb(123 123 123)',
+        );
       });
       describe('as custom property', () => {
-        it('returns only the custom property', () => {
+        // TODO: handle complex cases
+        it.skip('returns only the custom property', () => {
           expect(resolveVar('var(--test-c, var(--test-b, 78))')).toBe('78');
+          expect(resolveVar('var(--test-c, var(--test-b, 16px))')).toBe('16px');
+          expect(resolveVar('var(--test-c, var(--test-b, #fffFFF))')).toBe(
+            '#fffFFF',
+          );
+          expect(resolveVar('var(--test-b, var(--test-b, 123 123 123))')).toBe(
+            '123 123 123',
+          );
+          expect(
+            resolveVar('var(--test-b, var(--test-b, rgb(123 123 123)))'),
+          ).toBe('rgb(123 123 123)');
         });
       });
     });

@@ -1,6 +1,8 @@
 export default function resolveVar(wrappedVariable: string) {
   const matched = wrappedVariable
-    .matchAll(/,\s(\w+|\d+)\)/gi)
+    .matchAll(
+      /,\s(\w+|(\d+(\s|\w+)?)+|#[a-f0-9]{3,6}|(calc|rg(b|a)|cubic-bezier)\(.+\))\)/gi,
+    )
     .toArray()
     .flat();
 

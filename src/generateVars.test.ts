@@ -49,7 +49,7 @@ describe('generateVars', () => {
           },
         },
         {
-          prefixProperties: 'tokens',
+          prefixVars: 'tokens',
         },
       );
 

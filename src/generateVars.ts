@@ -7,7 +7,7 @@ import type {
   GeneratedVars,
 } from './types';
 
-const PROPERTIES_UNIFIER = '-';
+const VARS_UNIFIER = '-';
 const RESPONSIVE_VARS: ResponsiveVars = {};
 
 export default function generateVars<
@@ -18,20 +18,20 @@ export default function generateVars<
   options?: GenerateVarsOptions<M>,
   __adjustor?: string,
 ): GeneratedVars<M, S> {
-  const prefixProperties = options?.prefixProperties
-    ? `${options.prefixProperties}${PROPERTIES_UNIFIER}`
+  const prefixVars = options?.prefixVars
+    ? `${options.prefixVars}${VARS_UNIFIER}`
     : '';
-  const adjustor = __adjustor ? `${__adjustor}${PROPERTIES_UNIFIER}` : '';
+  const adjustor = __adjustor ? `${__adjustor}${VARS_UNIFIER}` : '';
 
-  return Object.entries(schema).reduce((generatedVars, [property, value]) => {
-    const path = `${prefixProperties}${adjustor}${property}`;
+  return Object.entries(schema).reduce((generatedVars, [key, value]) => {
+    const path = `${prefixVars}${adjustor}${key}`;
     const finalPath = `--${path}`;
     const resolveVars = getVarsResolver<M, S>(generatedVars);
 
     if (isPrimitive(value)) {
       return resolveVars(
         { [finalPath]: value },
-        { [property]: `var(${finalPath}, ${value})` },
+        { [key]: `var(${finalPath}, ${value})` },
       );
     }
 
@@ -57,16 +57,12 @@ export default function generateVars<
           }),
           ...RESPONSIVE_VARS,
         },
-        { [property]: `var(${finalPath}${resolvedDefaultValue})` },
+        { [key]: `var(${finalPath}${resolvedDefaultValue})` },
       );
     }
 
-    const vars = generateVars(
-      value,
-      { ...options, prefixProperties: '' },
-      path,
-    );
+    const vars = generateVars(value, { ...options, prefixVars: '' }, path);
 
-    return resolveVars(vars.value, { [property]: vars.reference });
+    return resolveVars(vars.value, { [key]: vars.reference });
   }, {} as GeneratedVars<M, S>);
 }

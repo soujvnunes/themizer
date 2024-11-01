@@ -1,14 +1,20 @@
 export type Primitive = string | number;
 
+type ResponsiveSchema<M extends string> = Record<M, Primitive>;
+
 export interface Schema<M extends string = never> {
   [prop: string]:
     | (Primitive | Schema<M>)
-    | (M extends string ? [Record<M, Primitive>, Primitive?] : never);
+    | (M extends string ? [ResponsiveSchema<M>, Primitive?] : never);
 }
 
 export type ResolveSchema<M extends string, S extends Schema<M>> = {
-  [Key in keyof S]: S[Key] extends any[]
-    ? Primitive
+  [Key in keyof S]: S[Key] extends [infer Value, infer DefaultValue]
+    ? DefaultValue extends undefined
+      ? Value extends ResponsiveSchema<M>
+        ? ResponsiveSchema<M>[M]
+        : Primitive
+      : DefaultValue
     : S[Key] extends Schema<M>
     ? ResolveSchema<M, S[Key]>
     : S[Key];

@@ -2,11 +2,15 @@ import type { ResolveSchema, Schema, ThemeOptions } from './types';
 import generateVars from './generateVars';
 import getRules from './getRules';
 
-export default function getTheme<M extends string, T extends Schema>(
-  aliases: (tokens: ResolveSchema<never, T>) => Schema<M>,
+export default function getTheme<
+  M extends string,
+  T extends Schema,
+  A extends Schema<M>,
+>(
+  aliases: (tokens: ResolveSchema<never, T>) => A,
   options: ThemeOptions<M, T>,
 ) {
-  const tokensVars = generateVars(options.tokens, {
+  const tokensVars = generateVars<never, T>(options.tokens, {
     prefixVars: `${options.prefixVars}-tokens`,
   });
   const aliasesVars = generateVars(aliases(tokensVars.reference), {

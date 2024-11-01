@@ -10,10 +10,7 @@ import type {
 const VARS_UNIFIER = '-';
 const RESPONSIVE_VARS: ResponsiveVars = {};
 
-export default function generateVars<
-  M extends string = never,
-  S extends Schema<M> = Schema<M>,
->(
+export default function generateVars<M extends string, S extends Schema<M>>(
   schema: S,
   options?: GenerateVarsOptions<M>,
   __adjustor?: string,
@@ -26,7 +23,7 @@ export default function generateVars<
   return Object.entries(schema).reduce((generatedVars, [key, value]) => {
     const path = `${prefixVars}${adjustor}${key}`;
     const finalPath = `--${path}`;
-    const resolveVars = getVarsResolver<M, S>(generatedVars);
+    const resolveVars = getVarsResolver(generatedVars);
 
     if (isPrimitive(value)) {
       return resolveVars(

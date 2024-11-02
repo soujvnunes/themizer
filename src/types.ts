@@ -3,7 +3,7 @@ export type Primitive = string | number;
 type ResponsiveSchema<M extends string> = Record<M, Primitive>;
 
 export interface Schema<M extends string = never> {
-  [prop: string]:
+  [key: string]:
     | (Primitive | Schema<M>)
     | (M extends string ? [ResponsiveSchema<M>, Primitive?] : never);
 }

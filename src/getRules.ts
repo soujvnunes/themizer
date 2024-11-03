@@ -11,8 +11,14 @@ export default function getRules(vars: FlattenVars) {
       RESPONSIVE_VARS += `${responsiveProp}:${responsiveValue};`;
     }
 
-    return `${rules}${prop}{${RESPONSIVE_VARS}}`;
+    const resolvedRules = `${rules}${prop}{${RESPONSIVE_VARS}}`;
+
+    RESPONSIVE_VARS = '';
+
+    return resolvedRules;
   }, '');
+
+  console.log(vars);
 
   return `@layer theme;@layer theme{:root{${rules}}}`;
 }

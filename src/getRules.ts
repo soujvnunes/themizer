@@ -18,5 +18,5 @@ export default function getRules(vars: FlattenVars) {
     return resolvedRules;
   }, '');
 
-  return `@layer theme;@layer theme{:root{${rules}}}`;
+  return `:root{${rules}}`;
 }

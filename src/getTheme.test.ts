@@ -1,7 +1,6 @@
-import 'jest-puppeteer';
-import 'expect-puppeteer';
 import getTheme from './getTheme';
 import resolveVar from './resolveVar';
+import { renderUI } from './testUtils';
 
 describe('getTheme', () => {
   describe('taking aliases and options', () => {
@@ -18,7 +17,7 @@ describe('getTheme', () => {
       {
         prefixVars: 'ds',
         medias: {
-          dark: '@media (prefers-scheme-color: dark)',
+          dark: '@media (prefers-color-scheme: dark)',
           desktop: '@media (min-width: 1024px)',
         },
         tokens: {
@@ -44,7 +43,7 @@ describe('getTheme', () => {
           },
         },
         medias: {
-          dark: '@media (prefers-scheme-color: dark)',
+          dark: '@media (prefers-color-scheme: dark)',
           desktop: '@media (min-width: 1024px)',
         },
         tokens: {
@@ -60,11 +59,11 @@ describe('getTheme', () => {
           },
         },
         rules:
-          '@layer theme;@layer theme{:root{--ds-tokens-colors-amber-light:rgb(251, 191, 36);--ds-tokens-colors-amber-dark:rgb(217, 119, 6);--ds-tokens-units-16:16px;--ds-tokens-units-24:24px;--ds-aliases-palette-main:var(--ds-tokens-colors-amber-dark, rgb(217, 119, 6));@media (prefers-scheme-color: dark){--ds-aliases-palette-main:var(--ds-tokens-colors-amber-light, rgb(251, 191, 36));}--ds-aliases-spacing-md:var(--ds-tokens-units-24, 24px);--ds-aliases-sizing-md:var(--ds-tokens-units-16, 16px);@media (min-width: 1024px){--ds-aliases-sizing-md:var(--ds-tokens-units-24, 24px);}}}',
+          ':root{--ds-tokens-colors-amber-light:rgb(251, 191, 36);--ds-tokens-colors-amber-dark:rgb(217, 119, 6);--ds-tokens-units-16:16px;--ds-tokens-units-24:24px;--ds-aliases-palette-main:var(--ds-tokens-colors-amber-dark, rgb(217, 119, 6));@media (prefers-color-scheme: dark){--ds-aliases-palette-main:var(--ds-tokens-colors-amber-light, rgb(251, 191, 36));}--ds-aliases-spacing-md:var(--ds-tokens-units-24, 24px);--ds-aliases-sizing-md:var(--ds-tokens-units-16, 16px);@media (min-width: 1024px){--ds-aliases-sizing-md:var(--ds-tokens-units-24, 24px);}}',
       });
     });
     it('its styles are applied to the DOM', async () => {
-      await page.setContent(`
+      const ui = await renderUI(`
         <!DOCTYPE html>
         <html>
           <head>
@@ -76,30 +75,17 @@ describe('getTheme', () => {
         </html>
       `);
 
-      function getComputedStyle() {
-        return page.evaluate(() => {
-          const element = document.getElementById('element');
+      await ui.setType('mobile.light');
 
-          if (!element) return;
-
-          const { color, fontSize } = window.getComputedStyle(element);
-
-          return { color, fontSize };
-        });
-      }
-
-      expect(await getComputedStyle()).toEqual({
+      expect(await ui.getStyle()).toEqual({
         color: resolveVar(theme.tokens.colors.amber.dark),
         fontSize: resolveVar(theme.tokens.units[16]),
       });
 
-      await page.emulateMediaFeatures([
-        { name: 'prefers-color-scheme', value: 'dark' },
-      ]);
-      await page.setViewport({ width: 1080, height: 1024 });
+      await ui.setType('desktop.dark');
 
-      expect(await getComputedStyle()).toEqual({
-        color: resolveVar(theme.tokens.colors.amber.dark),
+      expect(await ui.getStyle()).toEqual({
+        color: resolveVar(theme.tokens.colors.amber.light),
         fontSize: resolveVar(theme.tokens.units[24]),
       });
     });

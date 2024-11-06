@@ -1,6 +1,6 @@
 import getTheme from './getTheme';
 import resolveVar from './resolveVar';
-import { renderUI } from './testUtils';
+import { render } from './testUtils';
 
 describe('getTheme', () => {
   describe('taking aliases and options', () => {
@@ -63,7 +63,7 @@ describe('getTheme', () => {
       });
     });
     it('its styles are applied to the DOM', async () => {
-      const ui = await renderUI(`
+      const page = await render(`
         <!DOCTYPE html>
         <html>
           <head>
@@ -75,19 +75,19 @@ describe('getTheme', () => {
         </html>
       `);
 
-      await ui.setType('mobile.light');
+      let styles = await page.setScreenType('mobile.light');
 
-      expect(await ui.getStyle()).toEqual({
+      expect(styles).toEqual({
         color: resolveVar(theme.tokens.colors.amber.dark),
         fontSize: resolveVar(theme.tokens.units[16]),
       });
 
-      await ui.setType('desktop.dark');
+      styles = await page.setScreenType('desktop.dark');
 
-      expect(await ui.getStyle()).toEqual({
+      expect(styles).toEqual({
         color: resolveVar(theme.tokens.colors.amber.light),
         fontSize: resolveVar(theme.tokens.units[24]),
       });
-    });
+    }, 1000);
   });
 });

@@ -1,22 +1,32 @@
 import isPrimitive from './isPrimitive';
-import type { FlattenVars } from './types';
-
-let RESPONSIVE_VARS = '';
+import type { FlattenVars, Vars } from './types';
 
 export default function getRules(vars: FlattenVars) {
-  const rules = Object.entries(vars).reduce((rules, [prop, value]) => {
-    if (isPrimitive(value)) return `${rules}${prop}:${value};`;
+  const r8eVars: Record<string, Vars> = {};
 
-    for (const [responsiveProp, responsiveValue] of Object.entries(value)) {
-      RESPONSIVE_VARS += `${responsiveProp}:${responsiveValue};`;
-    }
+  let resolvedR8eRules = '';
 
-    const resolvedRules = `${rules}${prop}{${RESPONSIVE_VARS}}`;
+  const rules = Object.entries(vars).reduce((rules, [key, value]) => {
+    if (isPrimitive(value)) return `${rules}${key}:${value};`;
 
-    RESPONSIVE_VARS = '';
+    r8eVars[key] = value;
 
-    return resolvedRules;
+    return rules;
   }, '');
+  const r8eRules = Object.entries(r8eVars).reduce(
+    (r8eRules, [media, r8eVar]) => {
+      for (const [r8eKey, r8eValue] of Object.entries(r8eVar)) {
+        resolvedR8eRules += `${r8eKey}:${r8eValue};`;
+      }
 
-  return `:root{${rules}}`;
+      const resolvedRules = `${r8eRules}${media}{:root{${resolvedR8eRules}}}`;
+
+      resolvedR8eRules = '';
+
+      return resolvedRules;
+    },
+    '',
+  );
+
+  return `:root{${rules}}${r8eRules}`;
 }

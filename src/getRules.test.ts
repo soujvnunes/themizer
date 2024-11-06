@@ -26,7 +26,7 @@ describe('getRules', () => {
         });
 
         expect(rules).toContain(
-          ':root{--tokens-colors-white:#fff;--tokens-spaces-md:1rem;@media (prefers-color-scheme: dark){--colors-white:#333;--alphas-primary:1;}',
+          ':root{--tokens-colors-white:#fff;--tokens-spaces-md:1rem;}@media (prefers-color-scheme: dark){:root{--colors-white:#333;--alphas-primary:1;}}',
         );
       });
     });
@@ -52,7 +52,7 @@ describe('getRules', () => {
         });
 
         expect(rules).toContain(
-          ':root{--ds-tokens-colors-amber-light:#fbbf24;--ds-tokens-colors-amber-dark:#d97706;--ds-tokens-units-16:1rem;--ds-tokens-units-24:1.5rem;--ds-aliases-palette-main:var(--ds-tokens-colors-amber-dark, #d97706);@media (prefers-scheme-color: dark){--ds-aliases-palette-main:var(--ds-tokens-colors-amber-light, #fbbf24);}--ds-aliases-spacing-md:var(--ds-tokens-units-24, 1.5rem);--ds-aliases-sizing-md:var(--ds-tokens-units-16, 1rem);@media (min-width: 1024px){--ds-aliases-sizing-md:var(--ds-tokens-units-24, 1.5rem);}',
+          ':root{--ds-tokens-colors-amber-light:#fbbf24;--ds-tokens-colors-amber-dark:#d97706;--ds-tokens-units-16:1rem;--ds-tokens-units-24:1.5rem;--ds-aliases-palette-main:var(--ds-tokens-colors-amber-dark, #d97706);--ds-aliases-spacing-md:var(--ds-tokens-units-24, 1.5rem);--ds-aliases-sizing-md:var(--ds-tokens-units-16, 1rem);}@media (prefers-scheme-color: dark){:root{--ds-aliases-palette-main:var(--ds-tokens-colors-amber-light, #fbbf24);}}@media (min-width: 1024px){:root{--ds-aliases-sizing-md:var(--ds-tokens-units-24, 1.5rem);}}',
         );
       });
     });

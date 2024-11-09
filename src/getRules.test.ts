@@ -9,9 +9,16 @@ describe('getRules', () => {
         '--tokens-spaces-md': '1rem',
       });
 
-      expect(rules).toContain(
-        ':root{--tokens-colors-white:#fff;--tokens-colors-red-500:#f00;--tokens-spaces-md:1rem;}',
-      );
+      expect(rules).toEqual({
+        css: ':root{--tokens-colors-white:#fff;--tokens-colors-red-500:#f00;--tokens-spaces-md:1rem;}',
+        jss: {
+          ':root': {
+            '--tokens-colors-white': '#fff',
+            '--tokens-colors-red-500': '#f00',
+            '--tokens-spaces-md': '1rem',
+          },
+        },
+      });
     });
 
     describe('with media queries', () => {
@@ -25,9 +32,18 @@ describe('getRules', () => {
           },
         });
 
-        expect(rules).toContain(
-          ':root{--tokens-colors-white:#fff;--tokens-spaces-md:1rem;}@media (prefers-color-scheme: dark){:root{--colors-white:#333;--alphas-primary:1;}}',
-        );
+        expect(rules).toEqual({
+          css: ':root{--tokens-colors-white:#fff;--tokens-spaces-md:1rem;}@media (prefers-color-scheme: dark){:root{--colors-white:#333;--alphas-primary:1;}}',
+          jss: {
+            ':root': {
+              '--tokens-colors-white': '#fff',
+              '--tokens-spaces-md': '1rem',
+            },
+            '@media (prefers-color-scheme: dark)': {
+              ':root': { '--colors-white': '#333', '--alphas-primary': 1 },
+            },
+          },
+        });
       });
     });
 
@@ -51,9 +67,32 @@ describe('getRules', () => {
           },
         });
 
-        expect(rules).toContain(
-          ':root{--ds-tokens-colors-amber-light:#fbbf24;--ds-tokens-colors-amber-dark:#d97706;--ds-tokens-units-16:1rem;--ds-tokens-units-24:1.5rem;--ds-aliases-palette-main:var(--ds-tokens-colors-amber-dark, #d97706);--ds-aliases-spacing-md:var(--ds-tokens-units-24, 1.5rem);--ds-aliases-sizing-md:var(--ds-tokens-units-16, 1rem);}@media (prefers-scheme-color: dark){:root{--ds-aliases-palette-main:var(--ds-tokens-colors-amber-light, #fbbf24);}}@media (min-width: 1024px){:root{--ds-aliases-sizing-md:var(--ds-tokens-units-24, 1.5rem);}}',
-        );
+        expect(rules).toEqual({
+          css: ':root{--ds-tokens-colors-amber-light:#fbbf24;--ds-tokens-colors-amber-dark:#d97706;--ds-tokens-units-16:1rem;--ds-tokens-units-24:1.5rem;--ds-aliases-palette-main:var(--ds-tokens-colors-amber-dark, #d97706);--ds-aliases-spacing-md:var(--ds-tokens-units-24, 1.5rem);--ds-aliases-sizing-md:var(--ds-tokens-units-16, 1rem);}@media (prefers-scheme-color: dark){:root{--ds-aliases-palette-main:var(--ds-tokens-colors-amber-light, #fbbf24);}}@media (min-width: 1024px){:root{--ds-aliases-sizing-md:var(--ds-tokens-units-24, 1.5rem);}}',
+          jss: {
+            ':root': {
+              '--ds-tokens-colors-amber-light': '#fbbf24',
+              '--ds-tokens-colors-amber-dark': '#d97706',
+              '--ds-tokens-units-16': '1rem',
+              '--ds-tokens-units-24': '1.5rem',
+              '--ds-aliases-palette-main':
+                'var(--ds-tokens-colors-amber-dark, #d97706)',
+              '--ds-aliases-spacing-md': 'var(--ds-tokens-units-24, 1.5rem)',
+              '--ds-aliases-sizing-md': 'var(--ds-tokens-units-16, 1rem)',
+            },
+            '@media (prefers-scheme-color: dark)': {
+              ':root': {
+                '--ds-aliases-palette-main':
+                  'var(--ds-tokens-colors-amber-light, #fbbf24)',
+              },
+            },
+            '@media (min-width: 1024px)': {
+              ':root': {
+                '--ds-aliases-sizing-md': 'var(--ds-tokens-units-24, 1.5rem)',
+              },
+            },
+          },
+        });
       });
     });
   });

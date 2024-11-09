@@ -1,11 +1,10 @@
 import isPrimitive from './isPrimitive';
-import type { FlattenVars, Vars } from './types';
+import type { FlattenVars, ResponsiveStyleSheet, Vars } from './types';
 
 export default function getRules(vars: FlattenVars) {
-  const r8eVars: Record<string, Vars> = {};
-
   let resolvedR8eRules = '';
 
+  const r8eVars: Record<string, Vars> = {};
   const rules = Object.entries(vars).reduce((rules, [key, value]) => {
     if (isPrimitive(value)) return `${rules}${key}:${value};`;
 
@@ -28,5 +27,16 @@ export default function getRules(vars: FlattenVars) {
     '',
   );
 
-  return `:root{${rules}}${r8eRules}`;
+  return {
+    css: `:root{${rules}}${r8eRules}`,
+    jss: Object.entries(vars).reduce(
+      (styleSheet, [key, value]) => ({
+        ...styleSheet,
+        ...(isPrimitive(value)
+          ? { ':root': { ...styleSheet[':root'], [key]: value } }
+          : { [key]: { ...styleSheet[key], ':root': value } }),
+      }),
+      {} as ResponsiveStyleSheet,
+    ),
+  };
 }

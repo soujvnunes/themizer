@@ -21,11 +21,11 @@ export type ResolveSchema<M extends string, S extends Schema<M>> = {
 };
 
 export interface Vars {
-  [key: string]: Primitive;
+  [customProperty: string]: Primitive;
 }
 
 export interface ResponsiveVars {
-  [key: string]: Vars;
+  [mediaQuery: string]: Vars;
 }
 
 export interface FlattenVars {
@@ -45,4 +45,12 @@ export interface GeneratedVars<M extends string, S extends Schema<M>> {
 export interface ThemeOptions<M extends string, T extends Schema>
   extends Required<GenerateVarsOptions<M>> {
   tokens: T;
+}
+
+export interface StyleSheet {
+  ':root': Vars;
+}
+
+export interface ResponsiveStyleSheet {
+  [mediaQuery: string]: StyleSheet;
 }

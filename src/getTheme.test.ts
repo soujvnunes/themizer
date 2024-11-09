@@ -58,8 +58,32 @@ describe('getTheme', () => {
             '24': 'var(--ds-tokens-units-24, 24px)',
           },
         },
-        rules:
-          ':root{--ds-tokens-colors-amber-light:rgb(251, 191, 36);--ds-tokens-colors-amber-dark:rgb(217, 119, 6);--ds-tokens-units-16:16px;--ds-tokens-units-24:24px;--ds-aliases-palette-main:var(--ds-tokens-colors-amber-dark, rgb(217, 119, 6));--ds-aliases-spacing-md:var(--ds-tokens-units-24, 24px);--ds-aliases-sizing-md:var(--ds-tokens-units-16, 16px);}@media (prefers-color-scheme: dark){:root{--ds-aliases-palette-main:var(--ds-tokens-colors-amber-light, rgb(251, 191, 36));}}@media (min-width: 1024px){:root{--ds-aliases-sizing-md:var(--ds-tokens-units-24, 24px);}}',
+        rules: {
+          css: ':root{--ds-tokens-colors-amber-light:rgb(251, 191, 36);--ds-tokens-colors-amber-dark:rgb(217, 119, 6);--ds-tokens-units-16:16px;--ds-tokens-units-24:24px;--ds-aliases-palette-main:var(--ds-tokens-colors-amber-dark, rgb(217, 119, 6));--ds-aliases-spacing-md:var(--ds-tokens-units-24, 24px);--ds-aliases-sizing-md:var(--ds-tokens-units-16, 16px);}@media (prefers-color-scheme: dark){:root{--ds-aliases-palette-main:var(--ds-tokens-colors-amber-light, rgb(251, 191, 36));}}@media (min-width: 1024px){:root{--ds-aliases-sizing-md:var(--ds-tokens-units-24, 24px);}}',
+          jss: {
+            ':root': {
+              '--ds-tokens-colors-amber-light': 'rgb(251, 191, 36)',
+              '--ds-tokens-colors-amber-dark': 'rgb(217, 119, 6)',
+              '--ds-tokens-units-16': '16px',
+              '--ds-tokens-units-24': '24px',
+              '--ds-aliases-palette-main':
+                'var(--ds-tokens-colors-amber-dark, rgb(217, 119, 6))',
+              '--ds-aliases-spacing-md': 'var(--ds-tokens-units-24, 24px)',
+              '--ds-aliases-sizing-md': 'var(--ds-tokens-units-16, 16px)',
+            },
+            '@media (prefers-color-scheme: dark)': {
+              ':root': {
+                '--ds-aliases-palette-main':
+                  'var(--ds-tokens-colors-amber-light, rgb(251, 191, 36))',
+              },
+            },
+            '@media (min-width: 1024px)': {
+              ':root': {
+                '--ds-aliases-sizing-md': 'var(--ds-tokens-units-24, 24px)',
+              },
+            },
+          },
+        },
       });
     });
     it('its styles are applied to the DOM', async () => {
@@ -67,7 +91,7 @@ describe('getTheme', () => {
         <!DOCTYPE html>
         <html>
           <head>
-            <style>${theme.rules}</style> 
+            <style>${theme.rules.css}</style> 
           </head>
           <body>
             <p id="element" style="color: ${theme.aliases.palette.main}; font-size: ${theme.aliases.sizing.md}"></p> 

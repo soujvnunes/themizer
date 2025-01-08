@@ -1,5 +1,5 @@
 {
-  "name": "ui-theme",
+  "name": "themizer",
   "version": "1.0.0",
   "description": "Generate CSS custom properties based on a given theme with tokens and aliases serving as a reference.",
   "author": "soujvnunes <soujvnunes@gmail.com> (https://soujvnunes.github.io)",
@@ -54,10 +54,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/soujvnunes/ui-theme.git"
+    "url": "git+https://github.com/soujvnunes/themizer.git"
   },
   "bugs": {
-    "url": "https://github.com/soujvnunes/ui-theme/issues"
+    "url": "https://github.com/soujvnunes/themizer/issues"
   },
-  "homepage": "https://github.com/soujvnunes/ui-theme#readme"
+  "homepage": "https://github.com/soujvnunes/themizer#readme"
 }

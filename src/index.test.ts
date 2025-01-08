@@ -1,6 +1,6 @@
-import * as uiTokens from './index';
+import * as uiTheme from './index';
 
-describe('ui-tokens', () => {
+describe('ui-theme', () => {
   describe('exporting modules', () => {
     const exportedModules = [
       'generateVars',
@@ -11,10 +11,10 @@ describe('ui-tokens', () => {
 
     it('returns its functions', () => {
       exportedModules.forEach((exportedModule) =>
-        expect(uiTokens[exportedModule]).toBeInstanceOf(Function),
+        expect(uiTheme[exportedModule]).toBeInstanceOf(Function),
       );
       exportedModules.forEach((exportedModule) =>
-        expect(uiTokens[exportedModule]).not.toBeFalsy(),
+        expect(uiTheme[exportedModule]).not.toBeFalsy(),
       );
     });
   });

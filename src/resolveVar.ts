@@ -20,7 +20,7 @@ export default function resolveVar(wrappedVariable: string) {
 
   if (typeof extractedValue === 'undefined' || extractedValue === '') {
     throw new Error(
-      `ui-tokens/resolveVar: Expected wrapped custom property '${wrappedVariable}' to have a default value.`,
+      `ui-theme/resolveVar: Expected wrapped custom property '${wrappedVariable}' to have a default value.`,
     );
   }
 

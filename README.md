@@ -1,4 +1,4 @@
-# ui-tokens
+# ui-theme
 
 Generate CSS3 custom properties based on a given theme with tokens and aliases serving as a reference.
 
@@ -79,7 +79,7 @@ export default function rgba(color: string, alpha: string) {
 
 // src/lib/theme.ts
 
-import { getTheme } from 'ui-tokens';
+import { getTheme } from 'ui-theme';
 import rgba from 'helpers/rgba';
 
 const theme = getTheme(
@@ -239,7 +239,6 @@ Generated styles within `theme.rules.css`:
 Generated styles within `theme.rules.jss`:
 
 ```ts
-
 console.log(theme.rules.jss);
 
 /*
@@ -346,7 +345,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import StyledJsxProvider from 'providers/StyledJsxProvider';
 // There are also cool helper functions to get a custom property name or value.
-import { resolveVar, unwrapVar } from 'ui-tokens';
+import { resolveVar, unwrapVar } from 'ui-theme';
 
 export const viewport: Viewport = {
   themeColor: [

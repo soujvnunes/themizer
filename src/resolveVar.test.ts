@@ -5,7 +5,7 @@ describe('resolveVar', () => {
     describe('without default value parameter', () => {
       it('throws an error', () => {
         expect(() => resolveVar('var(--test-a)')).toThrow(
-          "ui-tokens/resolveVar: Expected wrapped custom property 'var(--test-a)' to have a default value.",
+          "ui-theme/resolveVar: Expected wrapped custom property 'var(--test-a)' to have a default value.",
         );
       });
     });

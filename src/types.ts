@@ -20,35 +20,35 @@ export type ResolveSchema<M extends string, S extends Schema<M>> = {
     : S[Key];
 };
 
-export interface Vars {
+export interface Atoms {
   [customProperty: string]: Primitive;
 }
 
-export interface ResponsiveVars {
-  [mediaQuery: string]: Vars;
+export interface ResponsiveAtoms {
+  [mediaQuery: string]: Atoms;
 }
 
-export interface FlattenVars {
-  [key: string]: Primitive | Vars;
+export interface FlattenAtoms {
+  [key: string]: Primitive | Atoms;
 }
 
-export interface GenerateVarsOptions<M extends string = never> {
-  prefixVars?: string;
+export interface AtomizerOptions<M extends string = never> {
+  prefixAtoms?: string;
   medias?: Record<M, string>;
 }
 
-export interface GeneratedVars<M extends string, S extends Schema<M>> {
-  value: Vars & M extends string ? ResponsiveVars : never;
+export interface Atomizer<M extends string, S extends Schema<M>> {
+  value: Atoms & M extends string ? ResponsiveAtoms : never;
   reference: ResolveSchema<M, S>;
 }
 
-export interface ThemeOptions<M extends string, T extends Schema>
-  extends Required<GenerateVarsOptions<M>> {
+export interface ThemizerOptions<M extends string, T extends Schema>
+  extends Required<AtomizerOptions<M>> {
   tokens: T;
 }
 
 export interface StyleSheet {
-  ':root': Vars;
+  ':root': Atoms;
 }
 
 export interface ResponsiveStyleSheet {

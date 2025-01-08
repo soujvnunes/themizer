@@ -1,10 +1,10 @@
-import getTheme from './getTheme';
-import resolveVar from './resolveVar';
+import themizer from './themizer';
+import resolveAtom from './resolveAtom';
 import { render } from './testUtils';
 
-describe('getTheme', () => {
+describe('themizer', () => {
   describe('taking aliases and options', () => {
-    const theme = getTheme(
+    const theme = themizer(
       (tokens) => ({
         palette: {
           main: [{ dark: tokens.colors.amber.light }, tokens.colors.amber.dark],
@@ -15,7 +15,7 @@ describe('getTheme', () => {
         },
       }),
       {
-        prefixVars: 'ds',
+        prefixAtoms: 'ds',
         medias: {
           dark: '@media (prefers-color-scheme: dark)',
           desktop: '@media (min-width: 1024px)',
@@ -102,15 +102,15 @@ describe('getTheme', () => {
       let styles = await page.setScreenType('mobile.light');
 
       expect(styles).toEqual({
-        color: resolveVar(theme.tokens.colors.amber.dark),
-        fontSize: resolveVar(theme.tokens.units[16]),
+        color: resolveAtom(theme.tokens.colors.amber.dark),
+        fontSize: resolveAtom(theme.tokens.units[16]),
       });
 
       styles = await page.setScreenType('desktop.dark');
 
       expect(styles).toEqual({
-        color: resolveVar(theme.tokens.colors.amber.light),
-        fontSize: resolveVar(theme.tokens.units[24]),
+        color: resolveAtom(theme.tokens.colors.amber.light),
+        fontSize: resolveAtom(theme.tokens.units[24]),
       });
     }, 1000);
   });

@@ -1,26 +1,25 @@
 import type { Primitive } from './types';
 
-export default function resolveVar(wrappedVariable: string) {
+export default function resolveAtom(atom: string) {
   const regex =
     /var\((--[\w-]+)(?:,\s*((?:[^()]+|\((?:[^()]+|\([^()]*\))*\))+))?\)/g;
 
   let match: RegExpMatchArray | null;
   let extractedValue: Primitive | undefined;
 
-  while ((match = regex.exec(wrappedVariable)) !== null) {
+  while ((match = regex.exec(atom)) !== null) {
     const [, , defaultValue] = match;
 
     if (defaultValue) {
-      if (/^var\(--/.test(defaultValue)) return resolveVar(defaultValue);
+      if (/^var\(--/.test(defaultValue)) return resolveAtom(defaultValue);
 
-      // Removes spaces
       extractedValue = defaultValue.trim();
     }
   }
 
   if (typeof extractedValue === 'undefined' || extractedValue === '') {
     throw new Error(
-      `ui-theme/resolveVar: Expected wrapped custom property '${wrappedVariable}' to have a default value.`,
+      `themizer/resolveAtom: Expected wrapped custom property '${atom}' to have a default value.`,
     );
   }
 

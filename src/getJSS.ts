@@ -1,7 +1,7 @@
 import isPrimitive from './isPrimitive';
-import type { FlattenVars, ResponsiveStyleSheet } from './types';
+import type { FlattenAtoms, ResponsiveStyleSheet } from './types';
 
-export default function getJSS(vars: FlattenVars) {
+export default function getJSS(vars: FlattenAtoms) {
   const jss = Object.entries(vars).reduce(
     (styleSheet, [key, value]) => ({
       ...styleSheet,

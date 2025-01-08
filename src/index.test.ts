@@ -1,21 +1,19 @@
-import * as uiTheme from './index';
+import * as themizer from './index';
 
-describe('ui-theme', () => {
+describe('themizer', () => {
   describe('exporting modules', () => {
-    const exportedModules = [
-      'generateVars',
-      'getTheme',
-      'unwrapVar',
-      'resolveVar',
+    const modules = [
+      'atomizer',
+      'unwrapAtom',
+      'resolveAtom',
+      'default',
     ] as const;
 
     it('returns its functions', () => {
-      exportedModules.forEach((exportedModule) =>
-        expect(uiTheme[exportedModule]).toBeInstanceOf(Function),
+      modules.forEach((module) =>
+        expect(themizer[module]).toBeInstanceOf(Function),
       );
-      exportedModules.forEach((exportedModule) =>
-        expect(uiTheme[exportedModule]).not.toBeFalsy(),
-      );
+      modules.forEach((module) => expect(themizer[module]).not.toBeFalsy());
     });
   });
 });

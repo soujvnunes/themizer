@@ -11,7 +11,7 @@ describe('resolveVar', () => {
     });
     describe('with default value parameter', () => {
       it('returns only the custom property', () => {
-        expect(resolveVar('var(--test-b, 78)')).toBe('78');
+        expect(resolveVar('var(--test-b, 78)')).toBe(78);
         expect(resolveVar('var(--test-b, 16px)')).toBe('16px');
         expect(resolveVar('var(--test-b, #fff)')).toBe('#fff');
         expect(resolveVar('var(--test-b, 123 123 123)')).toBe('123 123 123');
@@ -21,8 +21,8 @@ describe('resolveVar', () => {
       });
       describe('as custom property', () => {
         // TODO: handle complex cases
-        it.skip('returns only the custom property', () => {
-          expect(resolveVar('var(--test-c, var(--test-b, 78))')).toBe('78');
+        it('returns only the custom property', () => {
+          expect(resolveVar('var(--test-c, var(--test-b, 78))')).toBe(78);
           expect(resolveVar('var(--test-c, var(--test-b, 16px))')).toBe('16px');
           expect(resolveVar('var(--test-c, var(--test-b, #fffFFF))')).toBe(
             '#fffFFF',

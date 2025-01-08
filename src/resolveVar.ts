@@ -1,16 +1,30 @@
-export default function resolveVar(wrappedVariable: string) {
-  const matched = wrappedVariable
-    .matchAll(
-      /,\s(\w+|(\d+(\s|\w+)?)+|#[a-f0-9]{3,6}|(calc|rg(b|a)|cubic-bezier)\(.+\))\)/gi,
-    )
-    .toArray()
-    .flat();
+import type { Primitive } from './types';
 
-  if (!matched.length) {
+export default function resolveVar(wrappedVariable: string) {
+  const regex =
+    /var\((--[\w-]+)(?:,\s*((?:[^()]+|\((?:[^()]+|\([^()]*\))*\))+))?\)/g;
+
+  let match: RegExpMatchArray | null;
+  let extractedValue: Primitive | undefined;
+
+  while ((match = regex.exec(wrappedVariable)) !== null) {
+    const [, , defaultValue] = match;
+
+    if (defaultValue) {
+      if (/^var\(--/.test(defaultValue)) return resolveVar(defaultValue);
+
+      // Removes spaces
+      extractedValue = defaultValue.trim();
+    }
+  }
+
+  if (typeof extractedValue === 'undefined' || extractedValue === '') {
     throw new Error(
       `ui-tokens/resolveVar: Expected wrapped custom property '${wrappedVariable}' to have a default value.`,
     );
   }
 
-  return matched[1];
+  const formattedValue = Number(extractedValue);
+
+  return Number.isNaN(formattedValue) ? extractedValue : formattedValue;
 }

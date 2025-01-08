@@ -1,6 +1,7 @@
 import type { ResolveSchema, Schema, ThemeOptions } from './types';
 import generateVars from './generateVars';
-import getRules from './getRules';
+import getJSS from './getJSS';
+import getCSSFromJSS from './getCSSFromJSS';
 
 export default function getTheme<
   M extends string,
@@ -17,15 +18,16 @@ export default function getTheme<
     ...options,
     prefixVars: `${options.prefixVars}-aliases`,
   });
-  const rules = getRules({
+  const jss = getJSS({
     ...tokensVars.value,
     ...aliasesVars.value,
   });
+  const css = getCSSFromJSS(jss);
 
   return {
-    rules,
     aliases: aliasesVars.reference,
     tokens: tokensVars.reference,
     medias: options.medias,
+    rules: { jss, css },
   };
 }

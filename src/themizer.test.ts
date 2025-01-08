@@ -1,10 +1,10 @@
-import getTheme from './getTheme';
+import themizer from './themizer';
 import resolveVar from './resolveVar';
 import { render } from './testUtils';
 
-describe('getTheme', () => {
+describe('themizer', () => {
   describe('taking aliases and options', () => {
-    const theme = getTheme(
+    const theme = themizer(
       (tokens) => ({
         palette: {
           main: [{ dark: tokens.colors.amber.light }, tokens.colors.amber.dark],

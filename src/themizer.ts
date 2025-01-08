@@ -3,7 +3,7 @@ import generateVars from './generateVars';
 import getJSS from './getJSS';
 import getCSSFromJSS from './getCSSFromJSS';
 
-export default function getTheme<
+export default function themizer<
   M extends string,
   T extends Schema,
   A extends Schema<M>,

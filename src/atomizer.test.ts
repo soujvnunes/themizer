@@ -1,9 +1,9 @@
-import generateVars from './generateVars';
+import atomizer from './atomizer';
 
-describe('generateVars', () => {
+describe('atomizer', () => {
   describe('when providing the schema parameter', () => {
     it('returns generated vars and its references', () => {
-      const vars = generateVars({
+      const vars = atomizer({
         colors: {
           white: '#fff',
           red: {
@@ -36,7 +36,7 @@ describe('generateVars', () => {
 
   describe('with prefix properties option', () => {
     it('returns prefixed generated vars and its references', () => {
-      const vars = generateVars(
+      const vars = atomizer(
         {
           colors: {
             white: '#fff',
@@ -49,7 +49,7 @@ describe('generateVars', () => {
           },
         },
         {
-          prefixVars: 'tokens',
+          prefixAtoms: 'tokens',
         },
       );
 
@@ -74,7 +74,7 @@ describe('generateVars', () => {
 
   describe('with medias options', () => {
     it('returns generated vars within each media query and its references with default values', () => {
-      const vars = generateVars(
+      const vars = atomizer(
         {
           colors: {
             black: '#111',

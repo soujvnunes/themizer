@@ -1,4 +1,4 @@
-export { default as getTheme } from './getTheme';
-export { default as generateVars } from './generateVars';
-export { default as unwrapVar } from './unwrapVar';
-export { default as resolveVar } from './resolveVar';
+export { default } from './themizer';
+export { default as atomizer } from './atomizer';
+export { default as unwrapAtom } from './unwrapAtom';
+export { default as resolveAtom } from './resolveAtom';

@@ -1,5 +1,5 @@
 import themizer from './themizer';
-import resolveVar from './resolveVar';
+import resolveAtom from './resolveAtom';
 import { render } from './testUtils';
 
 describe('themizer', () => {
@@ -15,7 +15,7 @@ describe('themizer', () => {
         },
       }),
       {
-        prefixVars: 'ds',
+        prefixAtoms: 'ds',
         medias: {
           dark: '@media (prefers-color-scheme: dark)',
           desktop: '@media (min-width: 1024px)',
@@ -102,15 +102,15 @@ describe('themizer', () => {
       let styles = await page.setScreenType('mobile.light');
 
       expect(styles).toEqual({
-        color: resolveVar(theme.tokens.colors.amber.dark),
-        fontSize: resolveVar(theme.tokens.units[16]),
+        color: resolveAtom(theme.tokens.colors.amber.dark),
+        fontSize: resolveAtom(theme.tokens.units[16]),
       });
 
       styles = await page.setScreenType('desktop.dark');
 
       expect(styles).toEqual({
-        color: resolveVar(theme.tokens.colors.amber.light),
-        fontSize: resolveVar(theme.tokens.units[24]),
+        color: resolveAtom(theme.tokens.colors.amber.light),
+        fontSize: resolveAtom(theme.tokens.units[24]),
       });
     }, 1000);
   });

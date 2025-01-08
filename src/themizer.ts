@@ -1,5 +1,5 @@
-import type { ResolveSchema, Schema, ThemeOptions } from './types';
-import generateVars from './generateVars';
+import type { ResolveSchema, Schema, ThemizerOptions } from './types';
+import atomizer from './atomizer';
 import getJSS from './getJSS';
 import getCSSFromJSS from './getCSSFromJSS';
 
@@ -8,25 +8,25 @@ export default function themizer<
   T extends Schema,
   A extends Schema<M>,
 >(
-  aliases: (tokens: ResolveSchema<never, T>) => A,
-  options: ThemeOptions<M, T>,
+  aliasez: (tokens: ResolveSchema<never, T>) => A,
+  options: ThemizerOptions<M, T>,
 ) {
-  const tokensVars = generateVars<never, T>(options.tokens, {
-    prefixVars: `${options.prefixVars}-tokens`,
+  const tokens = atomizer<never, T>(options.tokens, {
+    prefixAtoms: `${options.prefixAtoms}-tokens`,
   });
-  const aliasesVars = generateVars(aliases(tokensVars.reference), {
+  const aliases = atomizer(aliasez(tokens.reference), {
     ...options,
-    prefixVars: `${options.prefixVars}-aliases`,
+    prefixAtoms: `${options.prefixAtoms}-aliases`,
   });
   const jss = getJSS({
-    ...tokensVars.value,
-    ...aliasesVars.value,
+    ...tokens.value,
+    ...aliases.value,
   });
   const css = getCSSFromJSS(jss);
 
   return {
-    aliases: aliasesVars.reference,
-    tokens: tokensVars.reference,
+    aliases: aliases.reference,
+    tokens: tokens.reference,
     medias: options.medias,
     rules: { jss, css },
   };

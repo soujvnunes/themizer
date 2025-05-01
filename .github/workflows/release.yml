@@ -1,0 +1,41 @@
+name: Release to npm and GitHub Packages
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # Write both tokens to ~/.npmrc
+      - run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
+          echo "@soujvnunes:registry=https://npm.pkg.github.com" >> ~/.npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" >> ~/.npmrc
+
+      - run: npm install -g pnpm
+      - run: pnpm install
+
+      # Version packages if changeset exists
+      - run: pnpm changeset version
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - run: git config user.name "github-actions[bot]"
+      - run: git config user.email "github-actions[bot]@users.noreply.github.com"
+      - run: git add .
+      - run: git commit -m "chore: version packages" || echo "No changes to commit"
+      - run: git push
+
+      # Publish to both npm and GitHub Packages
+      - run: pnpm changeset publish
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}

@@ -1,5 +1,11 @@
 # @soujvnunes/themizer
 
+## 1.0.4
+
+### Patch Changes
+
+- 4b51bb8: retry
+
 ## 1.0.3
 
 ### Patch Changes

@@ -3,7 +3,7 @@ import 'expect-puppeteer'
 
 type ScreenType = `${'mobile' | 'desktop'}.${'dark' | 'light'}`
 
-export async function render(html: string) {
+export default async function renderHTML(html: string) {
   await page.setContent(html)
 
   return {

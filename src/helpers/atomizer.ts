@@ -1,6 +1,7 @@
 import isAtom, { type Atom } from './isAtom'
 import getResponsiveAtom, { type ResponsiveAtom } from './getResponsiveAtom'
 import isDefaultMedia, { type DefaultMedia } from './isDefaultMedia'
+import PATH_UNIFIER from '../consts/pathUnifier'
 
 export type AtomizerOptions<M extends string = never> = {
   prefix?: string
@@ -35,8 +36,6 @@ export interface Atomized<M extends string, A extends Atoms<M>> {
 }
 
 export type FlattenVars = Record<string, Atom | Vars>
-
-const PATH_UNIFIER = '-'
 
 export default function atomizer<M extends string, A extends Atoms<M>>(
   atoms: A,

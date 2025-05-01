@@ -1,5 +1,6 @@
+import DEFAULT_MEDIA from '../consts/defaultMedia'
 import { Atom } from './isAtom'
-import { DEFAULT_MEDIA, type DefaultMedia } from './isDefaultMedia'
+import { type DefaultMedia } from './isDefaultMedia'
 
 export type ResponsiveAtom<M extends string> = Record<M | DefaultMedia, Atom>
 

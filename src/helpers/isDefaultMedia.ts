@@ -1,4 +1,4 @@
-export const DEFAULT_MEDIA = 'DEFAULT'
+import DEFAULT_MEDIA from '../consts/defaultMedia'
 
 export type DefaultMedia = typeof DEFAULT_MEDIA
 

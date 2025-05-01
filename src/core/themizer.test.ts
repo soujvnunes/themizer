@@ -1,6 +1,6 @@
 import themizer from './themizer'
 import resolveAtom from './resolveAtom'
-import { render } from './testUtils'
+import renderHTML from '../test-utils/renderHTML'
 
 describe('themizer', () => {
   describe('taking aliases and options', () => {
@@ -79,7 +79,7 @@ describe('themizer', () => {
       })
     })
     it('its styles are applied to the DOM', async () => {
-      const page = await render(`
+      const page = await renderHTML(`
         <!DOCTYPE html>
         <html>
           <head>

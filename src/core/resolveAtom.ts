@@ -1,4 +1,4 @@
-const ATOM_REGEX = /var\((--[\w-]+)(?:,\s*((?:[^()]+|\((?:[^()]+|\([^()]*\))*\))+))?\)/g
+import ATOM_REGEX from '../consts/atomRegex'
 
 export default function resolveAtom(atom: string) {
   let match: RegExpMatchArray | null

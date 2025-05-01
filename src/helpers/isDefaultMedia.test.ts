@@ -1,4 +1,5 @@
-import isDefaultMedia, { DEFAULT_MEDIA } from './isDefaultMedia'
+import DEFAULT_MEDIA from '../consts/defaultMedia'
+import isDefaultMedia from './isDefaultMedia'
 
 describe('isDefaultMedia', () => {
   describe('when providing a string parameter', () => {

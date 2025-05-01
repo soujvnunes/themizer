@@ -1,4 +1,4 @@
-name: Release to npm and GitHub Packages
+name: Release to npm
 
 permissions:
   contents: write
@@ -25,8 +25,6 @@ jobs:
         run: |
           printf 'registry=https://registry.npmjs.org/\n' >> .npmrc
           printf '//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}\n\n' >> .npmrc
-          printf '@soujvnunes:registry=https://npm.pkg.github.com/\n' >> .npmrc
-          printf '//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}\n\n' >> .npmrc
           printf 'package-manager=pnpm@8.0.0\n' >> .npmrc
 
       - name: Install dependencies
@@ -54,8 +52,3 @@ jobs:
         run: pnpm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish to GitHub Packages
-        run: pnpm publish --access public --registry=https://npm.pkg.github.com
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GH_TOKEN }}

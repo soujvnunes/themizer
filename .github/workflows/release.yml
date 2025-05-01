@@ -7,6 +7,7 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout the code
         uses: actions/checkout@v3
@@ -16,16 +17,18 @@ jobs:
         with:
           node-version: 18
 
-      - name: Configure npm auth for npmjs and GitHub Packages
+      - name: Configure project-level .npmrc from secrets
         run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
-          echo "@soujvnunes:registry=https://npm.pkg.github.com/" >> ~/.npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}" >> ~/.npmrc
+          printf 'registry=https://registry.npmjs.org/\n' >> .npmrc
+          printf '//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}\n\n' >> .npmrc
+          printf '@soujvnunes:registry=https://npm.pkg.github.com/\n' >> .npmrc
+          printf '//npm.pkg.github.com/:_authToken=${{ secrets.GH_TOKEN }}\n\n' >> .npmrc
+          printf 'package-manager=pnpm@8.0.0\n' >> .npmrc
 
       - name: Install dependencies
         run: |
           npm install -g pnpm
-          pnpm install
+          pnpm install --no-frozen-lockfile
 
       - name: Build the package
         run: pnpm run build

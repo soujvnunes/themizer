@@ -2,7 +2,6 @@ name: Release to npm
 
 permissions:
   contents: write
-  packages: write
 
 on:
   push:
@@ -21,16 +20,13 @@ jobs:
         with:
           node-version: 18
 
-      - name: Configure project-level .npmrc from secrets
+      - name: Configure global npm registry and auth
         run: |
-          # Set the npm registry and authentication token
-          echo "registry=https://registry.npmjs.org/" >> .npmrc
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
-          echo "package-manager=pnpm@8.0.0" >> .npmrc
+          npm config set registry https://registry.npmjs.org/
+          npm config set //registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}
 
       - name: Install dependencies
         run: |
-          # Install pnpm and project dependencies
           npm install -g pnpm
           pnpm install
 

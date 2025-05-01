@@ -1,33 +1,27 @@
-import themizer from './themizer';
-import resolveAtom from './resolveAtom';
-import { render } from './testUtils';
+import themizer from './themizer'
+import resolveAtom from './resolveAtom'
+import { render } from './testUtils'
 
 describe('themizer', () => {
   describe('taking aliases and options', () => {
     const theme = themizer(
       (tokens) => ({
-        palette: {
-          main: [{ dark: tokens.colors.amber.light }, tokens.colors.amber.dark],
-        },
+        palette: { main: { dark: tokens.colors.amber.light, DEFAULT: tokens.colors.amber.dark } },
         spacing: { md: tokens.units[24] },
-        sizing: {
-          md: [{ desktop: tokens.units[24] }, tokens.units[16]],
-        },
+        sizing: { md: { desktop: tokens.units[24], DEFAULT: tokens.units[16] } },
       }),
       {
-        prefixAtoms: 'ds',
+        prefix: 'ds',
         medias: {
-          dark: '@media (prefers-color-scheme: dark)',
-          desktop: '@media (min-width: 1024px)',
+          dark: '(prefers-color-scheme: dark)',
+          desktop: '(min-width: 1024px)',
         },
         tokens: {
-          colors: {
-            amber: { light: 'rgb(251, 191, 36)', dark: 'rgb(217, 119, 6)' },
-          },
-          units: { '24': '24px', '16': '16px' },
+          colors: { amber: { light: 'rgb(251, 191, 36)', dark: 'rgb(217, 119, 6)' } },
+          units: { 24: '24px', 16: '16px' },
         } as const,
       },
-    );
+    )
 
     it('returns its prefixed reference and tokens one with specified media and CSS rules', () => {
       expect(theme).toEqual({
@@ -43,8 +37,8 @@ describe('themizer', () => {
           },
         },
         medias: {
-          dark: '@media (prefers-color-scheme: dark)',
-          desktop: '@media (min-width: 1024px)',
+          dark: '(prefers-color-scheme: dark)',
+          desktop: '(min-width: 1024px)',
         },
         tokens: {
           colors: {
@@ -66,15 +60,13 @@ describe('themizer', () => {
               '--ds-tokens-colors-amber-dark': 'rgb(217, 119, 6)',
               '--ds-tokens-units-16': '16px',
               '--ds-tokens-units-24': '24px',
-              '--ds-aliases-palette-main':
-                'var(--ds-tokens-colors-amber-dark, rgb(217, 119, 6))',
+              '--ds-aliases-palette-main': 'var(--ds-tokens-colors-amber-dark, rgb(217, 119, 6))',
               '--ds-aliases-spacing-md': 'var(--ds-tokens-units-24, 24px)',
               '--ds-aliases-sizing-md': 'var(--ds-tokens-units-16, 16px)',
             },
             '@media (prefers-color-scheme: dark)': {
               ':root': {
-                '--ds-aliases-palette-main':
-                  'var(--ds-tokens-colors-amber-light, rgb(251, 191, 36))',
+                '--ds-aliases-palette-main': 'var(--ds-tokens-colors-amber-light, rgb(251, 191, 36))',
               },
             },
             '@media (min-width: 1024px)': {
@@ -84,8 +76,8 @@ describe('themizer', () => {
             },
           },
         },
-      });
-    });
+      })
+    })
     it('its styles are applied to the DOM', async () => {
       const page = await render(`
         <!DOCTYPE html>
@@ -97,21 +89,21 @@ describe('themizer', () => {
             <p id="element" style="color: ${theme.aliases.palette.main}; font-size: ${theme.aliases.sizing.md}"></p> 
           </body>
         </html>
-      `);
+      `)
 
-      let styles = await page.setScreenType('mobile.light');
+      let styles = await page.setScreenType('mobile.light')
 
       expect(styles).toEqual({
         color: resolveAtom(theme.tokens.colors.amber.dark),
         fontSize: resolveAtom(theme.tokens.units[16]),
-      });
+      })
 
-      styles = await page.setScreenType('desktop.dark');
+      styles = await page.setScreenType('desktop.dark')
 
       expect(styles).toEqual({
         color: resolveAtom(theme.tokens.colors.amber.light),
         fontSize: resolveAtom(theme.tokens.units[24]),
-      });
-    }, 1000);
-  });
-});
+      })
+    }, 1000)
+  })
+})

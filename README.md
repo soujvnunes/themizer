@@ -1,84 +1,80 @@
 # themizer
 
-Generate CSS3 custom properties based on a given theme with tokens and aliases serving as a reference.
+Provide a design-like scheme (with design tokens and aliases) to have its values generated as CSS custom properties and a JavaScript object to be used in your app as a reference.
+
+## Installation
+
+```bash
+pnpm add themizer@latest
+``` 
 
 ## API
 
 ```ts
-  import themizer from "themizer";
+import themizer, { unwrapAtom, resolveAtom } from "themizer";
 
-  const { aliases, medias, tokens, rules } = themizer(aliases, options?);
+const { aliases, medias, tokens, rules } = themizer(aliases, { medias, prefixAtoms? });
+
+const unwrapedAtom = unwrapAtom(aliases[key] /* or tokens[key] */);
+
+const resolvedAtom = resolveAtom(aliases[key] /* or tokens[key] */)
 ```
 
-### Parameters
+### themizer
 
-- **aliases**
+#### Parameters
 
-  Object for basic `theme.rules` generation, and `theme.aliases` as a JavaScript reference.
+|Property|Type|Default|Description|
+|-|-|-|-|
+|aliases|`(tokens) => Object`|_Required_|Function to generate `theme.rules` having `options.tokens` passed as parameter, and `theme.aliases` as a JavaScript reference|
+|options.tokens|`Object`|_Required_|Object to generate `theme.rules` and compose `aliases` as parameter, and `theme.tokens` as a JavaScript reference|
+|options.medias|`Object`|_Required_|Object with values as media queries and key as its own aliases to replace the responsive properties in the `aliases` object values. It's also accessed throught `theme.medias` as it is as a JavaScript reference| 
+|options.prefixAtoms?|string||Text to prefix all the generated CSS custom properties|
 
-  It's a function if `options.tokens` is provided, being passed as `aliases` parameter.
+#### Return
 
-- **options?**
+|Property|Type|Description|
+|-|-|-|
+|theme.aliases|Object|Object containing the same keys as `aliases` parameter, but returning its CSS custom properties|
+|theme.rules.css|string|String containing the custom properties as CSS format|
+|theme.rules.jss|string|Object containing the custom properties as JSS format|
+|theme.medias?|Object|Object containing the `options.medias` to be also used as reference in JavaScript|
+|theme.tokens?|Object|Object containing the same keys as `options.tokens` parameter, but returning its CSS custom properties|
 
-  - prefixAtoms?
+### unwrapAtom
 
-    String to prefix all the generated CSS custom properties, accessed in `theme.rules`.
+#### Parameters
 
-  - medias?
+|Property|Type|Default|Description|
+|-|-|-|-|
+|atom|string|_Required_|Function to generate `theme.rules` having `options.tokens` passed as parameter, and `theme.aliases` as a JavaScript reference|
 
-    Object with values as media queries and properties serving as its aliases.
+#### Return
 
-    It's used to replace the responsive properties in the `aliases` object values.
+|Property|Type|Description|
+|-|-|-|
+|atom|string|Object containing the same keys as `aliases` parameter, but returning its CSS custom properties|
 
-    It's also accessed throught `theme.medias` as it is.
+### resolveAtom
 
-  - tokens?
+#### Parameters
 
-    Object for advanced `theme.aliases` as function.
+|Property|Type|Default|Description|
+|-|-|-|-|
+|atom|string|_Required_|Function to generate `theme.rules` having `options.tokens` passed as parameter, and `theme.aliases` as a JavaScript reference|
 
-    It's also generates variables that can be referenced by `theme.tokens` in JavaScript.
+#### Return
 
-### Return
+|Property|Type|Description|
+|-|-|-|
+|atom|string|Object containing the same keys as `aliases` parameter, but returning its CSS custom properties|
 
-- **theme**
 
-  - aliases
-
-    Object containing the same keys as `aliases` parameter, but returning its CSS custom properties.
-
-  - medias?
-
-    Object containing the `options.medias` to be also used as reference in JavaScript.
-
-  - tokens?
-
-    Object containing the same keys as `options.tokens` parameter, but returning its CSS custom properties.
-
-  - rules
-
-    Object containing style sheets the generated custom properties from `aliases` and `options.tokens`.
-
-    - css
-
-      String containing the custom properties as CSS format.
-
-    - jss
-
-      Object containing the custom properties as JSS format.
-
-      > Needs to be injected at the top-level page application.
-
-## Example
+## Usage
 
 Create a file and provide any tokens and options based on the product's design system needs.
 
-```tsx
-// helpers/rgba.ts
-
-export default function rgba(color: string, alpha: string) {
-  return `color-mix(in srgb, ${color} calc(${alpha} * 100), transparent)`;
-}
-
+```ts
 // src/lib/theme.ts
 
 import themizer from 'themizer';
@@ -87,68 +83,58 @@ import rgba from 'helpers/rgba';
 const theme = themizer(
   (tokens) => ({
     palette: {
-      main: tokens.colors.amber[500],
-      accent: [{ dark: tokens.colors.amber[400] }, tokens.colors.amber[600]],
-      text: {
-        primary: [{ dark: tokens.colors.white }, rgba(tokens.colors.black, tokens.alphas.primary)],
-        secondary: [{ dark: rgba(tokens.colors.white, tokens.alphas.secondary) }, rgba(tokens.colors.black, tokens.alphas.secondary)],
+      main: {
+        primary: `rgb(${tokens.colors.amber[500]} / ${tokens.alphas.primary})`,
+      },
+      foreground: {
+        dark: tokens.colors.amber[50],
+        DEFAULT: tokens.colors.amber[950],
+      },
+      background: {
+        dark: tokens.colors.amber[950],
+        DEFAULT: tokens.colors.amber[50],
       },
     },
-    grid: {
-      margin: [{ desktop: tokens.dimensions[40] }, tokens.dimensions[16]],
-      gutter: tokens.dimensions[8],
-    },
     typography: {
-      headline: [{ desktop: tokens.dimensions[64] }, tokens.dimensions[40]],
-      body: tokens.dimensions[16],
+      title: {
+        desktop: tokens.units[40],
+        DEFAULT: tokens.units[24]
+      },
+      body: tokens.units[16],
     },
     motion: {
-      bounce: [{ motion: `${tokens.trans.duration.fast} ${tokens.trans.timing.bounce}` }],
-      ease: [{ motion: `${tokens.trans.duration.fast} ${tokens.trans.timing.ease}` }],
+      bounce: {
+        motion: `${tokens.trans.duration.fast} ${tokens.trans.timing.bounce}`,
+      },
     },
   }),
   {
-    prefixAtoms: 'ds',
+    prefixAtoms: 'brand',
     medias: {
-      desktop: '@media (min-width: 1024px)',
-      dark: '@media (prefers-color-scheme: dark)',
-      motion: '@media (prefers-reduced-motion: no-preference)',
+      desktop: '(min-width: 1024px)',
+      dark: '(prefers-color-scheme: dark)',
+      motion: '(prefers-reduced-motion: no-preference)',
     },
     tokens: {
-      colors: {
-        amber: {
-          400: '#fbbf24',
-          500: '#f59e0b',
-          600: '#d97706',
-        },
-        white: '#fff',
-        black: '#000',
-      },
       alphas: {
         primary: 0.8,
-        secondary: 0.6,
       },
-      dimensions: {
-        8: '0.5rem',
+      units: {
         16: '1rem',
+        24: '1.5rem',
         40: '2.5rem',
-        64: '4rem',
       },
-      font: {
-        sans: 'sofia-pro',
-        weight: {
-          regular: 400,
-          semibold: 600,
-          bold: 800,
-        },
+      timing: {
+        bounce: 'cubic-bezier(0.5, -0.5, 0.25, 1.5)',
       },
-      trans: {
-        timing: {
-          bounce: 'cubic-bezier(0.5, -0.5, 0.25, 1.5)',
-          ease: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
-        },
-        duration: {
-          fast: '200ms',
+      duration: {
+        fast: '200ms',
+      },
+      colors: {
+        amber: {
+          50: '#fffbf4',
+          500: '245 158 11',
+          950: '#100a01',
         },
       },
     },
@@ -158,139 +144,85 @@ const theme = themizer(
 
 The generated custom properties from the last example would look like this.
 
-> Note that the provided `prefixAtoms` ("ds") is being used. Otherwise, these custom properties would be just like `--tokens-*` for tokens and `--aliases-*` for aliases.
+> Note that the provided `prefixAtoms` ("brand") is being used. Otherwise, these custom properties would be just like `--tokens-*` for tokens and `--aliases-*` for aliases.
 
 Generated styles within `theme.rules.css`:
 
 ```css
 :root {
-  /* Generated tokens */
-  --ds-tokens-colors-amber-400: #fbbf24;
-  --ds-tokens-colors-amber-500: #f59e0b;
-  --ds-tokens-colors-amber-600: #d97706;
-  --ds-tokens-colors-white: #fff;
-  --ds-tokens-colors-black: #000;
-
-  --ds-tokens-alphas-primary: 0.8;
-  --ds-tokens-alphas-secondary: 0.6;
-
-  --ds-tokens-dimensions-8: 0.5rem;
-  --ds-tokens-dimensions-16: 1rem;
-  --ds-tokens-dimensions-40: 2.5rem;
-
-  --ds-tokens-font-sans: 'sofia-pro';
-  --ds-tokens-font-weight-regular: 400;
-  --ds-tokens-font-weight-semibold: 600;
-  --ds-tokens-font-weight-bold: 800;
-
-  --ds-tokens-trans-timing-bounce: cubic-bezier(0.5, -0.5, 0.25, 1.5);
-  --ds-tokens-trans-duration-fast: 200ms;
-
-  /* Generated aliases */
-  --ds-aliases-palette-main: var(--ds-tokens-colors-amber-500);
-  --ds-aliases-palette-accent: var(--ds-tokens-colors-amber-600);
-  --ds-aliases-palette-text-primary:
-    color-mix(
-      in srgb,
-      var(--ds-tokens-colors-black) calc(var(--ds-tokens-alphas-primary) * 100),
-      transparent
-    );
-  --ds-aliases-palette-text-secondary:
-    color-mix(
-      in srgb,
-      var(--ds-tokens-colors-black) calc(var(--ds-tokens-alphas-secondary) * 100),
-      transparent
-    );
-
-  --ds-aliases-grid-margin: var(--ds-tokens-dimensions-16);
-  --ds-aliases-grid-gutter: var(--ds-tokens-dimensions-8);
-
-  --ds-aliases-typography-body: var(--ds-tokens-dimensions-16);
-  --ds-aliases-typography-headline: var(--ds-tokens-dimensions-40);
+  --brand-tokens-alphas-primary: 0.8;
+  --brand-tokens-units-16: 1rem;
+  --brand-tokens-units-24: 1.5rem;
+  --brand-tokens-units-40: 2.5rem;
+  --brand-tokens-timing-bounce: cubic-bezier(0.5, -0.5, 0.25, 1.5);
+  --brand-tokens-duration-fast: 200ms;
+  --brand-tokens-colors-amber-50: #fffbf4;
+  --brand-tokens-colors-amber-500: 245 158 11; /* #f59e0b */
+  --brand-tokens-colors-amber-950: #100a01;
+  --brand-aliases-palette-main-primary: rgb(var(--brand-tokens-colors-amber-500) / var(--brand-tokens-alphas-primary));
+  --brand-aliases-palette-foreground: var(--brand-tokens-colors-amber-950);
+  --brand-aliases-palette-background: var(--brand-tokens-colors-amber-50);
+  --brand-aliases-typography-title: var(--ds-tokens-units-24);
+  --brand-aliases-typography-body: var(--ds-tokens-units-16);
 }
 
-@media (prefers-color-aliases: dark) {
+@media (prefers-color-scheme: dark) {
   :root {
-    --ds-aliases-palette-accent: var(--ds-tokens-colors-amber-400);
-    --ds-aliases-palette-text-primary: var(--ds-tokens-colors-white);
-    --ds-aliases-palette-text-secondary:
-      color-mix(
-        in srgb,
-        var(--ds-tokens-colors-white) calc(var(--ds-tokens-alphas-secondary) * 100),
-        transparent
-      );
+    --brand-aliases-palette-foreground: var(--brand-tokens-colors-amber-50);
+    --brand-aliases-palette-background: var(--brand-tokens-colors-amber-950);
   }
 }
 
 @media (min-width: 1024px) {
   :root {
-    --ds-aliases-grid-margin: var(--ds-tokens-dimensions-40);
-    --ds-aliases-typography-headline: var(--ds-tokens-dimensions-64);
+    --brand-aliases-typography-title: var(--brand-tokens-units-40);
   }
 }
 
 @media (prefers-reduced-motion: no-preference) {
   :root {
-    --ds-aliases-motion-bounce:
-      var(--ds-tokens-trans-duration-fast)
-      var(--ds-tokens-trans-timing-bounce);
+    --brand-aliases-motion-bounce: var(--brand-tokens-duration-fast) var(--brand-tokens-timing-bounce);
   }
 }
 ```
 
 Generated styles within `theme.rules.jss`:
 
-```ts
-console.log(theme.rules.jss);
-
-/*
+```json
 {
-  ':root': {
-    '--ds-tokens-colors-amber-400': '#fbbf24',
-    '--ds-tokens-colors-amber-500': '#f59e0b',
-    '--ds-tokens-colors-amber-600': '#d97706',
-    '--ds-tokens-colors-white': '#fff',
-    '--ds-tokens-colors-black': '#000',
-    '--ds-tokens-alphas-primary': 0.8,
-    '--ds-tokens-alphas-secondary': 0.6,
-    '--ds-tokens-dimensions-8': '0.5rem',
-    '--ds-tokens-dimensions-16': '1rem',
-    '--ds-tokens-dimensions-40': '2.5rem',
-    '--ds-tokens-font-sans': 'sofia-pro',
-    '--ds-tokens-font-weight-regular': 400,
-    '--ds-tokens-font-weight-semibold': 600,
-    '--ds-tokens-font-weight-bold': 800,
-    '--ds-tokens-trans-timing-bounce': 'cubic-bezier(0.5, -0.5, 0.25, 1.5)',
-    '--ds-tokens-trans-duration-fast': '200ms',
-    '--ds-aliases-palette-main': 'var(--ds-tokens-colors-amber-500)',
-    '--ds-aliases-palette-accent': 'var(--ds-tokens-colors-amber-600)',
-    '--ds-aliases-palette-text-primary': 'color-mix(in srgb, var(--ds-tokens-colors-black) calc(var(--ds-tokens-alphas-primary) * 100), transparent)',
-    '--ds-aliases-palette-text-secondary': 'color-mix(in srgb, var(--ds-tokens-colors-black) calc(var(--ds-tokens-alphas-secondary) * 100), transparent)',
-    '--ds-aliases-grid-margin': 'var(--ds-tokens-dimensions-16)',
-    '--ds-aliases-grid-gutter': 'var(--ds-tokens-dimensions-8)',
-    '--ds-aliases-typography-body': 'var(--ds-tokens-dimensions-16)',
-    '--ds-aliases-typography-headline': 'var(--ds-tokens-dimensions-40)',
+  ":root": {
+    "--brand-tokens-alphas-primary": "0.8",
+    "--brand-tokens-units-16": "1rem",
+    "--brand-tokens-units-24": "1.5rem",
+    "--brand-tokens-units-40": "2.5rem",
+    "--brand-tokens-timing-bounce": "cubic-bezier(0.5, -0.5, 0.25, 1.5)",
+    "--brand-tokens-duration-fast": "200ms",
+    "--brand-tokens-colors-amber-50": "#fffbf4",
+    "--brand-tokens-colors-amber-500": "245 158 11", /* #f59e0b */
+    "--brand-tokens-colors-amber-950": "#100a01",
+    "--brand-aliases-palette-main-primary": "rgb(var(--brand-tokens-colors-amber-500) / var(--brand-tokens-alphas-primary))",
+    "--brand-aliases-palette-foreground": "var(--brand-tokens-colors-amber-950)",
+    "--brand-aliases-palette-background": "var(--brand-tokens-colors-amber-50)",
+    "--brand-aliases-typography-title": "var(--ds-tokens-units-24)",
+    "--brand-aliases-typography-body": "var(--ds-tokens-units-16)",
   },
-  '@media (prefers-color-aliases: dark)': {
-    ':root': {
-      '--ds-aliases-palette-accent': 'var(--ds-tokens-colors-amber-400)',
-      '--ds-aliases-palette-text-primary': 'var(--ds-tokens-colors-white)',
-      '--ds-aliases-palette-text-secondary': 'color-mix(in srgb, var(--ds-tokens-colors-white) calc(var(--ds-tokens-alphas-secondary) * 100), transparent)',
-    },
-  },
-  '@media (min-width: 1024px)': {
-    ':root': {
-      '--ds-aliases-grid-margin': 'var(--ds-tokens-dimensions-40)',
-      '--ds-aliases-typography-headline': 'var(--ds-tokens-dimensions-64)',
-    },
-  },
-  '@media (prefers-reduced-motion: no-preference)': {
-    ':root': {
-      '--ds-aliases-motion-bounce': 'var(--ds-tokens-trans-duration-fast) var(--ds-tokens-trans-timing-bounce)',
+  "@media (prefers-color-scheme: dark)": {
+    ":root": {
+      "--brand-aliases-palette-foreground": "var(--brand-tokens-colors-amber-50)",
+      "--brand-aliases-palette-background": "var(--brand-tokens-colors-amber-950)",
     }
   },
+  "@media (min-width: 1024px)": {
+    ":root": {
+      "--brand-aliases-typography-title": "var(--brand-tokens-units-40)",
+    }
+  },
+  "@media (prefers-reduced-motion: no-preference)": {
+    ":root": {
+      "--ds-aliases-motion-bounce": "var(--ds-tokens-trans-duration-fast) var(--ds-tokens-trans-timing-bounce)"
+    }
+  }
 }
-*/
 ```
 
 ### Usage
@@ -304,41 +236,32 @@ The generated CSS custom properties needs to be indexed at the project's top-lev
 ```ts
 // tailwind.config.ts
 
-import theme from './lib/theme';
-import plugin from 'tailwindcss/plugin';
-import defaultTheme from 'tailwindcss/defaultTheme';
 import { type Config } from 'tailwindcss';
+import plugin from 'tailwindcss/plugin';
 import { type CSSRuleObject } from 'tailwindcss/types/config';
+
+import theme from '@/lib/theme';
 
 const config = {
   content: ['./app/**/*.{tsx,ts,mdx}', './components/**/*.{tsx,ts,mdx}'],
   theme: {
-    fontFamily: {
-      sans: [
-        theme.tokens.font.families.sans,
-        '-apple-system-font',
-        ...defaultTheme.fontFamily.sans,
-      ],
-    },
     colors: {
       transparent: 'transparent',
       current: 'currentColor',
-      background: rgb(theme.aliases.colors.background),
-      foreground: rgb(theme.aliases.colors.foreground),
+      background: theme.aliases.palette.background,
+      foreground: theme.aliases.palette.foreground,
     },
     fontSize: {
       body: [
-        theme.aliases.typography.sm,
+        theme.aliases.typography.title,
         {
-          lineHeight: theme.aliases.typography.lg,
+          lineHeight: theme.tokens.units[24],
         },
       ],
     },
   },
   plugins: [
-    plugin(({ addBase }) => {
-      return addBase(theme.rules.jss as CSSRuleObject);
-    }),
+    plugin((api) => api.addBase(theme.rules.jss as CSSRuleObject)),
   ],
 } satisfies Config;
 
@@ -349,21 +272,25 @@ export default config;
 
 ```tsx
 import type { Metadata, Viewport } from 'next';
+
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import theme from 'lib/theme';
-import './global.css';
+
 import { resolveAtom } from 'themizer';
+
+import theme from '@/lib/theme';
+
+import './global.css';
 
 export const viewport: Viewport = {
   themeColor: [
     {
       media: '(prefers-color-scheme: dark)',
-      color: `rgb(${resolveAtom(theme.tokens.palette.amber[950])})`,
+      color: `rgb(${resolveAtom(theme.tokens.colors.amber[950])})`,
     },
     {
       media: '(prefers-color-scheme: light)',
-      color: `rgb(${resolveAtom(theme.tokens.palette.amber[50])})`,
+      color: `rgb(${resolveAtom(theme.tokens.colors.amber[50])})`,
     },
   ],
 };
@@ -398,21 +325,22 @@ export default function AppLayout({ children }: React.PropsWithChildren) {
 'use client';
 
 import { useState } from 'react';
+
 import { useServerInsertedHTML } from 'next/navigation';
+
 import { StyleRegistry, createStyleRegistry } from 'styled-jsx';
-import theme from 'lib/theme';
+
+import theme from '@/lib/theme';
 
 export default function StyledJsxProvider({
   children,
 }: React.PropsWithChildren) {
-  const [styleRegistry] = useState(() => createStyleRegistry());
+  const [styleRegistry] = useState(createStyleRegistry);
 
   useServerInsertedHTML(() => {
-    const styles = styleRegistry.styles();
-
     styleRegistry.flush();
 
-    return <>{styles}</>;
+    return <>{styleRegistry.styles()}</>;
   });
 
   return (
@@ -432,10 +360,12 @@ export default function StyledJsxProvider({
 // src/app/layout.tsx
 
 import type { Viewport } from 'next';
+
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import StyledJsxProvider from 'providers/StyledJsxProvider';
-// There are also cool helper functions to get a custom property name or value.
+
+import StyledJsxProvider from '@/providers/StyledJsxProvider';
+
 import { resolveAtom, unwrapAtom } from 'themizer';
 
 export const viewport: Viewport = {
@@ -456,8 +386,10 @@ export default function RootLayout({ children }: React.PropsWithChildren) {
     <html
       lang="en"
       style={{
-        [unwrapVar(trans.duration.fast) /* --ds-tokens-trans-duration-fast */]: '400ms',
-      }}>
+        // --ds-tokens-trans-duration-fast
+        [unwrapVar(theme.tokens.duration.fast)]: '400ms',
+      }}
+    >
       <body>
         <StyledJsxProvider>
           {children}
@@ -475,22 +407,19 @@ export default function RootLayout({ children }: React.PropsWithChildren) {
 ```tsx
 // src/components/Title.tsx
 
-'use client';
-
-import theme from './lib/theme';
+import theme from '@/lib/theme';
 
 export default function Title({
   children,
   className = '',
   ...props
-}: React.ComponentPropsWithoutRef<'h1'>) {
+}: React.ComponentProps<'h1'>) {
   return (
     <h1 className={`title ${className}`} {...props}>
       {children}
       <style jsx>{`
         .title {
-          font-size: ${theme.aliases.typography.headline}; /* var(--ds-aliases-typography-headline, var(--ds-tokens-dimensions-40, 2.5rem)) */
-          font-weight: ${theme.tokens.font.weight.bold}; /* var(--ds-tokens-font-weight-bold, 800) */
+          font-size: ${theme.aliases.typography.title};
         }
       `}</style>
     </h1>
@@ -505,8 +434,9 @@ export default function Title({
 ```tsx
 // src/app/page.tsx
 
-import Title from 'components/Title';
-import theme from 'lib/theme';
+import Title from '@/components/Title';
+
+import theme from '@/lib/theme';
 
 export default function Page() {
   return (

@@ -4,4 +4,4 @@ export default {
   globalTeardown: 'jest-environment-puppeteer/teardown',
   testEnvironment: 'jest-environment-puppeteer',
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
-};
+}

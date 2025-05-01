@@ -23,12 +23,14 @@ jobs:
 
       - name: Configure project-level .npmrc from secrets
         run: |
-          printf 'registry=https://registry.npmjs.org/\n' >> .npmrc
-          printf '//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}\n\n' >> .npmrc
-          printf 'package-manager=pnpm@8.0.0\n' >> .npmrc
+          # Set the npm registry and authentication token
+          echo "registry=https://registry.npmjs.org/" >> .npmrc
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
+          echo "package-manager=pnpm@8.0.0" >> .npmrc
 
       - name: Install dependencies
         run: |
+          # Install pnpm and project dependencies
           npm install -g pnpm
           pnpm install
 

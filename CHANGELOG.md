@@ -1,5 +1,11 @@
 # @soujvnunes/themizer
 
+## 1.0.3
+
+### Patch Changes
+
+- 3efcb70: chore: bump to 1.0.3 to fix publish conflict
+
 ## 1.0.2
 
 ### Patch Changes

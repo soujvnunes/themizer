@@ -1,5 +1,9 @@
 name: Release to npm and GitHub Packages
 
+permissions:
+  contents: write
+  packages: write
+
 on:
   push:
     branches: [main]
@@ -28,7 +32,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm install -g pnpm
-          pnpm install --no-frozen-lockfile
+          pnpm install
 
       - name: Build the package
         run: pnpm run build

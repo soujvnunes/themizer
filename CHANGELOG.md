@@ -1,5 +1,11 @@
 # @soujvnunes/themizer
 
+## 1.0.6
+
+### Patch Changes
+
+- f1ebcc4: core: adjust tags
+
 ## 1.0.4
 
 ### Patch Changes

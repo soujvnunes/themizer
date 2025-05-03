@@ -2,50 +2,46 @@ import isAtom, { type Atom } from './isAtom'
 import PATH_UNIFIER from '../consts/pathUnifier'
 import getVar from './getVar'
 
-export interface Vars {
-  [variable: string]: Atom
-}
+export type Vars = { [variable: string]: Atom }
 
-export type FlattenVars = Record<string, Atom | Vars>
+export type FlattenVars = { [mediaQuery: string]: Atom | Vars }
 
-export interface R8eVars {
-  [mediaQuery: string]: Vars
-}
+export type ResponsiveVars = { [mediaQuery: string]: Vars }
 
-export type R8eAtoms<M extends string> = [Record<M, Atom>, Atom?]
+export type Medias = { [media: string]: string }
+
+export type R8eAtoms<M extends string> = [{ [Media in M]: Atom }, Atom?]
 
 export interface Atoms<M extends string = never> {
   [key: string | number]: (Atom | Atoms<M>) | (M extends string ? R8eAtoms<M> : never)
 }
 
-export type ResolveAtoms<M extends string, A extends Atoms<M>> = {
+export type ResolveAtoms<M extends Medias, A extends Atoms<Extract<keyof M, string>>> = {
   [Key in keyof A]: A[Key] extends [unknown, infer D]
     ? D
     : A[Key] extends [infer V]
     ? V extends Record<string, infer R>
       ? R
       : never
-    : A[Key] extends Atoms<M>
+    : A[Key] extends Atoms<Extract<keyof M, string>>
     ? ResolveAtoms<M, A[Key]>
     : A[Key]
 }
 
-export type AtomizerOptions<M extends string = never> = {
+export type AtomizerOptions<M extends Medias> = {
   prefix?: string
-  medias?: Record<M, string>
+  medias?: M
 }
 
-export interface Atomized<M extends string, A extends Atoms<M>> {
-  vars: Vars & M extends string ? R8eVars : never
+export interface Atomized<M extends Medias, A extends Atoms<Extract<keyof M, string>>> {
+  vars: Vars & M extends string ? ResponsiveVars : never
   ref: ResolveAtoms<M, A>
 }
 
-export default function atomizer<const M extends string, const A extends Atoms<M>>(
-  atoms: A,
-  options?: AtomizerOptions<M>,
-  __path?: string,
-  __r8eAtoms?: R8eVars,
-) {
+export default function atomizer<
+  const M extends Medias,
+  const A extends Atoms<Extract<keyof M, string>>,
+>(atoms: A, options?: AtomizerOptions<M>, __path?: string, __r8eAtoms?: ResponsiveVars) {
   const prefix = options?.prefix ? `${options.prefix}${PATH_UNIFIER}` : ''
   const unifiedPath = __path ? `${__path}${PATH_UNIFIER}` : ''
 
@@ -62,7 +58,7 @@ export default function atomizer<const M extends string, const A extends Atoms<M
       vars[variable] = atom
       ref[key] = getVar(variable, atom)
     } else if (Array.isArray(atom)) {
-      const [medias, defaultValue] = atom as R8eAtoms<M>
+      const [medias, defaultValue] = atom as R8eAtoms<Extract<keyof M, string>>
 
       for (const media in medias) {
         const mediaQuery = `@media ${options?.medias?.[media]}`

@@ -8,8 +8,6 @@ export default function resolveAtom(atom: string) {
     const defaultValue = match[2]
 
     if (defaultValue) {
-      console.log(defaultValue)
-
       if (/^var\(--/.test(defaultValue)) return resolveAtom(defaultValue)
 
       extractedValue = defaultValue.trim()

@@ -4,8 +4,14 @@ describe('atomizer', () => {
   describe('when providing the atoms parameter', () => {
     it('returns the vars and its reference', () => {
       const atomized = atomizer({
-        color: { red: { 500: '#f00' } },
-        opacity: { primary: 1 },
+        color: {
+          red: {
+            500: '#f00',
+          },
+        },
+        opacity: {
+          primary: 1,
+        },
         bounce: 'cubic-bezier(0.5, -0.5, 0.25, 1.5)',
       })
 
@@ -16,9 +22,13 @@ describe('atomizer', () => {
       })
       expect(atomized.ref).toEqual({
         color: {
-          red: { 500: 'var(--color-red-500, #f00)' },
+          red: {
+            500: 'var(--color-red-500, #f00)',
+          },
         },
-        opacity: { primary: 'var(--opacity-primary, 1)' },
+        opacity: {
+          primary: 'var(--opacity-primary, 1)',
+        },
         bounce: 'var(--bounce, cubic-bezier(0.5, -0.5, 0.25, 1.5))',
       })
     })
@@ -26,11 +36,19 @@ describe('atomizer', () => {
       it('returns prefixed generated vars and its reference', () => {
         const atomized = atomizer(
           {
-            color: { red: { 500: '#f00' } },
-            opacity: { primary: 1 },
+            color: {
+              red: {
+                500: '#f00',
+              },
+            },
+            opacity: {
+              primary: 1,
+            },
             bounce: 'cubic-bezier(0.5, -0.5, 0.25, 1.5)',
           },
-          { prefix: 'atoms' },
+          {
+            prefix: 'atoms',
+          },
         )
 
         expect(atomized.vars).toEqual({
@@ -39,8 +57,14 @@ describe('atomizer', () => {
           '--atoms-bounce': 'cubic-bezier(0.5, -0.5, 0.25, 1.5)',
         })
         expect(atomized.ref).toEqual({
-          color: { red: { 500: 'var(--atoms-color-red-500, #f00)' } },
-          opacity: { primary: 'var(--atoms-opacity-primary, 1)' },
+          color: {
+            red: {
+              500: 'var(--atoms-color-red-500, #f00)',
+            },
+          },
+          opacity: {
+            primary: 'var(--atoms-opacity-primary, 1)',
+          },
           bounce: 'var(--atoms-bounce, cubic-bezier(0.5, -0.5, 0.25, 1.5))',
         })
       })
@@ -51,20 +75,31 @@ describe('atomizer', () => {
           {
             colors: {
               black: '#111',
-              gray: { print: '#fff', DEFAULT: '#ddd' },
-              white: { dark: '#333', printOnDark: '#000', DEFAULT: '#fff' },
-              red: { 500: { print: '#000', DEFAULT: '#f00' } },
+              gray: [{ print: '#fff' }, '#ddd'],
+              white: [{ dark: '#333', printOnDark: '#000' }, '#fff'],
+              red: {
+                500: [{ print: '#000' }, '#f00'],
+              },
             },
-            spaces: { md: { desktop: '1.5rem', tablet: '1.25rem', DEFAULT: '1rem' } },
+            spaces: {
+              md: [{ desktop: '1.5rem', tablet: '1.25rem' }, '1rem'],
+            },
             font: {
               sans: 'sofia-pro',
-              sizes: { xl: { desktop: '3rem', DEFAULT: '2rem' } },
-              weight: { 500: { desktop: 800, tablet: 600, DEFAULT: 400 } },
+              sizes: {
+                xl: [{ desktop: '3rem' }, '2rem'],
+              },
+              weight: {
+                500: [{ desktop: 800, tablet: 600 }, 400],
+              },
             },
-            alphas: { primary: { dark: 1, DEFAULT: 0.8 }, secondary: 0.6 },
+            alphas: {
+              primary: [{ dark: 1 }, 0.8],
+              secondary: 0.6,
+            },
             trans: {
-              bounce: { motion: '200ms cubic-bezier(0.5, -0.5, 0.25, 1.5)' },
-              ease: { motion: '200ms cubic-bezier(0.25, 0.1, 0.25, 1)' },
+              bounce: [{ motion: '200ms cubic-bezier(0.5, -0.5, 0.25, 1.5)' }],
+              ease: [{ motion: '200ms cubic-bezier(0.25, 0.1, 0.25, 1)' }],
             },
           },
           {

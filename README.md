@@ -86,26 +86,15 @@ const theme = themizer(
       main: {
         primary: `rgb(${tokens.colors.amber[500]} / ${tokens.alphas.primary})`,
       },
-      foreground: {
-        dark: tokens.colors.amber[50],
-        DEFAULT: tokens.colors.amber[950],
-      },
-      background: {
-        dark: tokens.colors.amber[950],
-        DEFAULT: tokens.colors.amber[50],
-      },
+      foreground: [{ dark: tokens.colors.amber[50] }, tokens.colors.amber[950]],
+      background: [{ dark: tokens.colors.amber[950] }, tokens.colors.amber[50]],
     },
     typography: {
-      title: {
-        desktop: tokens.units[40],
-        DEFAULT: tokens.units[24]
-      },
+      title: [{ desktop: tokens.units[40] }, tokens.units[24]],
       body: tokens.units[16],
     },
     motion: {
-      bounce: {
-        motion: `${tokens.trans.duration.fast} ${tokens.trans.timing.bounce}`,
-      },
+      bounce: [{ motion: `${tokens.trans.duration.fast} ${tokens.trans.timing.bounce}` }],
     },
   }),
   {

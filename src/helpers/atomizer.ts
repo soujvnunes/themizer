@@ -1,56 +1,54 @@
 import isAtom, { type Atom } from './isAtom'
-import getResponsiveAtom, { type ResponsiveAtom } from './getResponsiveAtom'
-import isDefaultMedia, { type DefaultMedia } from './isDefaultMedia'
 import PATH_UNIFIER from '../consts/pathUnifier'
+import getVar from './getVar'
 
-export type AtomizerOptions<M extends string = never> = {
-  prefix?: string
-  medias?: Record<M, string>
-}
+export type Vars = { [variable: string]: Atom }
 
-export interface Vars {
-  [customProperty: string]: Atom
-}
+export type FlattenVars = { [mediaQuery: string]: Atom | Vars }
 
-export interface ResponsiveVars {
-  [mediaQuery: string]: Vars
-}
+export type ResponsiveVars = { [mediaQuery: string]: Vars }
+
+export type Medias = { [media: string]: string }
+
+export type R8eAtoms<M extends string> = [{ [Media in M]: Atom }, Atom?]
 
 export interface Atoms<M extends string = never> {
-  [key: string | number]: Atom | Atoms<M> | ResponsiveAtom<M>
+  [key: string | number]: (Atom | Atoms<M>) | (M extends string ? R8eAtoms<M> : never)
 }
 
-export type ResolveAtoms<M extends string, A extends Atoms<M>> = {
-  [Key in keyof A]: A[Key] extends ResponsiveAtom<M>
-    ? DefaultMedia extends keyof A[Key]
-      ? A[Key][DefaultMedia]
-      : A[Key][M]
-    : A[Key] extends Atoms<M>
+export type ResolveAtoms<M extends Medias, A extends Atoms<Extract<keyof M, string>>> = {
+  [Key in keyof A]: A[Key] extends [unknown, infer D]
+    ? D
+    : A[Key] extends [infer V]
+    ? V extends Record<string, infer R>
+      ? R
+      : never
+    : A[Key] extends Atoms<Extract<keyof M, string>>
     ? ResolveAtoms<M, A[Key]>
     : A[Key]
 }
 
-export interface Atomized<M extends string, A extends Atoms<M>> {
-  vars: Vars & ResponsiveVars
+export type AtomizerOptions<M extends Medias> = {
+  prefix?: string
+  medias?: M
+}
+
+export interface Atomized<M extends Medias, A extends Atoms<Extract<keyof M, string>>> {
+  vars: Vars & M extends string ? ResponsiveVars : never
   ref: ResolveAtoms<M, A>
 }
 
-export type FlattenVars = Record<string, Atom | Vars>
-
-export default function atomizer<M extends string, A extends Atoms<M>>(
-  atoms: A,
-  options?: AtomizerOptions<M>,
-  __path?: string,
-  __responsiveAtoms?: ResponsiveVars,
-) {
-  const isResponsiveAtom = getResponsiveAtom(options?.medias)
-
+export default function atomizer<
+  const M extends Medias,
+  const A extends Atoms<Extract<keyof M, string>>,
+>(atoms: A, options?: AtomizerOptions<M>, __path?: string, __r8eAtoms?: ResponsiveVars) {
   const prefix = options?.prefix ? `${options.prefix}${PATH_UNIFIER}` : ''
   const unifiedPath = __path ? `${__path}${PATH_UNIFIER}` : ''
-  const responsiveAtoms = __responsiveAtoms ?? {}
 
   const vars = {} as FlattenVars
   const ref = {} as Record<string, unknown>
+
+  const r8eAtoms = __r8eAtoms ?? {}
 
   for (const [key, atom] of Object.entries(atoms)) {
     const path = `${prefix}${unifiedPath}${key}`
@@ -58,34 +56,28 @@ export default function atomizer<M extends string, A extends Atoms<M>>(
 
     if (isAtom(atom)) {
       vars[variable] = atom
-      ref[key] = `var(${variable}, ${atom})`
-    } else if (isResponsiveAtom(atom)) {
-      let defaultAtom = ''
+      ref[key] = getVar(variable, atom)
+    } else if (Array.isArray(atom)) {
+      const [medias, defaultValue] = atom as R8eAtoms<Extract<keyof M, string>>
 
-      for (const [media, responsiveAtom] of Object.entries(atom)) {
-        const mediaQuery = `@media ${options?.medias?.[media as M]}`
+      for (const media in medias) {
+        const mediaQuery = `@media ${options?.medias?.[media]}`
 
-        if (isDefaultMedia(media)) {
-          vars[variable] = responsiveAtom
-          defaultAtom = `, ${responsiveAtom}`
-        } else {
-          responsiveAtoms[mediaQuery] = {
-            ...responsiveAtoms[mediaQuery],
-            [variable]: responsiveAtom,
-          }
-        }
+        r8eAtoms[mediaQuery] = { ...r8eAtoms[mediaQuery], [variable]: medias[media] }
       }
 
-      ref[key] = `var(${variable}${defaultAtom})`
+      if (isAtom(defaultValue)) vars[variable] = defaultValue
+
+      ref[key] = getVar(variable, defaultValue)
     } else {
-      const atomized = atomizer(atom, { ...options, prefix: '' }, path, responsiveAtoms)
+      const atomized = atomizer(atom, { ...options, prefix: '' }, path, r8eAtoms)
 
       Object.assign(vars, atomized.vars)
       ref[key] = atomized.ref
     }
   }
 
-  Object.assign(vars, responsiveAtoms)
+  Object.assign(vars, r8eAtoms)
 
   return {
     vars,

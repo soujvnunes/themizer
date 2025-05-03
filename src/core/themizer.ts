@@ -4,9 +4,9 @@ import atomizer, {
   type Atoms,
   type Medias,
 } from '../helpers/atomizer'
-import getJSS from '../helpers/getJSS'
 import getCSS from '../helpers/getCSS'
 import addAtMedia from '../helpers/addAtMedia'
+import writeThemeFile from '../helpers/writeThemeFile'
 
 export interface ThemizerOptions<M extends Medias, T extends Atoms>
   extends Required<AtomizerOptions<M>> {
@@ -17,7 +17,7 @@ export default function themizer<
   const M extends Medias,
   const T extends Atoms,
   const A extends Atoms<Extract<keyof M, string>>,
->(aliases: (tokens: ResolveAtoms<never, T>) => A, options: ThemizerOptions<M, T>) {
+>(options: ThemizerOptions<M, T>, aliases: (tokens: ResolveAtoms<never, T>) => A) {
   const tokenized = atomizer<never, T>(options.tokens, {
     prefix: `${options.prefix}-tokens`,
   })
@@ -25,18 +25,12 @@ export default function themizer<
     ...options,
     prefix: `${options.prefix}-aliases`,
   })
-  const flattenVars = {
-    ...tokenized.vars,
-    ...aliased.vars,
-  }
+
+  writeThemeFile(getCSS({ ...tokenized.vars, ...aliased.vars }))
 
   return {
     aliases: aliased.ref,
     tokens: tokenized.ref,
     medias: addAtMedia(options.medias),
-    rules: {
-      jss: getJSS(flattenVars),
-      css: getCSS(flattenVars),
-    },
   }
 }

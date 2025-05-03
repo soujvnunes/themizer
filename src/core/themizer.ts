@@ -1,6 +1,7 @@
 import atomizer, { type ResolveAtoms, type AtomizerOptions, type Atoms } from '../helpers/atomizer'
 import getJSS from '../helpers/getJSS'
 import getCSS from '../helpers/getCSS'
+import addAtMedia from '../helpers/addAtMedia'
 
 export interface ThemizerOptions<M extends string, T extends Atoms>
   extends Required<AtomizerOptions<M>> {
@@ -26,7 +27,7 @@ export default function themizer<M extends string, T extends Atoms, A extends At
   return {
     aliases: aliased.ref,
     tokens: tokenized.ref,
-    medias: options.medias,
+    medias: addAtMedia(options.medias),
     rules: {
       jss: getJSS(flattenVars),
       css: getCSS(flattenVars),

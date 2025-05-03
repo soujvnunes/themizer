@@ -1,9 +1,11 @@
-export default function addAtMedia<const O extends Record<string, string>>(params?: O) {
-  const medias = {} as Record<string, unknown>
+import { type Medias } from './atomizer'
+
+export default function addAtMedia<M extends Medias>(params: M) {
+  const medias = {} as { [Media in keyof M]: `@media ${M[Media]}` }
 
   for (const media in params) {
-    medias[media] = `@media ${params[media] as O[typeof media]}`
+    medias[media] = `@media ${params[media]}`
   }
 
-  return medias as { [Media in keyof O]: `@media ${O[Media]}` }
+  return medias
 }

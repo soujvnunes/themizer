@@ -1,19 +1,20 @@
 import path from 'node:path'
 import fs from 'node:fs'
 
-import themizer from './themizer'
-
-import resolveAtom from './resolveAtom'
-
 import renderHTML from '../test-utils/renderHTML'
 
-import { BUFFER_ENCONDIG, FILE_NAME } from '../helpers/writeThemeFile'
+import THEME_FILE_NAME from '../consts/themeFileName'
+import THEME_FILE_ENCODING from '../consts/themeFileEncoding'
+import THEME_FILE_DIRECTORY from '../consts/themeFileDirectory'
+
+import themizer from './themizer'
+import resolveAtom from './resolveAtom'
 
 describe('themizer', () => {
   afterAll(() => {
-    const filePath = path.resolve(process.cwd(), FILE_NAME)
+    const filePath = path.resolve(process.cwd(), THEME_FILE_DIRECTORY, THEME_FILE_NAME)
 
-    if (fs.existsSync(filePath)) fs.writeFileSync(filePath, '/* Placeholder */', BUFFER_ENCONDIG)
+    if (fs.existsSync(filePath)) fs.writeFileSync(filePath, '/* Placeholder */', THEME_FILE_ENCODING)
   })
 
   describe('taking aliases and options', () => {
@@ -89,7 +90,7 @@ describe('themizer', () => {
         </html>
       `)
 
-      await page.addStyleTag({ path: './theme.css' })
+      await page.addStyleTag({ path: `./${THEME_FILE_DIRECTORY}/${THEME_FILE_NAME}` })
 
       let styles = await html.setScreenType('mobile.light')
 

@@ -1,5 +1,6 @@
-import isAtom, { type Atom } from './isAtom'
 import PATH_UNIFIER from '../consts/pathUnifier'
+
+import isAtom, { type Atom } from './isAtom'
 import getVar from './getVar'
 
 export type Vars = { [variable: string]: Atom }

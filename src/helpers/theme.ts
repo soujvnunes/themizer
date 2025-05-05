@@ -1,5 +1,5 @@
 export class Theme {
-  atoms = ''
+  private atoms = ''
 
   setAtoms(atoms: string) {
     this.atoms = atoms

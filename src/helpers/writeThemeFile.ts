@@ -19,7 +19,7 @@ export interface WriteThemeFileParams {
 
 /** TODO: add outDir? param */
 export default function writeThemeFile({ outDir = THEME_FILE_DIRECTORY, atoms }: WriteThemeFileParams) {
-  if (theme.getAtoms === atoms) return
+  if (theme.getAtoms === atoms || process.env.NODE_ENV === 'production') return
 
   const resolvedPath = path.resolve(
     ...[process.cwd(), outDir === 'root' ? '' : outDir, THEME_FILE_NAME].filter(Boolean),

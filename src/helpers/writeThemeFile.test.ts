@@ -1,24 +1,26 @@
 import path from 'node:path'
 import fs from 'node:fs'
 
-import writeThemeFile from './writeThemeFile'
+import writeThemeFile, { WriteThemeFileParams } from './writeThemeFile'
 
 import THEME_FILE_NAME from '../consts/themeFileName'
 import THEME_FILE_ENCODING from '../consts/themeFileEncoding'
 import THEME_FILE_DIRECTORY from '../consts/themeFileDirectory'
 
 describe('writeThemeFile', () => {
-  let RULES_MOCK = ':root { --hello: "world"; }'
+  let atoms = ':root { --hello: "world"; }'
 
   const ROOT_MOCK = '.'
 
-  function expectCallWriteThemeFile(rules: string) {
+  function expectWriteThemeFileCalls({ atoms, outDir = THEME_FILE_DIRECTORY }: WriteThemeFileParams) {
     expect(process.cwd).toHaveBeenCalled()
-    expect(path.resolve).toHaveBeenCalledWith(ROOT_MOCK, THEME_FILE_DIRECTORY, THEME_FILE_NAME)
-    expect(fs.readFileSync).toHaveReturnedWith(rules)
+    expect(fs.readFileSync).toHaveReturnedWith(atoms)
+    expect(path.resolve).toHaveBeenCalledWith(
+      ...[ROOT_MOCK, outDir === 'root' ? '' : outDir, THEME_FILE_NAME].filter(Boolean),
+    )
     expect(fs.writeFileSync).toHaveBeenCalledWith(
-      `./${THEME_FILE_DIRECTORY}/${THEME_FILE_NAME}`,
-      rules,
+      (outDir === 'root' ? './' : `./${outDir}/`) + THEME_FILE_NAME,
+      atoms,
       THEME_FILE_ENCODING,
     )
   }
@@ -29,22 +31,24 @@ describe('writeThemeFile', () => {
     jest.spyOn(fs, 'mkdirSync').mockImplementation(jest.fn())
     jest.spyOn(fs, 'writeFileSync').mockImplementation(jest.fn)
     jest.spyOn(path, 'resolve').mockImplementation((...args) => args.join('/'))
-    jest.spyOn(fs, 'readFileSync').mockImplementation(() => RULES_MOCK)
+    jest.spyOn(fs, 'readFileSync').mockImplementation(() => atoms)
   })
 
   afterEach(() => {
     jest.restoreAllMocks()
   })
 
-  describe('when providing the rules parameter', () => {
-    it('writes them in the CSS placeholder theme file', () => {
-      writeThemeFile(RULES_MOCK)
+  describe('when providing the atoms parameter', () => {
+    describe('with the default output directory parameter', () => {
+      it('writes them in the CSS placeholder atoms file', () => {
+        writeThemeFile({ atoms })
 
-      expectCallWriteThemeFile(RULES_MOCK)
+        expectWriteThemeFileCalls({ atoms })
+      })
     })
     describe("that's equal to the previous one", () => {
-      it('skips writing them in the CSS placeholder theme file', () => {
-        writeThemeFile(RULES_MOCK)
+      it('skips writing them in the CSS placeholder atoms file', () => {
+        writeThemeFile({ atoms })
 
         expect(process.cwd).not.toHaveBeenCalled()
         expect(path.resolve).not.toHaveBeenCalled()
@@ -54,12 +58,30 @@ describe('writeThemeFile', () => {
       })
     })
     describe("that's different to the previous one", () => {
-      it('writes them in the CSS placeholder theme file', () => {
-        RULES_MOCK += ':root { --foo: "bar"; }'
+      it('writes them in the CSS placeholder atoms file', () => {
+        atoms += ':root { --foo: "bar"; }'
 
-        writeThemeFile(RULES_MOCK)
+        writeThemeFile({ atoms })
 
-        expectCallWriteThemeFile(RULES_MOCK)
+        expectWriteThemeFileCalls({ atoms })
+      })
+    })
+    describe('with the output directory parameter as root', () => {
+      it('writes them in the CSS placeholder atoms file', () => {
+        atoms += ':root { --foz: "baz"; }'
+
+        writeThemeFile({ atoms, outDir: 'root' })
+
+        expectWriteThemeFileCalls({ atoms, outDir: 'root' })
+      })
+    })
+    describe('with the output directory parameter customized', () => {
+      it('writes them in the CSS placeholder atoms file', () => {
+        atoms += ':root { --bar: "baz"; }'
+
+        writeThemeFile({ atoms, outDir: 'pages/style' })
+
+        expectWriteThemeFileCalls({ atoms, outDir: 'pages/style' })
       })
     })
   })

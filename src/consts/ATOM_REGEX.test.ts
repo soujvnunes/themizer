@@ -1,4 +1,4 @@
-import ATOM_REGEX from './atomRegex'
+import ATOM_REGEX from './ATOM_REGEX'
 
 describe('atomRegex', () => {
   describe('exporting modules', () => {

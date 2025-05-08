@@ -1,4 +1,4 @@
-import THEME_FILE_NAME from './themeFileName'
+import THEME_FILE_NAME from './THEME_FILE_NAME'
 
 describe('themeFileName', () => {
   describe('exporting modules', () => {

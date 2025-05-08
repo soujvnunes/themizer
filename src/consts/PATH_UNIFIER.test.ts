@@ -1,4 +1,4 @@
-import PATH_UNIFIER from './pathUnifier'
+import PATH_UNIFIER from './PATH_UNIFIER'
 
 describe('pathUnifier', () => {
   describe('exporting modules', () => {

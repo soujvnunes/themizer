@@ -1,9 +1,9 @@
 import FILE_ENCODING from './FILE_ENCODING'
 
-describe('themeFileEncoding', () => {
+describe('FILE_ENCODING', () => {
   describe('exporting modules', () => {
     it('returns it correctly', () => {
-      expect(typeof FILE_ENCODING === 'string').toBeTruthy()
+      expect(FILE_ENCODING).toStrictEqual('utf-8')
     })
   })
 })

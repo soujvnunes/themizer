@@ -1,9 +1,9 @@
 import PATH_UNIFIER from './PATH_UNIFIER'
 
-describe('pathUnifier', () => {
+describe('PATH_UNIFIER', () => {
   describe('exporting modules', () => {
     it('returns it correctly', () => {
-      expect(typeof PATH_UNIFIER === 'string').toBeTruthy()
+      expect(PATH_UNIFIER).toStrictEqual('-')
     })
   })
 })

@@ -1,3 +1,3 @@
-import themeFileName from './THEME_FILE_NAME'
+import themeFileName from './THEMIZER_FILE_NAME'
 
 export default `${themeFileName}.text`

@@ -1,9 +1,9 @@
-import THEME_FILE_NAME from './THEME_FILE_NAME'
+import THEMIZER_FILE_NAME from './THEMIZER_FILE_NAME'
 
 describe('themeFileName', () => {
   describe('exporting modules', () => {
     it('returns it correctly', () => {
-      expect(typeof THEME_FILE_NAME === 'string').toBeTruthy()
+      expect(typeof THEMIZER_FILE_NAME === 'string').toBeTruthy()
     })
   })
 })

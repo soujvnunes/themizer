@@ -1,4 +1,4 @@
-import ATOM_REGEX from '../consts/atomRegex'
+import ATOM_REGEX from '../consts/ATOM_REGEX'
 
 export default function resolveAtom(atom: string) {
   let match: RegExpMatchArray | null

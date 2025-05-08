@@ -1,4 +1,4 @@
-import PATH_UNIFIER from '../consts/pathUnifier'
+import PATH_UNIFIER from '../consts/PATH_UNIFIER'
 
 import isAtom, { type Atom } from './isAtom'
 import getVar from './getVar'

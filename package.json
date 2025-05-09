@@ -49,7 +49,6 @@
     "lint": "eslint 'src/**/*.{ts,tsx}' --fix",
     "format": "prettier --write 'src/**/*.{ts,tsx,json,md}'",
     "test": "jest",
-    "dev:link": "rm -rf dist *.tgz && pnpm build && pnpm pack && cp $(ls -t *.tgz | head -1) ../soujvnunes.github.io",
     "changeset:patch": "pnpm changeset && pnpm version patch",
     "changeset:minor": "pnpm changeset && pnpm version minor",
     "changeset:major": "pnpm changeset && pnpm version major"

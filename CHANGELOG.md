@@ -1,5 +1,11 @@
 # @soujvnunes/themizer
 
+## 1.3.0
+
+### Minor Changes
+
+- ff29eb1: prefer writting atoms file on build
+
 ## 1.1.0
 
 ### Minor Changes

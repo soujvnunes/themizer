@@ -1,19 +1,31 @@
 # themizer
 
-Provide a design-like scheme (with design tokens and aliases) to have its values generated as CSS custom properties and a JavaScript object to be used in your app as a reference.
+Provide a theme-like scheme (with design tokens and aliases) to generate CSS custom properties and a JavaScript object to be used as its reference.
 
 ## Installation
 
+1. Install **themizer** via `pnpm` or another preferred package manager.
+
 ```bash
 pnpm add themizer@latest
-``` 
+```
+
+2. Add the script into the `package.json` file to whenever the scheme is ready to start the build process.
+
+```diff
+  "scripts": {
++   "themizer:atoms": "themizer --out-dir=./src/app"
+  },
+```
 
 ## API
+
+Import **themizer** to generate the atoms, and **unwrapAtom** along with **resolveAtom** as helpers to get the custom property or default value of an atom.
 
 ```ts
 import themizer, { unwrapAtom, resolveAtom } from "themizer";
 
-const { aliases, medias, tokens } = themizer({ prefix, medias, tokens, outDir? }, aliases);
+const { aliases, medias, tokens } = themizer({ prefix, medias, tokens }, aliases);
 
 const unwrapedAtom = unwrapAtom(aliases[key] /* or tokens[key] */);
 
@@ -24,49 +36,55 @@ const resolvedAtom = resolveAtom(aliases[key] /* or tokens[key] */)
 
 #### Parameters
 
-|Property|Type|Default|Description|
-|-|-|-|-|
-|options.tokens|`Object`|_Required_|Object to componse `themizer.css` file and `aliases` as its function parameter, and `theme.tokens` as a JavaScript reference|
-|options.medias|`Object`|_Required_|Object with values as media queries and key as its own aliases to replace the responsive properties in the `aliases` object values. It's also accessed throught `theme.medias` as it is as a JavaScript reference with the addition of `@media *` in its values| 
-|options.prefix?|string|_Required_|Text to prefix all the generated CSS custom properties. It's required to avoid colision with other libraries custom properties|
-|options.prefix?|`"root" \| string`|`src`|Output directory for the generated `themizer.css` file. No need to be defined, as it defaults to the `src` folder of the consumer project|
-|aliases|`(tokens) => Object`|_Required_|Function to generate `theme.rules` having `options.tokens` passed as parameter, and `theme.aliases` as a JavaScript reference|
+| Property | Description |
+| - | - |
+| tokens | `Object` that writes CSS responsive custom properties to `atoms.css` file, serves `aliases` as its function parameter, and `theme.tokens` as a JavaScript reference |
+| options.medias | `Object` with values as media queries and key as its own aliases to replace the responsive properties in the `aliases` object values. It's also accessed throught `theme.medias` as it is as a JavaScript reference with the addition of `@media *` in its values |
+| options.prefix? | `String` to prefix all the generated CSS custom properties. It's required to avoid colision with other libraries custom properties |
+| aliases | `Function` to generate `theme.rules` having `options.tokens` passed as parameter, and `theme.aliases` as a JavaScript reference |
 
 #### Return
 
-|Property|Type|Description|
-|-|-|-|
-|theme.aliases|Object|Object containing the same keys as `aliases` parameter, but returning its CSS custom properties wrapped within `var(*)`. Use the utility `unwrapAtom` to unwrap it|
-|theme.tokens|Object|Object containing the same keys as `options.tokens` parameter, but returning its CSS custom properties wrapped within `var(*)`. Use the utility `unwrapAtom` to unwrap it|
-|theme.medias|Object|Object containing the `options.medias` to be also used as reference in JavaScript|
+| Property      | Type   | Description                                                                                                                                                               |
+| ------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| theme.aliases | Object | Object containing the same keys as `aliases` parameter, but returning its CSS custom properties wrapped within `var(*)`. Use the utility `unwrapAtom` to unwrap it        |
+| theme.tokens  | Object | Object containing the same keys as `options.tokens` parameter, but returning its CSS custom properties wrapped within `var(*)`. Use the utility `unwrapAtom` to unwrap it |
+| theme.medias  | Object | Object containing the `options.medias` to be also used as reference in JavaScript                                                                                         |
 
 ### unwrapAtom
 
 #### Parameters
 
-|Type|Description|
-|-|-|
-|string|Function to get generated custom properties. I.e. `unwrapAtom('var(--property)')` returns `--property`. Useful to change scoped custom properties|
+| Type   | Description                                                                                                                                       |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| string | Function to get generated custom properties. I.e. `unwrapAtom('var(--property)')` returns `--property`. Useful to change scoped custom properties |
 
 #### Return
 
-|Type|Description|
-|-|-|
-|string|String containing the unwrapped custom property|
+| Type   | Description                                     |
+| ------ | ----------------------------------------------- |
+| string | String containing the unwrapped custom property |
 
 ### resolveAtom
 
 #### Parameters
 
-|Type|Description|
-|-|-|
-|string|Function to get the default value of a custom propertie. I.e. `resolveAtom('var(--property, value)')` returns `value`. Useful for reusability and keeping its source of truth|
+| Type   | Description                                                                                                                                                                   |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| string | Function to get the default value of a custom propertie. I.e. `resolveAtom('var(--property, value)')` returns `value`. Useful for reusability and keeping its source of truth |
 
 #### Return
 
-|Type|Description|
-|-|-|
-|string|String containing the default value of a custom property|
+| Type   | Description                                              |
+| ------ | -------------------------------------------------------- |
+| string | String containing the default value of a custom property |
+
+When the configuration is done, execute `pnpm run themizer` to inject the generated responsive custom properties into the choosen output directory.
+
+| Parameter | Description                                                            |
+| --------- | ---------------------------------------------------------------------- |
+| --watch   | Executes the command everytime the file `themizer.config.ts` is saved  |
+| --out-dir | Injects the generated responsive custom properties into the given file |
 
 ## Usage
 
@@ -81,8 +99,6 @@ const theme = themizer(
   {
     // "jv" in this example stands to João Victor, my name
     prefix: 'jv',
-    // Changing "src" to "src/app"
-    outDir: 'src/app', 
     medias: {
       desktop: '(min-width: 1024px)',
       // Nothing surprising, queries can be combined
@@ -136,10 +152,10 @@ export default theme
 
 > Note that `prefix` was specified as "jv". Otherwise, the generated custom properties would start with `--tokens-*` for tokens and `--aliases-*` for aliases.
 
-The generated custom properties would be written in your product's app `src/app/themizer.css`, and look like this:
+The generated custom properties would be written in your product's app `src/app/atoms.css` path, and look like this:
 
 ```css
-/* src/app/themizer.css */
+/* src/app/atoms.css */
 
 :root {
   --jv-tokens-alphas-primary: 0.8;
@@ -190,7 +206,7 @@ The generated custom properties would be written in your product's app `src/app/
 + import theme from '@/lib/theme'
 
   import './global.css'
-+ import './themizer.css'
++ import './atoms.css'
 
   export const viewport: Viewport = {
     themeColor: [
@@ -250,7 +266,7 @@ Customize Tailwind CSS' default theme with the generated by `themizer`.
 
 ### Composing components
 
-#### React and Tailwind CSS 
+#### React and Tailwind CSS
 
 Implement React components using the generated theme.
 
@@ -262,7 +278,8 @@ import { unwrapAtom } from 'themizer'
 export default function Heading({ className = '', ...props }: React.ComponentProps<'h1'>) {
   return (
     <h1
-      className={`text-heading ${className}`} {...props}
+      className={`text-heading ${className}`}
+      {...props}
       styles={{
         /* If this component has to have it's font-size locked for some reason */
         [unwrapAtom(theme.aliases.typography.heading)]: theme.tokens.units[24],
@@ -281,11 +298,13 @@ export default function Heading({ className = '', ...props }: React.ComponentPro
 ```tsx
 // src/components/Title.tsx
 
-import theme from '@/lib/theme';
+import theme from '@/lib/theme'
 
 export default function Title({ children, className = '', ...props }: React.ComponentProps<'h1'>) {
   return (
-    <h1 className={`heading ${className}`} {...props}>
+    <h1
+      className={`heading ${className}`}
+      {...props}>
       {children}
       <style jsx>{`
         .heading {
@@ -293,7 +312,7 @@ export default function Title({ children, className = '', ...props }: React.Comp
         }
       `}</style>
     </h1>
-  );
+  )
 }
 ```
 

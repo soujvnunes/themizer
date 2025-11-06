@@ -1,4 +1,10 @@
 import { defineConfig } from 'tsup'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
+// Read version from package.json
+const packageJson = JSON.parse(readFileSync(join(__dirname, 'package.json'), 'utf-8'))
+const version = packageJson.version || '0.0.0'
 
 export default defineConfig([
   {
@@ -16,6 +22,9 @@ export default defineConfig([
     entry: ['./src/cli/bin.ts'],
     banner: {
       js: '#!/usr/bin/env node',
+    },
+    define: {
+      __VERSION__: `"${version}"`,
     },
   },
 ])

@@ -165,8 +165,8 @@ const tokens = {
     primary: 1,
     secondary: 0.8,
     tertiary: 0.6,
-    quartary: 0.4,
-    quintary: 0.2,
+    quaternary: 0.4,
+    quinary: 0.2,
   },
   units: {
     0: '0',

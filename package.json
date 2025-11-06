@@ -61,7 +61,6 @@
     "@types/prompts": "^2.4.9",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
-    "commander": "^13.1.0",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^8.10.2",
     "eslint-plugin-prettier": "^4.2.5",
@@ -84,6 +83,7 @@
   },
   "dependencies": {
     "chokidar": "^4.0.3",
+    "commander": "^13.1.0",
     "prompts": "^2.4.2"
   }
 }

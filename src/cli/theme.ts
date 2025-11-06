@@ -1,5 +1,6 @@
 import { Command } from 'commander'
 import { watch } from 'chokidar'
+import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import writeThemeFile from '../helpers/writeThemeFile'
 import { validateFilePath } from '../lib/validators'
@@ -18,6 +19,14 @@ export async function themeAction(options: { outDir?: string; watch?: boolean })
     if (options.watch) {
       const configPath = join(process.cwd(), 'themizer.config.ts')
       const outDir = options.outDir // Capture for use in callbacks
+
+      // Check if config file exists before starting watcher
+      if (!existsSync(configPath)) {
+        console.error('themizer: themizer.config.ts not found in current directory')
+        console.error('themizer: Run "themizer init" to create a configuration file first')
+        process.exit(1)
+      }
+
       console.log('themizer: Watching for changes to themizer.config.ts...')
       console.log('themizer: Press Ctrl+C to stop watching')
 

@@ -101,22 +101,28 @@ export function isValidMediaQuery(query: string): boolean {
 
   const trimmed = query.trim()
 
-  // Must contain at least one feature query in parentheses or be a media type
-  // Valid: (min-width: 768px), screen and (max-width: 1024px), print
+  // Must contain at least one feature query in parentheses or be a standalone media type
+  // Valid: (min-width: 768px), screen and (max-width: 1024px), print, screen
   const hasFeatureQuery = MEDIA_QUERY_FEATURE_PATTERN.test(trimmed)
-  const isMediaType = /^(all|screen|print|speech)(\s+(and|or|not)\s+)?/i.test(trimmed)
+  // Match standalone media types exactly (complete string)
+  const isStandaloneMediaType = /^(all|screen|print|speech)$/i.test(trimmed)
 
-  if (!hasFeatureQuery && !isMediaType) {
+  if (!hasFeatureQuery && !isStandaloneMediaType) {
     return false
   }
 
-  // Check for valid structure using the extracted pattern
+  // If it's a standalone media type, it's already validated
+  if (isStandaloneMediaType) {
+    return true
+  }
+
+  // Check for valid structure with feature queries using the extracted pattern
   const validPattern = new RegExp(
     `^(all|screen|print|speech)?(\\s+(and|or|not)\\s+)?${MEDIA_QUERY_FEATURE_PATTERN.source}(\\s+(and|or|not)\\s+${MEDIA_QUERY_FEATURE_PATTERN.source})*$`,
     'i',
   )
 
-  return validPattern.test(trimmed) || isMediaType
+  return validPattern.test(trimmed)
 }
 
 /**

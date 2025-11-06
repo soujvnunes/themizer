@@ -21,6 +21,7 @@ describe('writeThemeFile', () => {
   })
 
   afterEach(() => {
+    ThemeTempFile.resetForTesting()
     jest.restoreAllMocks()
   })
 

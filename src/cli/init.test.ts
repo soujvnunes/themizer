@@ -97,7 +97,9 @@ describe('init', () => {
         expect.stringContaining('"themizer:theme": "themizer theme --out-dir ./src/app"'),
         'utf-8',
       )
-      expect(console.log).toHaveBeenCalledWith('themizer: ✓ Added "themizer:theme" script to package.json')
+      expect(console.log).toHaveBeenCalledWith(
+        'themizer: ✓ Added "themizer:theme" script to package.json',
+      )
     })
 
     it('uses custom path when user provides it', async () => {
@@ -168,7 +170,7 @@ describe('init', () => {
     })
 
     it('handles missing package.json gracefully', async () => {
-      mockExistsSync.mockImplementation((path) => {
+      mockExistsSync.mockImplementation((_path) => {
         // Neither config nor package.json exist
         return false
       })

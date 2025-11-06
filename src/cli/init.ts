@@ -2,11 +2,8 @@ import { Command } from 'commander'
 import { writeFileSync, readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import prompts from 'prompts'
-import {
-  getFrameworkInfo,
-  getFrameworkDisplayName,
-  type Framework,
-} from '../helpers/detectFramework'
+import { getFrameworkInfo, getFrameworkDisplayName } from '../helpers/detectFramework'
+import { validateFilePath } from '../lib/validators'
 
 const CONFIG_TEMPLATE = `import themizer from 'themizer'
 
@@ -141,7 +138,17 @@ export async function initAction(options: { watch?: boolean; outDir?: string }) 
           name: 'customPath',
           message: 'Enter your custom output directory:',
           initial: frameworkInfo.suggestedPath,
-          validate: (value) => (value.trim() ? true : 'Output directory is required'),
+          validate: (value) => {
+            if (!value.trim()) {
+              return 'Output directory is required'
+            }
+            try {
+              validateFilePath(value)
+              return true
+            } catch (error) {
+              return (error as Error).message
+            }
+          },
         },
       ])
 
@@ -164,7 +171,17 @@ export async function initAction(options: { watch?: boolean; outDir?: string }) 
     // Update package.json if it exists
     if (existsSync(packageJsonPath)) {
       console.log('themizer: Updating package.json...')
-      const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
+      let packageJson
+      try {
+        packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
+
+        // Validate structure
+        if (typeof packageJson !== 'object' || packageJson === null) {
+          throw new Error('package.json must be a valid JSON object')
+        }
+      } catch (parseError) {
+        throw new Error(`Invalid package.json: ${(parseError as Error).message}`)
+      }
 
       // Initialize scripts object if it doesn't exist
       if (!packageJson.scripts) {

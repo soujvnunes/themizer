@@ -41,8 +41,7 @@ export function detectFramework(): Framework {
     if (allDeps.next) {
       // Try to detect if it's App Router or Pages Router
       // App Router is the default in Next.js 13+
-      const nextVersionStr = typeof allDeps.next === 'string' ? allDeps.next : String(allDeps.next)
-      const nextVersion = nextVersionStr.replace(/[^0-9.]/g, '')
+      const nextVersion = String(allDeps.next).replace(/[^0-9.]/g, '')
       const majorVersion = parseInt(nextVersion.split('.')[0], 10)
 
       if (!isNaN(majorVersion) && majorVersion >= 13) {

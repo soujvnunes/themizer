@@ -81,6 +81,13 @@ export function sanitizeCSSValue(value: string | number): string {
 }
 
 /**
+ * Media query feature pattern: (property: value)
+ * Allows alphanumeric, hyphens, units (%, px, em, rem, etc.), decimals
+ * Whitespace is only allowed as single spaces between words/values
+ */
+const MEDIA_QUERY_FEATURE_PATTERN = /\([\w-]+:\s*[\w%./-]+(?:\s+[\w%./-]+)*\)/
+
+/**
  * Validates media query syntax
  * @param query - The media query string (without @media prefix)
  * @returns true if valid, false otherwise
@@ -94,16 +101,18 @@ export function isValidMediaQuery(query: string): boolean {
 
   // Must contain at least one feature query in parentheses or be a media type
   // Valid: (min-width: 768px), screen and (max-width: 1024px), print
-  const hasFeatureQuery = /\([\w-]+:\s*[\w\s%.-]+\)/.test(trimmed)
+  const hasFeatureQuery = MEDIA_QUERY_FEATURE_PATTERN.test(trimmed)
   const isMediaType = /^(all|screen|print|speech)(\s+(and|or|not)\s+)?/i.test(trimmed)
 
   if (!hasFeatureQuery && !isMediaType) {
     return false
   }
 
-  // Check for valid structure
-  const validPattern =
-    /^(all|screen|print|speech)?(\s+(and|or|not)\s+)?\([\w-]+:\s*[\w\s%.-]+\)(\s+(and|or|not)\s+\([\w-]+:\s*[\w\s%.-]+\))*$/i
+  // Check for valid structure using the extracted pattern
+  const validPattern = new RegExp(
+    `^(all|screen|print|speech)?(\\s+(and|or|not)\\s+)?${MEDIA_QUERY_FEATURE_PATTERN.source}(\\s+(and|or|not)\\s+${MEDIA_QUERY_FEATURE_PATTERN.source})*$`,
+    'i',
+  )
 
   return validPattern.test(trimmed) || isMediaType
 }

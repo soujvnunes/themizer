@@ -3,14 +3,17 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 // Read version from package.json with error handling
-let version = '0.0.0'
-try {
-  const packageJson = JSON.parse(readFileSync(join(__dirname, 'package.json'), 'utf-8'))
-  version = packageJson.version || '0.0.0'
-} catch (error) {
-  const errorMessage = error instanceof Error ? error.message : String(error)
-  throw new Error(`Failed to read version from package.json: ${errorMessage}`)
+function getVersion(): string {
+  try {
+    const packageJson = JSON.parse(readFileSync(join(__dirname, 'package.json'), 'utf-8'))
+    return packageJson.version || '0.0.0'
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    throw new Error(`Failed to read version from package.json: ${errorMessage}`)
+  }
 }
+
+const version = getVersion()
 
 export default defineConfig([
   {

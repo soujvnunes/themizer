@@ -1,5 +1,8 @@
 import ATOM_REGEX from '../consts/ATOM_REGEX'
 
+// Extract regex source once at module level to avoid repeated property access
+const ATOM_REGEX_SOURCE = ATOM_REGEX.source
+
 /**
  * Resolves a CSS custom property var() expression to its default value.
  * Recursively unwraps nested var() expressions until a primitive value is found.
@@ -17,8 +20,8 @@ import ATOM_REGEX from '../consts/ATOM_REGEX'
  */
 export default function resolveAtom(atom: string) {
   // Create a fresh regex instance to avoid global state issues with recursive calls
-  // This is more reliable than managing lastIndex with a global regex
-  const regex = new RegExp(ATOM_REGEX.source, 'g')
+  // Using cached source string is more efficient than accessing ATOM_REGEX.source repeatedly
+  const regex = new RegExp(ATOM_REGEX_SOURCE, 'g')
   let match: RegExpMatchArray | null
   let extractedValue = ''
 

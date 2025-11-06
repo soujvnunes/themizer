@@ -26,7 +26,11 @@ Add watch mode for automatic theme.css regeneration, improve security with input
 
 **Improvements:**
 - Extract magic number to `MAX_CSS_IDENTIFIER_LENGTH` constant for better maintainability
-- Optimize regex usage in `resolveAtom` by creating fresh regex instances to avoid global state issues
+- Optimize regex usage in `resolveAtom` by caching regex source string at module level
+- Extract media query feature pattern to `MEDIA_QUERY_FEATURE_PATTERN` constant and improve whitespace validation
+- Extract temp file extension to `TEMP_FILE_EXTENSION` constant for better maintainability
+- Refactor version reading in `tsup.config.ts` to use dedicated function instead of try-catch with unused fallback
+- Simplify Next.js version string conversion in framework detection
 - Enhance CLI error formatting with user-friendly messages and debug mode support
 - Update ESLint rules to allow console.log in CLI files
 - Update all dependencies to latest versions

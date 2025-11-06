@@ -3,17 +3,17 @@
  */
 
 /**
+ * Maximum length for CSS identifiers
+ * Based on browser CSS custom property name limits
+ */
+const MAX_CSS_IDENTIFIER_LENGTH = 255
+
+/**
  * CSS identifier regex for custom property names
  * Allows letters, digits, hyphens, and underscores
  * Can start with any of these characters (including digits for numeric keys like "16")
  */
 const CSS_IDENTIFIER_REGEX = /^[\w-]+$/
-
-/**
- * Media query feature regex: validates common media features
- */
-const MEDIA_QUERY_FEATURE_REGEX =
-  /^(min-|max-)?(width|height|aspect-ratio|resolution|orientation|color|monochrome|scan|grid)$/
 
 /**
  * Validates if a string is a valid CSS identifier (for custom property names)
@@ -30,7 +30,7 @@ export function isValidCSSIdentifier(identifier: string | number): boolean {
   }
 
   // Check length constraints
-  if (id.length === 0 || id.length > 255) {
+  if (id.length === 0 || id.length > MAX_CSS_IDENTIFIER_LENGTH) {
     return false
   }
 

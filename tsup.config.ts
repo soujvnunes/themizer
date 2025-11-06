@@ -7,8 +7,8 @@ function getVersion(): string {
   try {
     const packageJson = JSON.parse(readFileSync(join(__dirname, 'package.json'), 'utf-8'))
 
-    // Validate structure
-    if (typeof packageJson !== 'object' || packageJson === null) {
+    // Validate structure (must be object, not array or null)
+    if (typeof packageJson !== 'object' || packageJson === null || Array.isArray(packageJson)) {
       throw new Error('Invalid package.json structure')
     }
 

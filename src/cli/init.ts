@@ -185,8 +185,8 @@ export async function initAction(options: { watch?: boolean; outDir?: string }) 
       try {
         packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
 
-        // Validate structure
-        if (typeof packageJson !== 'object' || packageJson === null) {
+        // Validate structure (must be object, not array or null)
+        if (typeof packageJson !== 'object' || packageJson === null || Array.isArray(packageJson)) {
           throw new Error('package.json must be a valid JSON object')
         }
       } catch (parseError) {
@@ -203,8 +203,13 @@ export async function initAction(options: { watch?: boolean; outDir?: string }) 
 
       // Add themizer script if it doesn't exist
       const scriptName = options.watch ? 'themizer:theme:watch' : 'themizer:theme'
-      // Escape double quotes in outDir to prevent breaking the command string
-      const escapedOutDir = outDir.replace(/"/g, '\\"')
+      // Escape shell-sensitive characters in outDir to prevent command injection
+      // Escape: backslash, double-quote, dollar sign, backtick
+      const escapedOutDir = outDir
+        .replace(/\\/g, '\\\\')
+        .replace(/"/g, '\\"')
+        .replace(/\$/g, '\\$')
+        .replace(/`/g, '\\`')
       const scriptCommand = options.watch
         ? `themizer theme --out-dir "${escapedOutDir}" --watch`
         : `themizer theme --out-dir "${escapedOutDir}"`

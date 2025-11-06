@@ -22,8 +22,8 @@ export function detectFramework(): Framework {
   try {
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
 
-    // Validate structure
-    if (typeof packageJson !== 'object' || packageJson === null) {
+    // Validate structure (must be object, not array or null)
+    if (typeof packageJson !== 'object' || packageJson === null || Array.isArray(packageJson)) {
       return 'other'
     }
 
@@ -36,9 +36,12 @@ export function detectFramework(): Framework {
     if (allDeps.next) {
       // Try to detect if it's App Router or Pages Router
       // App Router is the default in Next.js 13+
-      const nextVersion = String(allDeps.next).replace(/[^0-9.]/g, '')
+      // Handle case where allDeps.next might be an object (e.g., resolved dependency)
+      const nextVersionRaw = typeof allDeps.next === 'string' ? allDeps.next : String(allDeps.next)
+      const nextVersion = nextVersionRaw.replace(/[^0-9.]/g, '')
       const versionParts = nextVersion.split('.')
-      const majorVersion = versionParts.length > 0 ? parseInt(versionParts[0], 10) : NaN
+      const majorVersion =
+        versionParts.length > 0 && versionParts[0] ? parseInt(versionParts[0], 10) : NaN
 
       if (!isNaN(majorVersion) && majorVersion >= 13) {
         // Check if app directory exists

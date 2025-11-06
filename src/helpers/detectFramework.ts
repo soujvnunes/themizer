@@ -42,7 +42,8 @@ export function detectFramework(): Framework {
       // Try to detect if it's App Router or Pages Router
       // App Router is the default in Next.js 13+
       const nextVersion = String(allDeps.next).replace(/[^0-9.]/g, '')
-      const majorVersion = parseInt(nextVersion.split('.')[0], 10)
+      const versionParts = nextVersion.split('.')
+      const majorVersion = versionParts.length > 0 ? parseInt(versionParts[0], 10) : NaN
 
       if (!isNaN(majorVersion) && majorVersion >= 13) {
         // Check if app directory exists

@@ -1,13 +1,7 @@
 import { readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 
-export type Framework =
-  | 'next-app'
-  | 'next-pages'
-  | 'remix'
-  | 'vite'
-  | 'create-react-app'
-  | 'other'
+export type Framework = 'next-app' | 'next-pages' | 'remix' | 'vite' | 'create-react-app' | 'other'
 
 export interface FrameworkDetectionResult {
   framework: Framework
@@ -26,22 +20,35 @@ export function detectFramework(): Framework {
   }
 
   try {
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
+    let packageJson
+    try {
+      packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
+
+      // Validate structure
+      if (typeof packageJson !== 'object' || packageJson === null) {
+        return 'other'
+      }
+    } catch (parseError) {
+      return 'other'
+    }
+
     const allDeps = {
-      ...packageJson.dependencies,
-      ...packageJson.devDependencies,
+      ...(packageJson.dependencies || {}),
+      ...(packageJson.devDependencies || {}),
     }
 
     // Check for Next.js
     if (allDeps.next) {
       // Try to detect if it's App Router or Pages Router
       // App Router is the default in Next.js 13+
-      const nextVersion = allDeps.next.replace(/[^0-9.]/g, '')
+      const nextVersionStr = typeof allDeps.next === 'string' ? allDeps.next : String(allDeps.next)
+      const nextVersion = nextVersionStr.replace(/[^0-9.]/g, '')
       const majorVersion = parseInt(nextVersion.split('.')[0], 10)
 
-      if (majorVersion >= 13) {
+      if (!isNaN(majorVersion) && majorVersion >= 13) {
         // Check if app directory exists
-        const hasAppDir = existsSync(join(process.cwd(), 'app')) || existsSync(join(process.cwd(), 'src/app'))
+        const hasAppDir =
+          existsSync(join(process.cwd(), 'app')) || existsSync(join(process.cwd(), 'src/app'))
         return hasAppDir ? 'next-app' : 'next-pages'
       }
 

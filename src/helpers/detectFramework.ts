@@ -1,5 +1,6 @@
 import { readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
+import { isPlainObject } from '../lib/validators'
 
 export type Framework = 'next-app' | 'next-pages' | 'remix' | 'vite' | 'create-react-app' | 'other'
 
@@ -22,14 +23,18 @@ export function detectFramework(): Framework {
   try {
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
 
-    // Validate structure (must be object, not array or null)
-    if (typeof packageJson !== 'object' || packageJson === null || Array.isArray(packageJson)) {
+    // Validate structure (must be plain object, not array or null)
+    if (!isPlainObject(packageJson)) {
       return 'other'
     }
 
+    // Extract dependencies with proper type checking
+    const dependencies = isPlainObject(packageJson.dependencies) ? packageJson.dependencies : {}
+    const devDependencies = isPlainObject(packageJson.devDependencies) ? packageJson.devDependencies : {}
+
     const allDeps = {
-      ...(packageJson.dependencies || {}),
-      ...(packageJson.devDependencies || {}),
+      ...dependencies,
+      ...devDependencies,
     }
 
     // Check for Next.js

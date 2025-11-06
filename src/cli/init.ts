@@ -3,7 +3,8 @@ import { writeFileSync, readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import prompts from 'prompts'
 import { getFrameworkInfo, getFrameworkDisplayName } from '../helpers/detectFramework'
-import { validateFilePath } from '../lib/validators'
+import { validateFilePath, validatePlainObject } from '../lib/validators'
+import { escapeSingleQuotes } from '../lib/shellEscape'
 
 const CONFIG_TEMPLATE = `import themizer from 'themizer'
 
@@ -184,34 +185,34 @@ export async function initAction(options: { watch?: boolean; outDir?: string }) 
       let packageJson
       try {
         packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
-
-        // Validate structure (must be object, not array or null)
-        if (typeof packageJson !== 'object' || packageJson === null || Array.isArray(packageJson)) {
-          throw new Error('package.json must be a valid JSON object')
-        }
+        validatePlainObject(packageJson)
       } catch (parseError) {
-        if (parseError instanceof Error && parseError.message.includes('must be a valid')) {
-          throw parseError
+        if (parseError instanceof Error && parseError.message.includes('must be a plain object')) {
+          throw new Error('package.json must be a valid JSON object')
         }
         throw new Error(`Invalid package.json: ${(parseError as Error).message}`)
       }
 
-      // Initialize scripts object if it doesn't exist
-      if (!packageJson.scripts) {
+      // Initialize scripts object if it doesn't exist or is not an object
+      if (
+        !packageJson.scripts ||
+        typeof packageJson.scripts !== 'object' ||
+        Array.isArray(packageJson.scripts)
+      ) {
         packageJson.scripts = {}
       }
 
+      const scripts = packageJson.scripts as Record<string, unknown>
+
       // Add themizer script if it doesn't exist
       const scriptName = options.watch ? 'themizer:theme:watch' : 'themizer:theme'
-      // Use single quotes for robust shell escaping (preserves everything except single quotes)
-      // To escape single quotes: end quote, add escaped single quote, restart quote
-      const escapedOutDir = `'${outDir.replace(/'/g, `'\\''`)}'`
+      const escapedOutDir = escapeSingleQuotes(outDir)
       const scriptCommand = options.watch
         ? `themizer theme --out-dir ${escapedOutDir} --watch`
         : `themizer theme --out-dir ${escapedOutDir}`
 
-      if (!packageJson.scripts[scriptName]) {
-        packageJson.scripts[scriptName] = scriptCommand
+      if (!scripts[scriptName]) {
+        scripts[scriptName] = scriptCommand
         writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n', 'utf-8')
         console.log(`themizer: ✓ Added "${scriptName}" script to package.json`)
       } else {

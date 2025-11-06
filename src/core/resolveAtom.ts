@@ -19,8 +19,11 @@ const ATOM_REGEX_SOURCE = ATOM_REGEX.source
  * ```
  */
 export default function resolveAtom(atom: string) {
-  // Create a fresh regex instance to avoid global state issues with recursive calls
-  // Using cached source string is more efficient than accessing ATOM_REGEX.source repeatedly
+  // Create a fresh regex instance to avoid global state issues with recursive calls.
+  // We cache the regex source at module level, but still create a new RegExp object
+  // on each call to ensure the 'g' flag's lastIndex is reset for each invocation.
+  // This is necessary because recursive calls would otherwise interfere with each other's
+  // regex state if we shared a single global RegExp instance.
   const regex = new RegExp(ATOM_REGEX_SOURCE, 'g')
   let match: RegExpMatchArray | null
   let extractedValue = ''

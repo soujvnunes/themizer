@@ -1,5 +1,5 @@
 /**
- * Validation utilities for CSS identifiers, values, and media queries
+ * Validation utilities for CSS identifiers, values, media queries, and data structures
  */
 
 /**
@@ -56,6 +56,45 @@ export function validatePrefix(prefix: string): void {
 }
 
 /**
+ * Validates that a value is a plain object (not null, array, or primitive).
+ * This is a type guard function that can be used in conditionals.
+ *
+ * @param value - The value to validate
+ * @returns true if value is a plain object, false otherwise
+ *
+ * @example
+ * ```ts
+ * if (isPlainObject(data)) {
+ *   // TypeScript knows data is Record<string, unknown>
+ *   const keys = Object.keys(data)
+ * }
+ * ```
+ */
+export function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+/**
+ * Validates that a value is a plain object and throws if it's not.
+ * This is an assertion function that narrows the type.
+ *
+ * @param value - The value to validate
+ * @throws Error if value is not a plain object
+ *
+ * @example
+ * ```ts
+ * const data = JSON.parse(jsonString)
+ * validatePlainObject(data) // Throws if not a plain object
+ * // TypeScript now knows data is Record<string, unknown>
+ * ```
+ */
+export function validatePlainObject(value: unknown): asserts value is Record<string, unknown> {
+  if (!isPlainObject(value)) {
+    throw new Error('Value must be a plain object (not null, array, or primitive)')
+  }
+}
+
+/**
  * Sanitizes CSS values to prevent injection attacks
  * @param value - The CSS value to sanitize
  * @returns Sanitized value
@@ -81,13 +120,30 @@ export function sanitizeCSSValue(value: string | number): string {
 }
 
 /**
- * Media query feature pattern: (property: value)
- * Allows alphanumeric, hyphens, units (%, px, em, rem, etc.), decimals
- * Pattern: \s* allows optional whitespace after colon, \s+ requires at least
- * one space between multiple values (e.g., "1rem 2rem"), preventing malformed
- * CSS like "min-width:7 6 8px" while allowing valid multi-value properties
+ * Media query feature pattern with strict value validation.
+ *
+ * Pattern breakdown:
+ * - [\w-]+: Property name (min-width, max-width, width, etc.)
+ * - :\s*: Colon followed by optional whitespace
+ * - (\d+(?:\.\d+)?[a-z%]*): First value - number with optional decimal, optional units
+ *   - \d+: One or more digits (required)
+ *   - (?:\.\d+)?: Optional decimal point with digits (allows only ONE decimal)
+ *   - [a-z%]*: Optional units (px, em, rem, %, etc.) - case insensitive with 'i' flag
+ * - (?:\s+\d+(?:\.\d+)?[a-z%]*)*: Additional space-separated values (for multi-value properties)
+ *
+ * Valid examples:
+ * - (min-width: 768px)
+ * - (width: 50%)
+ * - (height: 10.5em)
+ * - (aspect-ratio: 16 9) - multi-value
+ *
+ * Invalid (prevented):
+ * - (min-width: 7.5.3px) - multiple decimals
+ * - (width: 7..5px) - consecutive decimals
+ * - (height: %%) - no digits
+ * - (width: /) - orphan slash
  */
-const MEDIA_QUERY_FEATURE_PATTERN = /\([\w-]+:\s*[\w%./-]+(?:\s+[\w%./-]+)*\)/
+const MEDIA_QUERY_FEATURE_PATTERN = /\([\w-]+:\s*(\d+(?:\.\d+)?[a-z%]*)(?:\s+\d+(?:\.\d+)?[a-z%]*)*\)/i
 
 /**
  * Validates media query syntax

@@ -1,16 +1,15 @@
 import { defineConfig } from 'tsup'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { validatePlainObject } from './src/lib/validators'
 
 // Read version from package.json with error handling
 function getVersion(): string {
   try {
     const packageJson = JSON.parse(readFileSync(join(__dirname, 'package.json'), 'utf-8'))
 
-    // Validate structure (must be object, not array or null)
-    if (typeof packageJson !== 'object' || packageJson === null || Array.isArray(packageJson)) {
-      throw new Error('Invalid package.json structure')
-    }
+    // Validate structure (must be plain object, not array or null)
+    validatePlainObject(packageJson)
 
     return packageJson.version || '0.0.0'
   } catch (error) {

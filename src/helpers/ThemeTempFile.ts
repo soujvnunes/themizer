@@ -25,6 +25,12 @@ export default class ThemeTempFile {
     fs.writeFileSync(this.file, css, FILE_ENCODING)
 
     // Register cleanup handlers on first write
+    // Note: While setting cleanupRegistered after writeFileSync creates a theoretical race
+    // window, this is not a practical concern in Node.js because:
+    // 1. writeFileSync is blocking (synchronous)
+    // 2. Flag update and handler registration happen in the same event loop tick
+    // 3. Process exit events cannot fire until control returns to the event loop
+    // 4. If the process crashes before handlers are registered, the OS will clean up temp files
     if (!this.cleanupRegistered) {
       this.cleanupRegistered = true
       this.registerCleanupHandlers()

@@ -331,14 +331,12 @@ Learn more about [Tailwind CSS v4](https://tailwindcss.com/docs/upgrade-guide).
 
 ### Tailwind CSS v3
 
-Integrate themizer with Tailwind CSS v3 using the plugin API:
+Integrate themizer with Tailwind CSS v3 by extending the theme configuration:
 
 ```ts
 // tailwind.config.ts
 
-import plugin from 'tailwindcss/plugin'
 import { type Config } from 'tailwindcss'
-import { type CSSRuleObject } from 'tailwindcss/types/config'
 import theme from './themizer.config'
 
 export default {
@@ -361,11 +359,6 @@ export default {
       },
     },
   },
-  plugins: [
-    plugin((api) => {
-      api.addBase(theme.rules.jss as unknown as CSSRuleObject);
-    }),
-  ],
 } satisfies Config
 ```
 

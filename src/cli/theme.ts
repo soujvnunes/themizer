@@ -17,6 +17,7 @@ export async function themeAction(options: { outDir?: string; watch?: boolean })
 
     if (options.watch) {
       const configPath = join(process.cwd(), 'themizer.config.ts')
+      const outDir = options.outDir // Capture for use in callbacks
       console.log('themizer: Watching for changes to themizer.config.ts...')
       console.log('themizer: Press Ctrl+C to stop watching')
 
@@ -33,7 +34,7 @@ export async function themeAction(options: { outDir?: string; watch?: boolean })
         console.log('')
         console.log('themizer: Config file changed, regenerating theme.css...')
         try {
-          if (options.outDir) await writeThemeFile(options.outDir)
+          await writeThemeFile(outDir)
           console.log(`themizer: ✓ theme.css regenerated successfully`)
         } catch (error) {
           console.error(`themizer: Failed to regenerate theme.css - ${(error as Error).message}`)

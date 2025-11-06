@@ -115,6 +115,16 @@ export async function initAction(options: { watch?: boolean; outDir?: string }) 
     const frameworkInfo = getFrameworkInfo()
     let outDir = options.outDir || frameworkInfo.suggestedPath
 
+    // Validate outDir if provided via CLI flag (non-interactive mode)
+    if (options.outDir) {
+      try {
+        validateFilePath(outDir)
+      } catch (error) {
+        console.error(`themizer: Invalid output directory - ${(error as Error).message}`)
+        process.exit(1)
+      }
+    }
+
     // Interactive prompts if --out-dir is not provided
     if (!options.outDir) {
       console.log('')

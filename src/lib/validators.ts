@@ -83,7 +83,9 @@ export function sanitizeCSSValue(value: string | number): string {
 /**
  * Media query feature pattern: (property: value)
  * Allows alphanumeric, hyphens, units (%, px, em, rem, etc.), decimals
- * Whitespace is only allowed as single spaces between words/values
+ * Pattern: \s* allows optional whitespace after colon, \s+ requires at least
+ * one space between multiple values (e.g., "1rem 2rem"), preventing malformed
+ * CSS like "min-width:7 6 8px" while allowing valid multi-value properties
  */
 const MEDIA_QUERY_FEATURE_PATTERN = /\([\w-]+:\s*[\w%./-]+(?:\s+[\w%./-]+)*\)/
 

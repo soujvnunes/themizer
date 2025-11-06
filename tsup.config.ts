@@ -6,6 +6,12 @@ import { join } from 'node:path'
 function getVersion(): string {
   try {
     const packageJson = JSON.parse(readFileSync(join(__dirname, 'package.json'), 'utf-8'))
+
+    // Validate structure
+    if (typeof packageJson !== 'object' || packageJson === null) {
+      throw new Error('Invalid package.json structure')
+    }
+
     return packageJson.version || '0.0.0'
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error)

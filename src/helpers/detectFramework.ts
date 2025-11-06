@@ -20,15 +20,10 @@ export function detectFramework(): Framework {
   }
 
   try {
-    let packageJson
-    try {
-      packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
 
-      // Validate structure
-      if (typeof packageJson !== 'object' || packageJson === null) {
-        return 'other'
-      }
-    } catch (parseError) {
+    // Validate structure
+    if (typeof packageJson !== 'object' || packageJson === null) {
       return 'other'
     }
 

@@ -299,6 +299,10 @@ export async function initAction(options: { watch?: boolean; outDir?: string }) 
 
       // Add themizer script if it doesn't exist
       const scriptName = options.watch ? 'themizer:theme:watch' : 'themizer:theme'
+      // Shell escaping IS necessary here because npm/pnpm/yarn execute scripts through a shell.
+      // Without quotes, paths with spaces (e.g., "./my folder/styles") would be split into
+      // multiple arguments by the shell. The quotes are stored literally in package.json and
+      // correctly interpreted by the shell at execution time.
       const escapedOutDir = escapeSingleQuotes(outDir)
       const scriptCommand = options.watch
         ? `themizer theme --out-dir ${escapedOutDir} --watch`

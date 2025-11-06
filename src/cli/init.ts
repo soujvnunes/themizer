@@ -44,7 +44,7 @@ const tokens = {
     primary: 1,
     secondary: 0.8,
     tertiary: 0.6,
-    quartary: 0.4,
+    quaternary: 0.4,
     quintary: 0.2,
     sextary: 0.1,
     septimary: 0.06,

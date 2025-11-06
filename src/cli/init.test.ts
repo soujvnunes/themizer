@@ -94,7 +94,7 @@ describe('init', () => {
 
       expect(mockWriteFileSync).toHaveBeenCalledWith(
         expect.stringContaining('package.json'),
-        expect.stringContaining('"themizer:theme": "themizer theme --out-dir ./src/app"'),
+        expect.stringContaining('"themizer:theme": "themizer theme --out-dir \'./src/app\'"'),
         'utf-8',
       )
       expect(console.log).toHaveBeenCalledWith(
@@ -111,7 +111,7 @@ describe('init', () => {
 
       expect(mockWriteFileSync).toHaveBeenCalledWith(
         expect.stringContaining('package.json'),
-        expect.stringContaining('"themizer:theme": "themizer theme --out-dir ./custom/path"'),
+        expect.stringContaining('"themizer:theme": "themizer theme --out-dir \'./custom/path\'"'),
         'utf-8',
       )
     })
@@ -127,7 +127,7 @@ describe('init', () => {
 
       expect(mockWriteFileSync).toHaveBeenCalledWith(
         expect.stringContaining('package.json'),
-        expect.stringContaining('"themizer:theme": "themizer theme --out-dir ./explicit/path"'),
+        expect.stringContaining('"themizer:theme": "themizer theme --out-dir \'./explicit/path\'"'),
         'utf-8',
       )
     })
@@ -141,7 +141,7 @@ describe('init', () => {
 
       expect(mockWriteFileSync).toHaveBeenCalledWith(
         expect.stringContaining('package.json'),
-        expect.stringContaining('"themizer:theme:watch": "themizer theme --out-dir ./src/app --watch"'),
+        expect.stringContaining('"themizer:theme:watch": "themizer theme --out-dir \'./src/app\' --watch"'),
         'utf-8',
       )
       expect(console.log).toHaveBeenCalledWith(

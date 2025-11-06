@@ -2,6 +2,7 @@ const mockThemeAction = jest.fn().mockResolvedValue(undefined)
 const mockInitAction = jest.fn().mockResolvedValue(undefined)
 
 jest.mock('./theme', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { Command } = require('commander')
   const command = new Command('theme')
   command
@@ -17,6 +18,7 @@ jest.mock('./theme', () => {
 })
 
 jest.mock('./init', () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { Command } = require('commander')
   const command = new Command('init')
   command

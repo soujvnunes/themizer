@@ -3,8 +3,9 @@ import { Command } from 'commander'
 import theme from './theme'
 import init from './init'
 
-// Version is imported from package.json at build time
-const VERSION = '1.3.0'
+// Version is injected at build time via tsup define
+declare const __VERSION__: string
+const VERSION = typeof __VERSION__ !== 'undefined' ? __VERSION__ : '0.0.0'
 
 export default async function cli() {
   const command = new Command('themizer')

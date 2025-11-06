@@ -17,8 +17,8 @@ export default class ThemeTempFile {
 
     // Register cleanup handlers on first write
     if (!this.cleanupRegistered) {
-      this.registerCleanupHandlers()
       this.cleanupRegistered = true
+      this.registerCleanupHandlers()
     }
   }
 
@@ -55,11 +55,8 @@ export default class ThemeTempFile {
       process.exit(143) // Standard exit code for SIGTERM
     })
 
-    // Clean up on uncaught exception
-    process.on('uncaughtException', (error) => {
-      this.cleanup()
-      console.error('Uncaught exception:', error)
-      process.exit(1)
-    })
+    // Note: We don't handle uncaughtException here to avoid masking errors
+    // and interfering with Node.js's default error handling behavior.
+    // The OS will clean up temp files eventually if cleanup doesn't run.
   }
 }

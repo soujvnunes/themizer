@@ -12,7 +12,7 @@ export default {
     '!src/**/*.test.ts',
     '!src/**/*.d.ts',
     '!src/test-utils/**',
-    '!src/cli/index.ts', // Exclude CLI entry point (hard to test due to immediate execution)
+    '!src/cli/bin.ts', // Exclude CLI entry point (hard to test due to immediate execution)
   ],
   coverageThreshold: {
     global: {

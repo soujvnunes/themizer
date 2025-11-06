@@ -16,19 +16,17 @@ import ATOM_REGEX from '../consts/ATOM_REGEX'
  * ```
  */
 export default function resolveAtom(atom: string) {
-  // Reset lastIndex to ensure the regex starts from the beginning
-  ATOM_REGEX.lastIndex = 0
-
+  // Create a fresh regex instance to avoid global state issues with recursive calls
+  // This is more reliable than managing lastIndex with a global regex
+  const regex = new RegExp(ATOM_REGEX.source, 'g')
   let match: RegExpMatchArray | null
   let extractedValue = ''
 
-  while ((match = ATOM_REGEX.exec(atom)) !== null) {
+  while ((match = regex.exec(atom)) !== null) {
     const defaultValue = match[2]
 
     if (defaultValue) {
       if (/^var\(--/.test(defaultValue)) {
-        // Reset before recursive call
-        ATOM_REGEX.lastIndex = 0
         return resolveAtom(defaultValue)
       }
 

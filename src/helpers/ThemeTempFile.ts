@@ -7,6 +7,15 @@ import FILE_ENCODING from '../consts/FILE_ENCODING'
 
 export default class ThemeTempFile {
   private static cleanupRegistered = false
+  private static exitHandler = () => ThemeTempFile.cleanup()
+  private static sigintHandler = () => {
+    ThemeTempFile.cleanup()
+    process.exit(130) // Standard exit code for SIGINT
+  }
+  private static sigtermHandler = () => {
+    ThemeTempFile.cleanup()
+    process.exit(143) // Standard exit code for SIGTERM
+  }
 
   private static get file() {
     return path.join(os.tmpdir(), TEMP_FILE_NAME)
@@ -38,22 +47,15 @@ export default class ThemeTempFile {
   }
 
   private static registerCleanupHandlers() {
-    // Clean up on normal exit
-    process.on('exit', () => {
-      this.cleanup()
-    })
+    // Remove any existing handlers first (important for test environments)
+    process.removeListener('exit', this.exitHandler)
+    process.removeListener('SIGINT', this.sigintHandler)
+    process.removeListener('SIGTERM', this.sigtermHandler)
 
-    // Clean up on SIGINT (Ctrl+C)
-    process.on('SIGINT', () => {
-      this.cleanup()
-      process.exit(130) // Standard exit code for SIGINT
-    })
-
-    // Clean up on SIGTERM
-    process.on('SIGTERM', () => {
-      this.cleanup()
-      process.exit(143) // Standard exit code for SIGTERM
-    })
+    // Register cleanup handlers using named functions for proper removal
+    process.on('exit', this.exitHandler)
+    process.on('SIGINT', this.sigintHandler)
+    process.on('SIGTERM', this.sigtermHandler)
 
     // Note: We don't handle uncaughtException here to avoid masking errors
     // and interfering with Node.js's default error handling behavior.

@@ -29,8 +29,8 @@ export function isValidCSSIdentifier(identifier: string | number): boolean {
     return false
   }
 
-  // Check length constraints
-  if (id.length === 0 || id.length > MAX_CSS_IDENTIFIER_LENGTH) {
+  // Check length constraint (empty strings already caught by !id check above)
+  if (id.length > MAX_CSS_IDENTIFIER_LENGTH) {
     return false
   }
 

@@ -203,16 +203,12 @@ export async function initAction(options: { watch?: boolean; outDir?: string }) 
 
       // Add themizer script if it doesn't exist
       const scriptName = options.watch ? 'themizer:theme:watch' : 'themizer:theme'
-      // Escape shell-sensitive characters in outDir to prevent command injection
-      // Escape: backslash, double-quote, dollar sign, backtick
-      const escapedOutDir = outDir
-        .replace(/\\/g, '\\\\')
-        .replace(/"/g, '\\"')
-        .replace(/\$/g, '\\$')
-        .replace(/`/g, '\\`')
+      // Use single quotes for robust shell escaping (preserves everything except single quotes)
+      // To escape single quotes: end quote, add escaped single quote, restart quote
+      const escapedOutDir = `'${outDir.replace(/'/g, `'\\''`)}'`
       const scriptCommand = options.watch
-        ? `themizer theme --out-dir "${escapedOutDir}" --watch`
-        : `themizer theme --out-dir "${escapedOutDir}"`
+        ? `themizer theme --out-dir ${escapedOutDir} --watch`
+        : `themizer theme --out-dir ${escapedOutDir}`
 
       if (!packageJson.scripts[scriptName]) {
         packageJson.scripts[scriptName] = scriptCommand

@@ -234,8 +234,8 @@ After running `pnpm run themizer:theme`, a `theme.css` file is created:
   --theme-tokens-alphas-primary: 1;
   --theme-tokens-alphas-secondary: 0.8;
   --theme-tokens-alphas-tertiary: 0.6;
-  --theme-tokens-alphas-quartary: 0.4;
-  --theme-tokens-alphas-quintary: 0.2;
+  --theme-tokens-alphas-quaternary: 0.4;
+  --theme-tokens-alphas-quinary: 0.2;
   --theme-tokens-units-0: 0;
   --theme-tokens-units-8: 0.5rem;
   --theme-tokens-units-16: 1rem;

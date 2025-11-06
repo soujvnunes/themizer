@@ -45,6 +45,17 @@ export async function themeAction(options: { outDir?: string; watch?: boolean })
         if (error instanceof Error) console.error(`themizer: Watcher error - ${error.message}`)
       })
 
+      // Setup cleanup handlers for graceful shutdown
+      const cleanup = async () => {
+        console.log('')
+        console.log('themizer: Stopping watcher...')
+        await watcher.close()
+        process.exit(0)
+      }
+
+      process.on('SIGINT', cleanup)
+      process.on('SIGTERM', cleanup)
+
       // Keep process alive
       process.stdin.resume()
     }

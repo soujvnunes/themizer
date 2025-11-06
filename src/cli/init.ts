@@ -203,9 +203,11 @@ export async function initAction(options: { watch?: boolean; outDir?: string }) 
 
       // Add themizer script if it doesn't exist
       const scriptName = options.watch ? 'themizer:theme:watch' : 'themizer:theme'
+      // Escape double quotes in outDir to prevent breaking the command string
+      const escapedOutDir = outDir.replace(/"/g, '\\"')
       const scriptCommand = options.watch
-        ? `themizer theme --out-dir "${outDir}" --watch`
-        : `themizer theme --out-dir "${outDir}"`
+        ? `themizer theme --out-dir "${escapedOutDir}" --watch`
+        : `themizer theme --out-dir "${escapedOutDir}"`
 
       if (!packageJson.scripts[scriptName]) {
         packageJson.scripts[scriptName] = scriptCommand

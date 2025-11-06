@@ -34,7 +34,7 @@ This project adheres to a Code of Conduct that all contributors are expected to 
 
 ### Prerequisites
 
-- Node.js >= 18.0.0
+- Node.js >= 16.0.0
 - pnpm >= 8.0.0
 
 ### Installation

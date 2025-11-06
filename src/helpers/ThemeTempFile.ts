@@ -46,6 +46,17 @@ export default class ThemeTempFile {
     }
   }
 
+  /**
+   * Resets the cleanup registration state and removes all handlers.
+   * This is primarily for testing purposes to ensure test isolation.
+   */
+  static resetForTesting() {
+    this.cleanupRegistered = false
+    process.removeListener('exit', this.exitHandler)
+    process.removeListener('SIGINT', this.sigintHandler)
+    process.removeListener('SIGTERM', this.sigtermHandler)
+  }
+
   private static registerCleanupHandlers() {
     // Remove any existing handlers first (important for test environments)
     process.removeListener('exit', this.exitHandler)

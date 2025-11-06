@@ -15,6 +15,9 @@ export type {
   Atomized,
 } from './lib/atomizer'
 
+// Framework detection types (for CLI and advanced integrations)
+export type { Framework, FrameworkDetectionResult } from './helpers/detectFramework'
+
 // Validation utilities (for advanced users)
 export {
   validatePrefix,

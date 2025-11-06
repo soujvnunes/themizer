@@ -252,49 +252,87 @@ themizer theme --out-dir ./src/app --watch # Watch for changes
 
 Main function to generate design tokens and aliases.
 
-```ts
-const { aliases, tokens, medias } = themizer(
-  {
-    prefix: 'theme',              // CSS custom property prefix
-    medias: { lg: '(min-width: 1024px)' },
-    tokens: { colors: { blue: '#3b82f6' } },
-  },
-  (t) => ({
-    primary: t.colors.blue,       // Semantic alias
-  }),
-)
-```
+#### Parameters
 
-**Returns:**
-- `aliases` - Semantic names wrapped in `var()` for CSS/JS use
-- `tokens` - Design tokens wrapped in `var()` for CSS/JS use
+- `options.prefix` - Prefix for CSS custom properties (e.g., `'theme'` → `--theme-*`)
+- `options.medias` - Media query definitions for responsive design
+- `options.tokens` - Design tokens object (colors, spacing, typography, etc.)
+- `aliases` - Function that receives resolved tokens and returns semantic aliases
+
+#### Returns
+
+- `aliases` - Semantic aliases wrapped in `var()` for use in CSS/JS
+- `tokens` - Design tokens wrapped in `var()` for use in CSS/JS
 - `medias` - Media queries prefixed with `@media`
+
+#### Example
+
+```ts
+import theme from './themizer.config'
+
+// Using aliases (semantic names)
+theme.aliases.palette.main        // → "var(--theme-aliases-palette-main)"
+theme.aliases.typography.title    // → "var(--theme-aliases-typography-title)"
+
+// Using tokens (raw values)
+theme.tokens.colors.green[500]    // → "var(--theme-tokens-colors-green-500)"
+theme.tokens.units[16]            // → "var(--theme-tokens-units-16)"
+
+// Using media queries
+theme.medias.lg                   // → "@media (min-width: 1024px)"
+theme.medias.dark                 // → "@media (prefers-color-scheme: dark)"
+```
 
 ### `unwrapAtom(atom)`
 
 Extract CSS custom property name from `var()` expression.
 
+#### Parameters
+
+- `atom` - A CSS custom property wrapped in `var()`
+
+#### Returns
+
+The unwrapped custom property name (string)
+
+#### Example
+
 ```ts
 import { unwrapAtom } from 'themizer'
+import theme from './themizer.config'
 
-unwrapAtom('var(--theme-aliases-primary)')  // → "--theme-aliases-primary"
+unwrapAtom(theme.aliases.palette.main)  // → "--theme-aliases-palette-main"
 
 // Useful for scoped overrides:
-<div style={{ [unwrapAtom(theme.aliases.primary)]: '#ff0000' }} />
+<div style={{ [unwrapAtom(theme.aliases.palette.main)]: '#ff0000' }}>
+  This div has red text
+</div>
 ```
 
 ### `resolveAtom(atom)`
 
 Extract default value from `var()` expression.
 
+#### Parameters
+
+- `atom` - A CSS custom property with a default value
+
+#### Returns
+
+The resolved default value (string or number)
+
+#### Example
+
 ```ts
 import { resolveAtom } from 'themizer'
+import theme from './themizer.config'
 
-resolveAtom('var(--theme-aliases-primary, #3b82f6)')  // → "#3b82f6"
+resolveAtom(theme.tokens.colors.green[500])  // → "#22c55e"
+resolveAtom(theme.tokens.units[16])          // → "1rem"
 
 // Useful for non-CSS contexts:
 export const viewport = {
-  themeColor: resolveAtom(theme.tokens.colors.blue),
+  themeColor: resolveAtom(theme.tokens.colors.green[500]),
 }
 ```
 

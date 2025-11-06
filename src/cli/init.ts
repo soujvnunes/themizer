@@ -180,6 +180,9 @@ export async function initAction(options: { watch?: boolean; outDir?: string }) 
           throw new Error('package.json must be a valid JSON object')
         }
       } catch (parseError) {
+        if (parseError instanceof Error && parseError.message.includes('must be a valid')) {
+          throw parseError
+        }
         throw new Error(`Invalid package.json: ${(parseError as Error).message}`)
       }
 

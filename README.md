@@ -362,6 +362,44 @@ export default {
 } satisfies Config
 ```
 
+Import the generated `theme.css` in your global CSS entry point (e.g., `app/layout.tsx`, `pages/_app.tsx`, or `src/index.tsx`):
+
+```tsx
+// app/layout.tsx (Next.js App Router)
+import './theme.css'
+import './globals.css'
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+```tsx
+// pages/_app.tsx (Next.js Pages Router)
+import './theme.css'
+import './globals.css'
+
+export default function App({ Component, pageProps }) {
+  return <Component {...pageProps} />
+}
+```
+
+```tsx
+// src/index.tsx (React/Vite)
+import './theme.css'
+import './index.css'
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+)
+```
+
 Use semantic class names:
 
 ```tsx

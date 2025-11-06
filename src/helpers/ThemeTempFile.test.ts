@@ -28,8 +28,8 @@ describe('ThemeTempFile', () => {
   function expectPath(tempFile: string) {
     expect(os.tmpdir).toHaveBeenCalled()
     expect(os.tmpdir).toHaveReturnedWith(TEMP_DIR)
-    expect(path.join).toHaveReturnedWith(tempFile)
     expect(path.join).toHaveBeenCalledWith(TEMP_DIR, TEMP_FILE_NAME)
+    expect(path.join).toHaveReturnedWith(tempFile)
   }
 
   it('writes CSS correctly', () => {

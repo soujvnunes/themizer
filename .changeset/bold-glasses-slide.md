@@ -28,6 +28,7 @@ Add watch mode for automatic theme.css regeneration, improve security with input
 - Fix hardcoded version by implementing build-time injection from package.json
 - Update TSConfig to remove outdated `src/cli/index.ts` reference
 - Fix ESLint configuration to include root-level TypeScript files
+- Fix media query validation regex to support keyword values (prefers-color-scheme, orientation, etc.) in addition to numeric values
 
 **Improvements:**
 - Extract magic number to `MAX_CSS_IDENTIFIER_LENGTH` constant for better maintainability

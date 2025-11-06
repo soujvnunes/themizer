@@ -30,7 +30,9 @@ export function detectFramework(): Framework {
 
     // Extract dependencies with proper type checking
     const dependencies = isPlainObject(packageJson.dependencies) ? packageJson.dependencies : {}
-    const devDependencies = isPlainObject(packageJson.devDependencies) ? packageJson.devDependencies : {}
+    const devDependencies = isPlainObject(packageJson.devDependencies)
+      ? packageJson.devDependencies
+      : {}
 
     const allDeps = {
       ...dependencies,

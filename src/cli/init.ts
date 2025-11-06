@@ -287,7 +287,11 @@ export async function initAction(options: { watch?: boolean; outDir?: string }) 
       }
 
       // Initialize scripts object if it doesn't exist or is not an object
-      if (!packageJson.scripts || typeof packageJson.scripts !== 'object' || Array.isArray(packageJson.scripts)) {
+      if (
+        !packageJson.scripts ||
+        typeof packageJson.scripts !== 'object' ||
+        Array.isArray(packageJson.scripts)
+      ) {
         packageJson.scripts = {}
       }
 

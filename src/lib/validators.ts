@@ -121,29 +121,44 @@ export function sanitizeCSSValue(value: string | number): string {
 
 /**
  * Media query feature pattern with strict value validation.
+ * Supports both numeric values (with units) and keyword values.
  *
  * Pattern breakdown:
- * - [\w-]+: Property name (min-width, max-width, width, etc.)
+ * - \([\w-]+: Opening parenthesis and property name (min-width, prefers-color-scheme, etc.)
  * - :\s*: Colon followed by optional whitespace
- * - (\d+(?:\.\d+)?[a-z%]*): First value - number with optional decimal, optional units
- *   - \d+: One or more digits (required)
- *   - (?:\.\d+)?: Optional decimal point with digits (allows only ONE decimal)
- *   - [a-z%]*: Optional units (px, em, rem, %, etc.) - case insensitive with 'i' flag
- * - (?:\s+\d+(?:\.\d+)?[a-z%]*)*: Additional space-separated values (for multi-value properties)
+ * - (?:...): Non-capturing group for value alternatives:
+ *   - \d+(?:\.\d+)?[a-z%]*: Numeric value with optional decimal and units
+ *     - \d+: One or more digits (required)
+ *     - (?:\.\d+)?: Optional decimal point with digits (allows only ONE decimal)
+ *     - [a-z%]*: Optional units (px, em, rem, %, etc.)
+ *   - |: OR
+ *   - \w+(?:-\w+)*: Keyword value (dark, light, landscape, no-preference, etc.)
+ *     - \w+: Word characters (letters, digits, underscore)
+ *     - (?:-\w+)*: Optional hyphenated words (for multi-word keywords)
+ * - (?:\s+(?:...))*: Additional space-separated values with same logic
+ * - \): Closing parenthesis
  *
- * Valid examples:
+ * Valid examples (numeric):
  * - (min-width: 768px)
  * - (width: 50%)
  * - (height: 10.5em)
- * - (aspect-ratio: 16 9) - multi-value
+ * - (aspect-ratio: 16 9) - multi-value numeric
+ *
+ * Valid examples (keyword):
+ * - (prefers-color-scheme: dark)
+ * - (prefers-color-scheme: light)
+ * - (orientation: landscape)
+ * - (prefers-reduced-motion: no-preference)
+ * - (prefers-contrast: more)
  *
  * Invalid (prevented):
  * - (min-width: 7.5.3px) - multiple decimals
  * - (width: 7..5px) - consecutive decimals
- * - (height: %%) - no digits
+ * - (height: %%) - no digits, no keyword
  * - (width: /) - orphan slash
  */
-const MEDIA_QUERY_FEATURE_PATTERN = /\([\w-]+:\s*(\d+(?:\.\d+)?[a-z%]*)(?:\s+\d+(?:\.\d+)?[a-z%]*)*\)/i
+const MEDIA_QUERY_FEATURE_PATTERN =
+  /\([\w-]+:\s*(?:\d+(?:\.\d+)?[a-z%]*|\w+(?:-\w+)*)(?:\s+(?:\d+(?:\.\d+)?[a-z%]*|\w+(?:-\w+)*))*\)/i
 
 /**
  * Validates media query syntax

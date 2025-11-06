@@ -14,6 +14,30 @@ interface ThemizerOptions<M extends Medias, T extends Atoms> extends Required<At
   tokens: T
 }
 
+/**
+ * Main themizer function that generates CSS custom properties from design tokens and aliases.
+ *
+ * @param options - Configuration object with prefix, media queries, and design tokens
+ * @param options.prefix - Prefix for CSS custom properties (e.g., 'theme' generates --theme-*)
+ * @param options.medias - Media query definitions for responsive design
+ * @param options.tokens - Design tokens (colors, spacing, etc.)
+ * @param aliases - Function that receives resolved tokens and returns semantic aliases
+ * @returns Object containing resolved aliases, tokens, and media query helpers
+ *
+ * @example
+ * ```ts
+ * const { aliases, tokens, medias } = themizer(
+ *   {
+ *     prefix: 'theme',
+ *     medias: { md: '(min-width: 768px)' },
+ *     tokens: { colors: { black: '#000' } }
+ *   },
+ *   ({ colors }) => ({
+ *     palette: { text: colors.black }
+ *   })
+ * )
+ * ```
+ */
 export default function themizer<
   const M extends Medias,
   const T extends Atoms,

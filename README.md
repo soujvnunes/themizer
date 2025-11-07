@@ -8,7 +8,7 @@
 
 ## The Problem
 
-Working with utility-first CSS frameworks often leads to verbose, hard-to-maintain class names:
+Utility-first CSS frameworks create a maintainability trap. Your components become littered with verbose, brittle class names:
 
 ```tsx
 <button className="text-white dark:text-black hover:text-white/60 dark:hover:text-white/60 transition-colors">
@@ -16,7 +16,7 @@ Working with utility-first CSS frameworks often leads to verbose, hard-to-mainta
 </button>
 ```
 
-What if your design system changes? You'd need to update these classes across your entire codebase.
+Need to change your brand color? Good luck finding and updating every instance of `text-blue-500` across your codebase. There's no single source of truth, just scattered utility classes everywhere.
 
 ## The Solution
 
@@ -83,12 +83,12 @@ const { aliases, tokens: resolvedTokens } = themizer(
   ({ colors, alphas, units }) => ({
     // Semantic aliases grouped by context
     palette: {
-      text: [`rgb(${colors.black} / ${alphas.secondary})`, { dark: `rgb(${colors.white} / ${alphas.primary})` }],
-      background: [colors.white, { dark: colors.black }],
+      text: [{ dark: `rgb(${colors.white} / ${alphas.primary})` }, `rgb(${colors.black} / ${alphas.secondary})`],
+      background: [{ dark: colors.black }, colors.white],
       main: colors.green[500],
     },
     typography: {
-      title: [units[24], { lg: units[40] }],
+      title: [{ lg: units[40] }, units[24]],
       body: units[16],
     },
   }),
@@ -100,7 +100,7 @@ export { aliases, resolvedTokens as tokens, medias }
 **Key Concept:**
 - **Tokens** = Raw values (`colors.green[500]`)
 - **Aliases** = Semantic names (`palette.text`, `typography.title`)
-- Responsive values use array syntax: `[defaultValue, { mediaKey: value }]`
+- Responsive values use array syntax: `[{ mediaKey: value }, defaultValue]`
 
 ### 2. Generate CSS
 
@@ -348,11 +348,51 @@ const { aliases } = themizer(
     tokens: { colors: { white: '#fff', black: '#000' } },
   },
   (t) => ({
-    foreground: [t.colors.black, { dark: t.colors.white }],
-    background: [t.colors.white, { dark: t.colors.black }],
+    foreground: [{ dark: t.colors.white }, t.colors.black],
+    background: [{ dark: t.colors.black }, t.colors.white],
   }),
 )
 ```
+
+### Motion & Accessibility
+
+Respect user preferences for reduced motion while providing smooth animations:
+
+```ts
+const { aliases } = themizer(
+  {
+    prefix: 'theme',
+    medias: {
+      motion: '(prefers-reduced-motion: no-preference)',
+    },
+    tokens: {
+      transitions: {
+        bounce: '200ms cubic-bezier(0.5, -0.5, 0.25, 1.5)',
+        ease: '200ms cubic-bezier(0.25, 0.1, 0.25, 1)',
+      },
+    },
+  },
+  (t) => ({
+    animations: {
+      bounce: [{ motion: t.transitions.bounce }],
+      ease: [{ motion: t.transitions.ease }],
+    },
+  }),
+)
+```
+
+Generated CSS:
+
+```css
+@media (prefers-reduced-motion: no-preference) {
+  :root {
+    --theme-aliases-animations-bounce: var(--theme-tokens-transitions-bounce);
+    --theme-aliases-animations-ease: var(--theme-tokens-transitions-ease);
+  }
+}
+```
+
+Users with `prefers-reduced-motion: reduce` get no animation variables (they remain undefined), while users who prefer motion get smooth transitions. This ensures accessibility without sacrificing user experience.
 
 ### Component Overrides
 

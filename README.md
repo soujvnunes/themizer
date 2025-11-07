@@ -109,7 +109,7 @@ pnpm run themizer:theme        # Generate once
 pnpm run themizer:theme:watch  # Watch mode (if configured with --watch)
 ```
 
-This creates `theme.css` with CSS custom properties:
+The CLI automatically executes your `themizer.config.ts` and generates `theme.css` with CSS custom properties:
 
 ```css
 :root {
@@ -138,6 +138,8 @@ import './globals.css'
 ```
 
 ## Framework Integration
+
+**Note:** You only need to import `themizer.config` in your TypeScript/JavaScript code if you want to use the theme object programmatically (e.g., in Tailwind config, styled-components). For just using CSS custom properties, importing `theme.css` is sufficient.
 
 ### Tailwind CSS v4
 

@@ -310,11 +310,7 @@ export async function initAction(options: { watch?: boolean; outDir?: string }) 
     console.log('')
     console.log('Next steps:')
     console.log('  1. Customize your tokens in themizer.config.ts')
-    console.log('  2. Import and use themizer in your application:')
-    console.log('')
-    console.log("     import './themizer.config'")
-    console.log('')
-    console.log('  3. Generate theme.css:')
+    console.log('  2. Generate theme.css:')
     console.log('')
     if (existsSync(packageJsonPath)) {
       const scriptName = options.watch ? 'themizer:theme:watch' : 'themizer:theme'
@@ -323,7 +319,7 @@ export async function initAction(options: { watch?: boolean; outDir?: string }) 
       console.log(`     themizer theme --out-dir ${outDir}`)
     }
     console.log('')
-    console.log(`  4. Import ${outDir}/theme.css in your application`)
+    console.log(`  3. Import ${outDir}/theme.css in your application`)
     console.log('')
     console.log('For more information, visit: https://github.com/soujvnunes/themizer#readme')
   } catch (error) {

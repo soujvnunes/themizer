@@ -3,6 +3,7 @@ import { watch } from 'chokidar'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import writeThemeFile from '../helpers/writeThemeFile'
+import executeConfig from '../helpers/executeConfig'
 import { validateFilePath } from '../lib/validators'
 
 export async function themeAction(options: { outDir?: string; watch?: boolean }) {
@@ -11,21 +12,26 @@ export async function themeAction(options: { outDir?: string; watch?: boolean })
     process.exit(1)
   }
 
+  const configPath = join(process.cwd(), 'themizer.config.ts')
+
+  // Check if config file exists
+  if (!existsSync(configPath)) {
+    console.error('themizer: themizer.config.ts not found in current directory')
+    console.error('themizer: Run "themizer init" to create a configuration file first')
+    process.exit(1)
+  }
+
   try {
     validateFilePath(options.outDir)
+
+    // Execute config to generate temp file
+    await executeConfig(configPath)
+
     await writeThemeFile(options.outDir)
     console.log(`themizer: theme.css written to ${options.outDir} directory`)
 
     if (options.watch) {
-      const configPath = join(process.cwd(), 'themizer.config.ts')
       const outDir = options.outDir // Capture for use in callbacks
-
-      // Check if config file exists before starting watcher
-      if (!existsSync(configPath)) {
-        console.error('themizer: themizer.config.ts not found in current directory')
-        console.error('themizer: Run "themizer init" to create a configuration file first')
-        process.exit(1)
-      }
 
       console.log('themizer: Watching for changes to themizer.config.ts...')
       console.log('themizer: Press Ctrl+C to stop watching')
@@ -43,6 +49,8 @@ export async function themeAction(options: { outDir?: string; watch?: boolean })
         console.log('')
         console.log('themizer: Config file changed, regenerating theme.css...')
         try {
+          // Re-execute config to regenerate temp file
+          await executeConfig(configPath)
           await writeThemeFile(outDir)
           console.log(`themizer: ✓ theme.css regenerated successfully`)
         } catch (error) {
@@ -84,7 +92,7 @@ command
     'after',
     `
 Description:
-  Reads the generated CSS from your themizer configuration and writes it to
+  Executes your themizer.config.ts file and writes the generated CSS to
   a theme.css file in the specified directory. This file contains all your
   CSS custom properties with responsive media queries.
 
@@ -98,8 +106,8 @@ Watch Mode:
   themizer.config.ts changes. This is useful during development.
 
 Note:
-  You must first set up your themizer configuration in your TypeScript code
-  before running this command. See the documentation for setup instructions.
+  This command automatically executes your themizer.config.ts file.
+  You don't need to import it in your application code to generate CSS.
 `,
   )
   .action(themeAction)

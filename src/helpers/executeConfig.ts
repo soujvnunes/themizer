@@ -12,9 +12,13 @@ export default async function executeConfig(configPath: string): Promise<void> {
   // This is necessary for proper module resolution across platforms
   const configUrl = pathToFileURL(configPath).href
 
+  // Add timestamp to bust Node.js module cache
+  // This ensures config changes are picked up in watch mode
+  const cacheBustedUrl = `${configUrl}?t=${Date.now()}`
+
   try {
     // Dynamic import executes the config file, triggering themizer()
-    await import(configUrl)
+    await import(cacheBustedUrl)
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(`Failed to execute config file: ${error.message}`)

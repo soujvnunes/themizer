@@ -1,7 +1,7 @@
 {
   "type": "module",
   "license": "ISC",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "name": "themizer",
   "description": "Generate CSS custom properties based on a given theme with tokens and aliases serving as a reference.",
   "author": "soujvnunes <soujvnunes@gmail.com> (https://soujvnunes.github.io)",

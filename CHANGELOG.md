@@ -1,5 +1,11 @@
 # @soujvnunes/themizer
 
+## 1.4.2
+
+### Patch Changes
+
+- b71f771: Test automated publishing workflow with npm Trusted Publishing (OIDC)
+
 ## 1.4.1
 
 ### Patch Changes

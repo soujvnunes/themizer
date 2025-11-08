@@ -283,21 +283,21 @@ function isLength(value: string): boolean {
  * Checks if a value is a CSS percentage
  */
 function isPercentage(value: string): boolean {
-  return /^-?\d*\.?\d+\s*%$/.test(value)
+  return /^-?(\d+\.?\d*|\d*\.\d+)\s*%$/.test(value)
 }
 
 /**
  * Checks if a value is a CSS time value
  */
 function isTime(value: string): boolean {
-  return /^-?\d*\.?\d+\s*(ms|s)$/i.test(value)
+  return /^-?(\d+\.?\d*|\d*\.\d+)\s*(ms|s)$/i.test(value)
 }
 
 /**
  * Checks if a value is a CSS angle
  */
 function isAngle(value: string): boolean {
-  return /^-?\d*\.?\d+\s*(deg|grad|rad|turn)$/i.test(value)
+  return /^-?(\d+\.?\d*|\d*\.\d+)\s*(deg|grad|rad|turn)$/i.test(value)
 }
 
 /**
@@ -311,7 +311,7 @@ function isInteger(value: string): boolean {
  * Checks if a value is a number (including decimals)
  */
 function isNumber(value: string): boolean {
-  return /^-?\d*\.?\d+$/.test(value)
+  return /^-?(\d+\.?\d*|\d*\.\d+)$/.test(value)
 }
 
 /**

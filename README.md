@@ -426,7 +426,7 @@ export const viewport = {
 **themizer** automatically registers all generated CSS custom properties using the CSS `@property` at-rule. This provides two key benefits:
 
 1. **Type Validation** - Browsers validate that property values match their declared syntax (e.g., `<color>`, `<length>`, `<percentage>`)
-2. **Security** - Prevents external stylesheets from injecting invalid values into your application's custom properties
+2. **Type Safety** - Invalid values set by external stylesheets or scripts are rejected by the browser, helping prevent accidental type mismatches (but this is not a comprehensive security mechanism)
 
 #### How It Works
 
@@ -497,8 +497,8 @@ With `@property` registration, browsers will **reject** invalid values:
 ```css
 /* External stylesheet tries to inject a malicious value */
 :root {
-  --theme-tokens-colors-primary: "javascript:alert('xss')"; /* REJECTED by browser */
-  --theme-tokens-spacing-md: 999999999px;                   /* REJECTED by browser */
+  --theme-tokens-colors-primary: "not-a-color";            /* REJECTED: not a valid <color> value */
+  --theme-tokens-spacing-md: 999999999px;                   /* REJECTED: not a valid <length> value */
 }
 ```
 

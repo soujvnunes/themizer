@@ -157,7 +157,9 @@ export default function atomizer<
       const normalizedPath = propertyPath.startsWith(prefix)
         ? propertyPath.slice(prefix.length)
         : propertyPath
-      return normalizedPath === override.replace(/\./g, PATH_UNIFIER)
+      // Replace dots with path unifier without creating new RegExp each time
+      const normalizedOverride = override.split('.').join(PATH_UNIFIER)
+      return normalizedPath === normalizedOverride
     })
   }
 

@@ -49,8 +49,9 @@ const LENGTH_UNITS = [
 
 /**
  * Pre-compiled RegExp for length value matching
+ * Ensures at least one digit is present to avoid matching invalid values like ".px" or "-.rem"
  */
-const LENGTH_PATTERN = new RegExp(`^-?\\d*\\.?\\d+\\s*(${LENGTH_UNITS.join('|')})$`, 'i')
+const LENGTH_PATTERN = new RegExp(`^-?(\\d+\\.?\\d*|\\d*\\.\\d+)\\s*(${LENGTH_UNITS.join('|')})$`, 'i')
 
 /**
  * Set of CSS named colors (lowercase) for fast O(1) lookup

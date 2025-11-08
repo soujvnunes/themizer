@@ -18,8 +18,9 @@ describe('writeThemeFile', () => {
     jest.resetModules()
     jest.spyOn(process, 'cwd').mockReturnValue(ROOT_DIR)
     jest.spyOn(path, 'resolve').mockImplementation((...args) => args.join('/'))
-    jest.spyOn(fs.promises, 'mkdir').mockImplementation(jest.fn())
-    jest.spyOn(fs.promises, 'writeFile').mockImplementation(jest.fn())
+    jest.spyOn(path, 'dirname').mockImplementation((p) => p.split('/').slice(0, -1).join('/'))
+    jest.spyOn(fs.promises, 'mkdir').mockResolvedValue(undefined)
+    jest.spyOn(fs.promises, 'writeFile').mockResolvedValue()
     ;(executeConfig as jest.Mock).mockResolvedValue(CSS)
   })
 
@@ -33,9 +34,13 @@ describe('writeThemeFile', () => {
     await writeThemeFile(OUT_DIR, CONFIG_PATH)
 
     expect(executeConfig).toHaveBeenCalledWith(CONFIG_PATH)
+    expect(process.cwd).toHaveBeenCalled()
     expect(process.cwd).toHaveReturnedWith(ROOT_DIR)
     expect(path.resolve).toHaveBeenCalledWith(ROOT_DIR, OUT_DIR, THEME_FILE_NAME)
-    expect(fs.promises.mkdir).toHaveBeenCalled()
+    expect(fs.promises.mkdir).toHaveBeenCalledWith(
+      `${ROOT_DIR}/${OUT_DIR}`,
+      { recursive: true },
+    )
     expect(fs.promises.writeFile).toHaveBeenCalledWith(
       `${ROOT_DIR}/${OUT_DIR}/${THEME_FILE_NAME}`,
       CSS,

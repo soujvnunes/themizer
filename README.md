@@ -62,44 +62,43 @@ The `init` command creates `themizer.config.ts` with example tokens and adds a s
 // themizer.config.ts
 import themizer from 'themizer'
 
-const medias = {
-  md: '(min-width: 768px)',
-  lg: '(min-width: 1024px)',
-  dark: '(prefers-color-scheme: dark)',
-} as const
+const mix = (color: string, percentage: string) => `color-mix(in srgb, ${color} ${percentage}, transparent)`
 
-const tokens = {
-  colors: {
-    black: '#000000',
-    white: '#ffffff',
-    green: { 500: '#22c55e', 600: '#16a34a' },
+export const { aliases, tokens, medias } = themizer(
+  {
+    prefix: 'theme',
+    medias: {
+      desktop: '(min-width: 1024px)',
+      dark: '(prefers-color-scheme: dark)',
+    },
+    tokens: {
+      colors: {
+        black: '#000000',
+        white: '#ffffff',
+        green: { 500: '#22c55e', 600: '#16a34a' },
+      },
+      alphas: { primary: '100%', secondary: '80%' },
+      units: { 16: '1rem', 24: '1.5rem', 40: '2.5rem' },
+    },
   },
-  alphas: { primary: 1, secondary: 0.8 },
-  units: { 16: '1rem', 24: '1.5rem', 40: '2.5rem' },
-}
-
-const { aliases, tokens: resolvedTokens } = themizer(
-  { prefix: 'theme', medias, tokens },
   ({ colors, alphas, units }) => ({
     // Semantic aliases grouped by context
     palette: {
-      text: [{ dark: `rgb(${colors.white} / ${alphas.primary})` }, `rgb(${colors.black} / ${alphas.secondary})`],
+      foreground: [{ dark: colors.white }, mix(colors.black, alphas.secondary)],
       background: [{ dark: colors.black }, colors.white],
       main: colors.green[500],
     },
     typography: {
-      title: [{ lg: units[40] }, units[24]],
+      title: [{ desktop: units[40] }, units[24]],
       body: units[16],
     },
   }),
 )
-
-export { aliases, resolvedTokens as tokens, medias }
 ```
 
 **Key Concept:**
 - **Tokens** = Raw values (`colors.green[500]`)
-- **Aliases** = Semantic names (`palette.text`, `typography.title`)
+- **Aliases** = Semantic names (`palette.foreground`, `typography.title`)
 - Responsive values use array syntax: `[{ mediaKey: value }, defaultValue]`
 
 ### 2. Generate CSS
@@ -168,7 +167,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        text: theme.aliases.palette.text,
+        foreground: theme.aliases.palette.foreground,
         background: theme.aliases.palette.background,
         main: theme.aliases.palette.main,
       },
@@ -216,7 +215,7 @@ import theme from './themizer.config'
 
 const Button = styled.button`
   background-color: ${theme.aliases.palette.main};
-  color: ${theme.aliases.palette.text};
+  color: ${theme.aliases.palette.foreground};
   padding: ${theme.aliases.typography.body};
 
   &:hover {

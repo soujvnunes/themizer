@@ -1,15 +1,15 @@
 import { existsSync } from 'node:fs'
 import * as writeThemeFile from '../helpers/writeThemeFile'
-import * as executeConfig from '../helpers/executeConfig'
 
 import { themeAction } from './theme'
 
 jest.mock('node:fs')
+jest.mock('../helpers/writeThemeFile')
 
 describe('theme', () => {
   const OPTS = { outDir: './src' }
 
-  let writeThemeFileSpy: jest.SpyInstance
+  let writeThemeFileSpy: jest.MockedFunction<typeof writeThemeFile.default>
   let existsSyncMock: jest.MockedFunction<typeof existsSync>
 
   beforeEach(() => {
@@ -19,8 +19,8 @@ describe('theme', () => {
     jest.spyOn(console, 'log').mockImplementation(jest.fn())
     jest.spyOn(process, 'exit').mockImplementation(jest.fn as never)
 
-    writeThemeFileSpy = jest.spyOn(writeThemeFile, 'default').mockImplementation(jest.fn())
-    jest.spyOn(executeConfig, 'default').mockImplementation(jest.fn())
+    writeThemeFileSpy = writeThemeFile.default as jest.MockedFunction<typeof writeThemeFile.default>
+    writeThemeFileSpy.mockResolvedValue(undefined)
     existsSyncMock = existsSync as jest.MockedFunction<typeof existsSync>
     existsSyncMock.mockReturnValue(true)
   })
@@ -56,8 +56,10 @@ describe('theme', () => {
     it('writes theme to the output directory file', async () => {
       await themeAction(OPTS)
 
-      expect(executeConfig.default).toHaveBeenCalledWith(expect.stringContaining('themizer.config.ts'))
-      expect(writeThemeFile.default).toHaveBeenLastCalledWith(OPTS.outDir)
+      expect(writeThemeFileSpy).toHaveBeenCalledWith(
+        OPTS.outDir,
+        expect.stringContaining('themizer.config.ts'),
+      )
       expect(console.log).toHaveBeenCalledWith(
         `themizer: theme.css written to ${OPTS.outDir} directory`,
       )

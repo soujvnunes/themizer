@@ -62,7 +62,7 @@ The `init` command creates `themizer.config.ts` with example tokens and adds a s
 // themizer.config.ts
 import themizer from 'themizer'
 
-const mix = (color: string, percentage: string) => `color-mix(in srgb, ${color} ${percentage}, transparent)`
+const alpha = (color: string, percentage: string) => `color-mix(in srgb, ${color} ${percentage}, transparent)`
 
 export const { aliases, tokens, medias } = themizer(
   {
@@ -73,22 +73,34 @@ export const { aliases, tokens, medias } = themizer(
     },
     tokens: {
       colors: {
-        black: '#000000',
-        white: '#ffffff',
-        green: { 500: '#22c55e', 600: '#16a34a' },
+        amber: {
+          50: 'oklch(98% 0.02 85)',
+          500: 'oklch(76.9% 0.188 70.08)',
+          900: 'oklch(12% 0.03 70)',
+          950: 'oklch(6% 0.02 70)',
+        },
       },
-      alphas: { primary: '100%', secondary: '80%' },
-      units: { 16: '1rem', 24: '1.5rem', 40: '2.5rem' },
+      alphas: {
+        primary: '100%',
+        secondary: '80%',
+        tertiary: '60%',
+      },
+      units: {
+        16: '1rem',
+        24: '1.5rem',
+        40: '2.5rem',
+        64: '4rem',
+      },
     },
   },
   ({ colors, alphas, units }) => ({
     // Semantic aliases grouped by context
     palette: {
-      foreground: [{ dark: colors.white }, mix(colors.black, alphas.secondary)],
-      background: [{ dark: colors.black }, colors.white],
-      main: colors.green[500],
+      foreground: [{ dark: colors.amber[50] }, alpha(colors.amber[950], alphas.secondary)],
+      background: [{ dark: colors.amber[950] }, colors.amber[50]],
     },
     typography: {
+      headline: [{ desktop: units[64] }, units[40]],
       title: [{ desktop: units[40] }, units[24]],
       body: units[16],
     },
@@ -97,9 +109,10 @@ export const { aliases, tokens, medias } = themizer(
 ```
 
 **Key Concept:**
-- **Tokens** = Raw values (`colors.green[500]`)
+- **Tokens** = Raw values (`colors.amber[500]`)
 - **Aliases** = Semantic names (`palette.foreground`, `typography.title`)
 - Responsive values use array syntax: `[{ mediaKey: value }, defaultValue]`
+- Use modern CSS color spaces like `oklch()` for better color manipulation
 
 ### 2. Generate CSS
 
@@ -112,17 +125,24 @@ The CLI automatically executes your `themizer.config.ts` and generates `theme.cs
 
 ```css
 :root {
-  --theme-tokens-colors-green-500: #22c55e;
-  --theme-aliases-palette-text: rgb(var(--theme-tokens-colors-black) / var(--theme-tokens-alphas-secondary));
-  --theme-aliases-palette-main: var(--theme-tokens-colors-green-500);
+  --theme-tokens-colors-amber-500: oklch(76.9% 0.188 70.08);
+  --theme-aliases-palette-foreground: color-mix(in srgb, var(--theme-tokens-colors-amber-950) var(--theme-tokens-alphas-secondary), transparent);
+  --theme-aliases-palette-background: var(--theme-tokens-colors-amber-50);
   --theme-aliases-typography-title: var(--theme-tokens-units-24);
   /* ... */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --theme-aliases-palette-text: rgb(var(--theme-tokens-colors-white) / var(--theme-tokens-alphas-primary));
-    --theme-aliases-palette-background: var(--theme-tokens-colors-black);
+    --theme-aliases-palette-foreground: var(--theme-tokens-colors-amber-50);
+    --theme-aliases-palette-background: var(--theme-tokens-colors-amber-950);
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --theme-aliases-typography-headline: var(--theme-tokens-units-64);
+    --theme-aliases-typography-title: var(--theme-tokens-units-40);
   }
 }
 ```
@@ -148,9 +168,9 @@ import './globals.css'
 @import "./theme.css";
 
 @theme {
-  --color-text: var(--theme-aliases-palette-text);
+  --color-foreground: var(--theme-aliases-palette-foreground);
   --color-background: var(--theme-aliases-palette-background);
-  --color-main: var(--theme-aliases-palette-main);
+  --font-size-headline: var(--theme-aliases-typography-headline);
   --font-size-title: var(--theme-aliases-typography-title);
 }
 ```
@@ -169,9 +189,9 @@ export default {
       colors: {
         foreground: theme.aliases.palette.foreground,
         background: theme.aliases.palette.background,
-        main: theme.aliases.palette.main,
       },
       fontSize: {
+        headline: [theme.aliases.typography.headline],
         title: [theme.aliases.typography.title],
       },
     },
@@ -182,8 +202,9 @@ export default {
 Use semantic class names:
 
 ```tsx
-<div className="bg-background text-text">
-  <h1 className="text-title text-main">Hello World</h1>
+<div className="bg-background text-foreground">
+  <h1 className="text-headline">Hello World</h1>
+  <h2 className="text-title">Subtitle</h2>
 </div>
 ```
 

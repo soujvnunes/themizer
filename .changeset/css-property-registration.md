@@ -13,10 +13,10 @@ This release introduces automatic CSS `@property` registration for all generated
 - Optional `overrides` configuration to exclude specific properties from registration
 - Comprehensive support for 160+ CSS named colors and all CSS syntax types
 
-**Security Benefits:**
+**Type Validation Benefits:**
 
 - Browsers now validate that custom property values match their declared syntax types
-- Prevents external stylesheets from injecting invalid or malicious values
+- Prevents type mismatches (e.g., setting a `<color>` to `16px`)
 - Type-safe custom properties with automatic type detection
 
 **Breaking Changes:**

@@ -149,18 +149,18 @@ export default function atomizer<
 
   const r8eAtoms = __r8eAtoms ?? {}
 
+  // Precompute a Set of normalized overrides for O(1) lookup
+  const overridesSet = options?.overrides
+    ? new Set(options.overrides.map(override => override.split('.').join(PATH_UNIFIER)))
+    : null
+
   // Helper to check if a property path should be excluded from registration
   const isOverridden = (propertyPath: string): boolean => {
-    if (!options?.overrides) return false
-    return options.overrides.some((override) => {
-      // Remove the prefix to get the actual path for comparison
-      const normalizedPath = propertyPath.startsWith(prefix)
-        ? propertyPath.slice(prefix.length)
-        : propertyPath
-      // Replace dots with path unifier without creating new RegExp each time
-      const normalizedOverride = override.split('.').join(PATH_UNIFIER)
-      return normalizedPath === normalizedOverride
-    })
+    if (!overridesSet) return false
+    const normalizedPath = propertyPath.startsWith(prefix)
+      ? propertyPath.slice(prefix.length)
+      : propertyPath
+    return overridesSet.has(normalizedPath)
   }
 
   for (const [key, atom] of Object.entries(atoms)) {

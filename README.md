@@ -208,6 +208,82 @@ Use semantic class names:
 </div>
 ```
 
+### Linaria (Zero-Runtime CSS-in-JS)
+
+**themizer** is designed to be side-effect-free, making it compatible with build-time CSS-in-JS solutions like [Linaria](https://linaria.dev/). Unlike runtime CSS-in-JS libraries, Linaria extracts CSS at build time for optimal performance.
+
+```tsx
+// Button.tsx
+import { styled } from '@linaria/react'
+import theme from './themizer.config'
+
+const Button = styled.button`
+  background-color: ${theme.aliases.palette.background};
+  color: ${theme.aliases.palette.foreground};
+  font-size: ${theme.aliases.typography.body};
+  padding: ${theme.tokens.units[16]};
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 150ms;
+
+  &:hover {
+    opacity: ${theme.tokens.alphas.secondary};
+  }
+
+  @media ${theme.medias.desktop} {
+    padding: ${theme.tokens.units[24]};
+    font-size: ${theme.aliases.typography.title};
+  }
+`
+
+export default function MyButton({ children }) {
+  return <Button>{children}</Button>
+}
+```
+
+**Why it works:** The `themizer()` function is pure and doesn't perform file system operations during module evaluation, so Linaria can safely evaluate your config at build time and extract the theme values into static CSS.
+
+#### Using with the `css` function:
+
+```tsx
+import { css } from '@linaria/core'
+import theme from './themizer.config'
+
+const cardStyles = css`
+  background: ${theme.aliases.palette.background};
+  border: 1px solid ${theme.tokens.colors.amber[500]};
+  padding: ${theme.tokens.units[24]};
+
+  @media ${theme.medias.dark} {
+    border-color: ${theme.tokens.colors.amber[50]};
+  }
+`
+
+export default function Card({ children }) {
+  return <div className={cardStyles}>{children}</div>
+}
+```
+
+### Runtime CSS-in-JS (styled-components, emotion)
+
+For runtime solutions, themizer works seamlessly with your theme tokens:
+
+```tsx
+import styled from 'styled-components'
+import theme from './themizer.config'
+
+const Button = styled.button`
+  background-color: ${theme.aliases.palette.background};
+  color: ${theme.aliases.palette.foreground};
+  padding: ${theme.tokens.units[16]};
+
+  &:hover {
+    opacity: ${theme.tokens.alphas.secondary};
+  }
+`
+```
+
 ### Next.js with styled-jsx
 
 ```tsx
@@ -219,30 +295,13 @@ export default function Title({ children }) {
       {children}
       <style jsx>{`
         .heading {
-          color: ${theme.aliases.palette.main};
+          color: ${theme.aliases.palette.foreground};
           font-size: ${theme.aliases.typography.title};
         }
       `}</style>
     </h1>
   )
 }
-```
-
-### CSS-in-JS (styled-components, emotion)
-
-```tsx
-import styled from 'styled-components'
-import theme from './themizer.config'
-
-const Button = styled.button`
-  background-color: ${theme.aliases.palette.main};
-  color: ${theme.aliases.palette.foreground};
-  padding: ${theme.aliases.typography.body};
-
-  &:hover {
-    opacity: ${theme.tokens.alphas.secondary};
-  }
-`
 ```
 
 ## CLI Commands

@@ -2,7 +2,6 @@ name: Release to npm
 
 permissions:
   contents: write
-  pull-requests: write
 
 on:
   push:
@@ -39,14 +38,32 @@ jobs:
         run: pnpm audit --audit-level=high
         continue-on-error: false
 
-      - name: Create Release Pull Request or Publish
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          publish: pnpm publish --access public
-          version: pnpm changeset version
-          commit: 'chore: version packages'
-          title: 'chore: version packages'
+      - name: Check for changesets
+        id: check_changesets
+        run: |
+          if [ -n "$(ls -A .changeset/*.md 2>/dev/null | grep -v README.md)" ]; then
+            echo "has_changesets=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changesets=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Apply version bump from Changesets
+        if: steps.check_changesets.outputs.has_changesets == 'true'
+        run: pnpm changeset version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Commit version bump
+        if: steps.check_changesets.outputs.has_changesets == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "chore: version packages" || echo "No changes to commit"
+          git push
+
+      - name: Publish to npmjs.org
+        if: steps.check_changesets.outputs.has_changesets == 'true'
+        run: pnpm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

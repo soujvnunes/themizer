@@ -32,6 +32,8 @@ Refactor architecture for better maintainability and add comprehensive improveme
 - Add comprehensive JSDoc to internal library functions
 - Update README examples to match new init template
 - Modernize README examples with color-mix() and semantic naming
+- Add comprehensive Linaria (zero-runtime CSS-in-JS) integration examples
+- Highlight themizer's side-effect-free design enabling build-time CSS extraction
 - Document RJSS interface to type conversion in CHANGELOG
 
 **Code Quality:**

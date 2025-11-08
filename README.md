@@ -550,6 +550,10 @@ Properties listed in `overrides` will:
 - Not have `@property` registration
 - Accept any value type without validation
 
+**Important:** Override paths match the structure of your tokens/aliases objects, not the generated CSS variable names:
+- For tokens: Use the path within the `tokens` object (e.g., `'colors.primary'` for `tokens.colors.primary`)
+- For aliases: Use the path within the aliases object (e.g., `'foreground'` for the `foreground` alias)
+
 This is useful for properties that you want to allow dynamic overriding from external sources or that have complex computed values that change types.
 
 ### Dark Mode

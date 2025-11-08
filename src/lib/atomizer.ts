@@ -154,7 +154,9 @@ export default function atomizer<
     if (!options?.overrides) return false
     return options.overrides.some((override) => {
       // Remove the prefix to get the actual path for comparison
-      const normalizedPath = propertyPath.replace(new RegExp(`^${prefix}`), '')
+      const normalizedPath = propertyPath.startsWith(prefix)
+        ? propertyPath.slice(prefix.length)
+        : propertyPath
       return normalizedPath === override.replace(/\./g, PATH_UNIFIER)
     })
   }

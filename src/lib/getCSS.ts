@@ -3,6 +3,12 @@ import type { PropertyMetadataMap } from './inferSyntax'
 import isAtom from './isAtom'
 
 /**
+ * Template for generating a single @property CSS rule
+ */
+const generatePropertyRule = (name: string, meta: PropertyMetadataMap[string]): string =>
+  `@property ${name}{syntax:"${meta.syntax}";inherits:${meta.inherits};initial-value:${meta.initialValue};}`
+
+/**
  * Generates @property CSS rules from metadata
  * @param metadata - Map of property names to their metadata
  * @returns CSS string with @property declarations
@@ -11,7 +17,7 @@ function generatePropertyRules(metadata: PropertyMetadataMap): string {
   let propertyRules = ''
 
   for (const [name, meta] of Object.entries(metadata)) {
-    propertyRules += `@property ${name}{syntax:"${meta.syntax}";inherits:${meta.inherits};initial-value:${meta.initialValue};}`
+    propertyRules += generatePropertyRule(name, meta)
   }
 
   return propertyRules

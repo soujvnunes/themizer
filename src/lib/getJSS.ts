@@ -2,9 +2,10 @@ import type { FlattenVars, Vars } from './atomizer'
 import isAtom from './isAtom'
 
 export interface RJSS {
+  ':root'?: Vars
   [mediaQuery: string]: {
     ':root': Vars
-  }
+  } | Vars
 }
 
 export default function getJSS(vars: FlattenVars) {

@@ -35,6 +35,7 @@
   - Update TSConfig to remove outdated `src/cli/index.ts` reference
   - Fix ESLint configuration to include root-level TypeScript files
   - Fix media query validation regex to support keyword values (prefers-color-scheme, orientation, etc.) in addition to numeric values
+  - Fix TypeScript error TS2411 in RJSS type by converting from interface to intersection type. This resolves the conflict between the optional ':root' property and the index signature while maintaining the same runtime behavior. Note: The RJSS interface can no longer be extended via `interface extends`, but can still be composed using type intersections.
 
   **Improvements:**
 

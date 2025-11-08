@@ -11,7 +11,7 @@ import isAtom from './isAtom'
  * The RJSS type uses an intersection to allow both:
  * - An optional ':root' property containing root-level CSS variables
  * - Dynamic media query keys (e.g., '@media (prefers-color-scheme: dark)')
- *   that can contain either nested ':root' objects or direct variable definitions
+ *   that contain nested ':root' objects with variable definitions
  *
  * @internal
  */

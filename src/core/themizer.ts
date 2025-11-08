@@ -1,7 +1,6 @@
-import ThemeTempFile from '../helpers/ThemeTempFile'
-
 import addAtMedia from '../lib/addAtMedia'
 import getCSS from '../lib/getCSS'
+import getJSS from '../lib/getJSS'
 import atomizer, {
   type ResolveAtoms,
   type AtomizerOptions,
@@ -55,11 +54,15 @@ export default function themizer<
     prefix: `${options.prefix}-aliases`,
   })
 
-  ThemeTempFile.write(getCSS({ ...tokenized.vars, ...aliased.vars }))
+  const flattenVars = { ...tokenized.vars, ...aliased.vars }
 
   return {
     aliases: aliased.ref,
     tokens: tokenized.ref,
     medias: addAtMedia(options.medias),
+    rules: {
+      css: getCSS(flattenVars),
+      jss: getJSS(flattenVars),
+    },
   }
 }

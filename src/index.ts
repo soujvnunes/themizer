@@ -5,6 +5,7 @@ export { default as resolveAtom } from './core/resolveAtom'
 
 // Core types
 export type { Atom } from './lib/isAtom'
+export type { RJSS } from './lib/getJSS'
 export type {
   Atoms,
   Medias,
@@ -15,16 +16,5 @@ export type {
   Atomized,
 } from './lib/atomizer'
 
-// Framework detection types (for CLI and advanced integrations)
-export type { Framework, FrameworkDetectionResult } from './helpers/detectFramework'
-
-// Validation utilities (for advanced users)
-export {
-  validatePrefix,
-  validateTokens,
-  validateFilePath,
-  validateMediaQuery,
-  isValidCSSIdentifier,
-  isValidMediaQuery,
-  sanitizeCSSValue,
-} from './lib/validators'
+// Validation utilities (for library users)
+export { validatePrefix, validateTokens, isValidCSSIdentifier } from './lib/validators'

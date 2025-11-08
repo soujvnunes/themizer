@@ -339,7 +339,7 @@ Main function to generate design tokens and aliases.
 - `options.prefix` - Prefix for CSS custom properties (e.g., `'theme'` → `--theme-*`)
 - `options.medias` - Media query definitions for responsive design
 - `options.tokens` - Design tokens object (colors, spacing, typography, etc.)
-- `options.overrides` - Optional array of property paths to exclude from `@property` registration (e.g., `['colors.primary']`)
+- `options.overrides` - Optional array of property paths to exclude from `@property` registration (e.g., `['tokens.colors.primary']`)
 - `aliases` - Function that receives resolved tokens and returns semantic aliases
 
 #### Returns
@@ -536,7 +536,7 @@ export default themizer(
     },
     // Exclude specific properties from @property registration
     // Supports both dot notation and dash notation
-    overrides: ['colors.primary'], // or ['colors-primary']
+    overrides: ['tokens.colors.primary'], // or ['tokens-colors-primary']
   },
   (t) => ({
     foreground: t.colors.primary,

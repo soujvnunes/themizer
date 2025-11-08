@@ -38,7 +38,7 @@ Change your design system once in your configuration, and all components update 
 - **Single Source of Truth** - Define your design system once, use everywhere
 - **Tailwind Integration** - Extend Tailwind's theme with your tokens
 - **CSS-in-JS Compatible** - Works with styled-jsx, styled-components, emotion, etc.
-- **CSS @property Registration** - Automatic type validation for enhanced security and browser optimization
+- **CSS @property Registration** - Automatic type validation and browser optimization
 
 ## Quick Start
 
@@ -421,7 +421,7 @@ export const viewport = {
 
 ## Advanced
 
-### CSS @property Registration (Enhanced Security)
+### CSS @property Registration (Type Validation)
 
 **themizer** automatically registers all generated CSS custom properties using the CSS `@property` at-rule. This provides two key benefits:
 

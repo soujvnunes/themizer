@@ -264,8 +264,8 @@ function isColor(value: string): boolean {
   // color-mix()
   if (/^color-mix\s*\([^)]+\)/.test(value)) return true
 
-  // Hex colors (#RGB, #RRGGBB, #RRGGBBAA, etc.)
-  if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(value)) return true
+  // Hex colors (#RGB, #RGBA, #RRGGBB, #RRGGBBAA, etc.)
+  if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(value)) return true
 
   // Named colors - O(1) lookup using Set
   if (NAMED_COLORS_SET.has(value.toLowerCase())) return true

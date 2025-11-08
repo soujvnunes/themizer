@@ -3,8 +3,7 @@ import { watch } from 'chokidar'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import writeThemeFile from '../helpers/writeThemeFile'
-import executeConfig from '../helpers/executeConfig'
-import { validateFilePath } from '../lib/validators'
+import { validateFilePath } from './validators'
 
 export async function themeAction(options: { outDir?: string; watch?: boolean }) {
   if (!options.outDir) {
@@ -24,10 +23,7 @@ export async function themeAction(options: { outDir?: string; watch?: boolean })
   try {
     validateFilePath(options.outDir)
 
-    // Execute config to generate temp file
-    await executeConfig(configPath)
-
-    await writeThemeFile(options.outDir)
+    await writeThemeFile(options.outDir, configPath)
     console.log(`themizer: theme.css written to ${options.outDir} directory`)
 
     if (options.watch) {
@@ -49,9 +45,7 @@ export async function themeAction(options: { outDir?: string; watch?: boolean })
         console.log('')
         console.log('themizer: Config file changed, regenerating theme.css...')
         try {
-          // Re-execute config to regenerate temp file
-          await executeConfig(configPath)
-          await writeThemeFile(outDir)
+          await writeThemeFile(outDir, configPath)
           console.log(`themizer: ✓ theme.css regenerated successfully`)
         } catch (error) {
           console.error(`themizer: Failed to regenerate theme.css - ${(error as Error).message}`)

@@ -1,6 +1,6 @@
 import { readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { isPlainObject } from '../lib/validators'
+import { isPlainObject } from './validators'
 
 export type Framework = 'next-app' | 'next-pages' | 'remix' | 'vite' | 'create-react-app' | 'other'
 

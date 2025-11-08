@@ -2,8 +2,8 @@ import { Command } from 'commander'
 import { writeFileSync, readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import prompts from 'prompts'
-import { getFrameworkInfo, getFrameworkDisplayName } from '../helpers/detectFramework'
-import { validateFilePath, validatePlainObject } from '../lib/validators'
+import { getFrameworkInfo, getFrameworkDisplayName } from './detectFramework'
+import { validateFilePath, validatePlainObject } from './validators'
 import { escapeSingleQuotes } from '../lib/shellEscape'
 
 const CONFIG_TEMPLATE = `import themizer from 'themizer'
@@ -13,7 +13,9 @@ const CONFIG_TEMPLATE = `import themizer from 'themizer'
  * Customize your design tokens below
  */
 
-export const { aliases, tokens, medias } = themizer(
+const alpha = (color: string, percentage: string) => \`color-mix(in srgb, \${color} \${percentage}, transparent)\`
+
+export default themizer(
   {
     prefix: 'theme',
     medias: {
@@ -22,124 +24,24 @@ export const { aliases, tokens, medias } = themizer(
     },
     tokens: {
       colors: {
-        black: '#000000',
-        white: '#ffffff',
-        red: {
-          50: '#fef2f2',
-          100: '#fee2e2',
-          200: '#fecaca',
-          300: '#fca5a5',
-          400: '#f87171',
-          500: '#ef4444',
-          600: '#dc2626',
-          700: '#b91c1c',
-          800: '#991b1b',
-          900: '#7f1d1d',
-          950: '#450a0a',
-        },
-        blue: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
-          950: '#172554',
-        },
-        green: {
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          200: '#bbf7d0',
-          300: '#86efac',
-          400: '#4ade80',
-          500: '#22c55e',
-          600: '#16a34a',
-          700: '#15803d',
-          800: '#166534',
-          900: '#14532d',
-          950: '#052e16',
-        },
-        yellow: {
-          50: '#fefce8',
-          100: '#fef9c3',
-          200: '#fef08a',
-          300: '#fde047',
-          400: '#facc15',
-          500: '#eab308',
-          600: '#ca8a04',
-          700: '#a16207',
-          800: '#854d0e',
-          900: '#713f12',
-          950: '#422006',
-        },
-        purple: {
-          50: '#faf5ff',
-          100: '#f3e8ff',
-          200: '#e9d5ff',
-          300: '#d8b4fe',
-          400: '#c084fc',
-          500: '#a855f7',
-          600: '#9333ea',
-          700: '#7e22ce',
-          800: '#6b21a8',
-          900: '#581c87',
-          950: '#3b0764',
-        },
-        orange: {
-          50: '#fff7ed',
-          100: '#ffedd5',
-          200: '#fed7aa',
-          300: '#fdba74',
-          400: '#fb923c',
-          500: '#f97316',
-          600: '#ea580c',
-          700: '#c2410c',
-          800: '#9a3412',
-          900: '#7c2d12',
-          950: '#431407',
-        },
-        pink: {
-          50: '#fdf2f8',
-          100: '#fce7f3',
-          200: '#fbcfe8',
-          300: '#f9a8d4',
-          400: '#f472b6',
-          500: '#ec4899',
-          600: '#db2777',
-          700: '#be185d',
-          800: '#9d174d',
-          900: '#831843',
-          950: '#500724',
-        },
-        gray: {
-          50: '#f9fafb',
-          100: '#f3f4f6',
-          200: '#e5e7eb',
-          300: '#d1d5db',
-          400: '#9ca3af',
-          500: '#6b7280',
-          600: '#4b5563',
-          700: '#374151',
-          800: '#1f2937',
-          900: '#111827',
-          950: '#030712',
+        amber: {
+          50: "oklch(98% 0.02 85)",
+          500: "oklch(76.9% 0.188 70.08)",
+          900: "oklch(12% 0.03 70)",
+          950: "oklch(6% 0.02 70)",
         },
       },
       alphas: {
-        primary: 1,
-        secondary: 0.8,
-        tertiary: 0.6,
-        quaternary: 0.4,
-        quinary: 0.2,
-        senary: 0.1,
-        septenary: 0.06,
-        octonary: 0.04,
-        novenary: 0.02,
-        denary: 0,
+        primary: "100%",
+        secondary: "80%",
+        tertiary: "60%",
+        quaternary: "40%",
+        quinary: "20%",
+        senary: "10%",
+        septenary: "6%",
+        octonary: "4%",
+        novenary: "2%",
+        denary: "0%",
       },
       units: {
         0: '0',
@@ -160,9 +62,9 @@ export const { aliases, tokens, medias } = themizer(
     // Define your semantic aliases grouped by context
 
     palette: {
-      text: [{ dark: \`rgb(\${colors.white} / \${alphas.primary})\` }, \`rgb(\${colors.black} / \${alphas.secondary})\`],
-      background: [{ dark: colors.black }, colors.white],
-      main: colors.green[500],
+      foreground: [{ dark: colors.amber[50] }, alpha(colors.amber[950], alphas.secondary)],
+      background: [{ dark: colors.amber[950] }, colors.amber[50]],
+      main: colors.amber[500],
     },
 
     typography: {

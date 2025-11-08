@@ -2,12 +2,12 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { initAction } from './init'
 import prompts from 'prompts'
-import * as detectFramework from '../helpers/detectFramework'
+import * as detectFramework from './detectFramework'
 
 jest.mock('node:fs')
 jest.mock('node:path')
 jest.mock('prompts')
-jest.mock('../helpers/detectFramework')
+jest.mock('./detectFramework')
 
 const mockExistsSync = existsSync as jest.MockedFunction<typeof existsSync>
 const mockReadFileSync = readFileSync as jest.MockedFunction<typeof readFileSync>

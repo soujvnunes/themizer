@@ -1,12 +1,4 @@
-import {
-  isValidCSSIdentifier,
-  validatePrefix,
-  sanitizeCSSValue,
-  isValidMediaQuery,
-  validateMediaQuery,
-  validateFilePath,
-  validateTokens,
-} from './validators'
+import { isValidCSSIdentifier, validatePrefix, validateTokens } from './validators'
 
 describe('validators', () => {
   describe('isValidCSSIdentifier', () => {
@@ -64,100 +56,6 @@ describe('validators', () => {
       expect(() => validatePrefix('')).toThrow('Prefix cannot be empty')
       expect(() => validatePrefix('has space')).toThrow('Invalid CSS identifier')
       expect(() => validatePrefix('has@special')).toThrow('Invalid CSS identifier')
-    })
-  })
-
-  describe('sanitizeCSSValue', () => {
-    it('should pass through numbers', () => {
-      expect(sanitizeCSSValue(42)).toBe('42')
-      expect(sanitizeCSSValue(3.14)).toBe('3.14')
-    })
-
-    it('should pass through safe CSS values', () => {
-      expect(sanitizeCSSValue('red')).toBe('red')
-      expect(sanitizeCSSValue('#ff0000')).toBe('#ff0000')
-      expect(sanitizeCSSValue('10px')).toBe('10px')
-      expect(sanitizeCSSValue('calc(100% - 20px)')).toBe('calc(100% - 20px)')
-      expect(sanitizeCSSValue('var(--spacing)')).toBe('var(--spacing)')
-    })
-
-    it('should remove dangerous characters', () => {
-      expect(sanitizeCSSValue('<script>alert(1)</script>')).toBe('scriptalert(1)/script')
-      expect(sanitizeCSSValue('value{}')).toBe('value')
-      expect(sanitizeCSSValue('value<>')).toBe('value')
-    })
-
-    it('should remove javascript protocol', () => {
-      expect(sanitizeCSSValue('javascript:alert(1)')).toBe('alert(1)')
-      expect(sanitizeCSSValue('JavaScript:alert(1)')).toBe('alert(1)')
-    })
-
-    it('should remove event handlers', () => {
-      expect(sanitizeCSSValue('value onclick=alert')).toBe('value alert')
-      expect(sanitizeCSSValue('value onmouseover=evil')).toBe('value evil')
-    })
-
-    it('should trim whitespace', () => {
-      expect(sanitizeCSSValue('  spaced  ')).toBe('spaced')
-    })
-  })
-
-  describe('isValidMediaQuery', () => {
-    it('should accept valid media queries', () => {
-      expect(isValidMediaQuery('(min-width: 768px)')).toBe(true)
-      expect(isValidMediaQuery('(max-width: 1024px)')).toBe(true)
-      expect(isValidMediaQuery('(prefers-color-scheme: dark)')).toBe(true)
-      expect(isValidMediaQuery('screen and (min-width: 768px)')).toBe(true)
-      expect(isValidMediaQuery('(min-width: 768px) and (max-width: 1024px)')).toBe(true)
-    })
-
-    it('should reject invalid media queries', () => {
-      expect(isValidMediaQuery('')).toBe(false)
-      expect(isValidMediaQuery('invalid')).toBe(false)
-      expect(isValidMediaQuery('()')).toBe(false)
-    })
-
-    it('should reject non-string values', () => {
-      expect(isValidMediaQuery(null as unknown as string)).toBe(false)
-      expect(isValidMediaQuery(undefined as unknown as string)).toBe(false)
-    })
-  })
-
-  describe('validateMediaQuery', () => {
-    it('should accept valid media queries', () => {
-      expect(() => validateMediaQuery('(min-width: 768px)')).not.toThrow()
-      expect(() => validateMediaQuery('screen and (min-width: 768px)')).not.toThrow()
-    })
-
-    it('should throw for invalid media queries', () => {
-      expect(() => validateMediaQuery('')).toThrow('Media query cannot be empty')
-      expect(() => validateMediaQuery('invalid')).toThrow('Invalid media query syntax')
-    })
-  })
-
-  describe('validateFilePath', () => {
-    it('should accept valid file paths', () => {
-      expect(() => validateFilePath('/path/to/file.css')).not.toThrow()
-      expect(() => validateFilePath('./relative/path.css')).not.toThrow()
-      expect(() => validateFilePath('simple.css')).not.toThrow()
-    })
-
-    it('should reject empty paths', () => {
-      expect(() => validateFilePath('')).toThrow('File path must be a non-empty string')
-    })
-
-    it('should reject directory traversal', () => {
-      expect(() => validateFilePath('../../../etc/passwd')).toThrow('directory traversal')
-      expect(() => validateFilePath('valid/../../../bad')).toThrow('directory traversal')
-    })
-
-    it('should reject null bytes', () => {
-      expect(() => validateFilePath('file\0.css')).toThrow('null bytes')
-    })
-
-    it('should reject non-string values', () => {
-      expect(() => validateFilePath(null as unknown as string)).toThrow()
-      expect(() => validateFilePath(undefined as unknown as string)).toThrow()
     })
   })
 

@@ -9,8 +9,10 @@ import atomizer, {
 } from '../lib/atomizer'
 import { validatePrefix, validateTokens } from '../lib/validators'
 
-interface ThemizerOptions<M extends Medias, T extends Atoms> extends Required<AtomizerOptions<M>> {
+interface ThemizerOptions<M extends Medias, T extends Atoms>
+  extends Required<Omit<AtomizerOptions<M>, 'overrides'>> {
   tokens: T
+  overrides?: string[]
 }
 
 /**
@@ -48,20 +50,23 @@ export default function themizer<
 
   const tokenized = atomizer<never, T>(options.tokens, {
     prefix: `${options.prefix}-tokens`,
+    overrides: options.overrides,
   })
   const aliased = atomizer(aliases(tokenized.ref), {
-    ...options,
     prefix: `${options.prefix}-aliases`,
+    medias: options.medias,
+    overrides: options.overrides,
   })
 
   const flattenVars = { ...tokenized.vars, ...aliased.vars }
+  const flattenMetadata = { ...tokenized.metadata, ...aliased.metadata }
 
   return {
     aliases: aliased.ref,
     tokens: tokenized.ref,
     medias: addAtMedia(options.medias),
     rules: {
-      css: getCSS(flattenVars),
+      css: getCSS(flattenVars, flattenMetadata),
       jss: getJSS(flattenVars),
     },
   }

@@ -15,6 +15,44 @@ export interface PropertyMetadata {
 export type PropertyMetadataMap = Record<string, PropertyMetadata>
 
 /**
+ * CSS length units for @property syntax detection
+ */
+const LENGTH_UNITS = [
+  'px',
+  'em',
+  'rem',
+  'vh',
+  'vw',
+  'vmin',
+  'vmax',
+  'ch',
+  'ex',
+  'cm',
+  'mm',
+  'in',
+  'pt',
+  'pc',
+  'q',
+  'cap',
+  'ic',
+  'lh',
+  'rlh',
+  'vi',
+  'vb',
+  'svw',
+  'svh',
+  'lvw',
+  'lvh',
+  'dvw',
+  'dvh',
+]
+
+/**
+ * Pre-compiled RegExp for length value matching
+ */
+const LENGTH_PATTERN = new RegExp(`^-?\\d*\\.?\\d+\\s*(${LENGTH_UNITS.join('|')})$`, 'i')
+
+/**
  * Set of CSS named colors (lowercase) for fast O(1) lookup
  */
 const NAMED_COLORS_SET = new Set([
@@ -238,38 +276,7 @@ function isColor(value: string): boolean {
  * Checks if a value is a CSS length
  */
 function isLength(value: string): boolean {
-  const lengthUnits = [
-    'px',
-    'em',
-    'rem',
-    'vh',
-    'vw',
-    'vmin',
-    'vmax',
-    'ch',
-    'ex',
-    'cm',
-    'mm',
-    'in',
-    'pt',
-    'pc',
-    'q',
-    'cap',
-    'ic',
-    'lh',
-    'rlh',
-    'vi',
-    'vb',
-    'svw',
-    'svh',
-    'lvw',
-    'lvh',
-    'dvw',
-    'dvh',
-  ]
-
-  const pattern = new RegExp(`^-?\\d*\\.?\\d+\\s*(${lengthUnits.join('|')})$`, 'i')
-  return pattern.test(value)
+  return LENGTH_PATTERN.test(value)
 }
 
 /**

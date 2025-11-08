@@ -27,6 +27,7 @@ jobs:
         with:
           node-version: 18
           cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: pnpm install
@@ -64,6 +65,6 @@ jobs:
 
       - name: Publish to npmjs.org
         if: steps.check_changesets.outputs.has_changesets == 'true'
-        run: pnpm publish --access public
+        run: pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

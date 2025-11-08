@@ -1,4 +1,4 @@
-import AtomsTempFile from '../helpers/AtomsTempFile'
+import ThemeTempFile from '../helpers/ThemeTempFile'
 
 import addAtMedia from '../lib/addAtMedia'
 import getCSS from '../lib/getCSS'
@@ -8,16 +8,45 @@ import atomizer, {
   type Atoms,
   type Medias,
 } from '../lib/atomizer'
+import { validatePrefix, validateTokens } from '../lib/validators'
 
 interface ThemizerOptions<M extends Medias, T extends Atoms> extends Required<AtomizerOptions<M>> {
   tokens: T
 }
 
+/**
+ * Main themizer function that generates CSS custom properties from design tokens and aliases.
+ *
+ * @param options - Configuration object with prefix, media queries, and design tokens
+ * @param options.prefix - Prefix for CSS custom properties (e.g., 'theme' generates --theme-*)
+ * @param options.medias - Media query definitions for responsive design
+ * @param options.tokens - Design tokens (colors, spacing, etc.)
+ * @param aliases - Function that receives resolved tokens and returns semantic aliases
+ * @returns Object containing resolved aliases, tokens, and media query helpers
+ *
+ * @example
+ * ```ts
+ * const { aliases, tokens, medias } = themizer(
+ *   {
+ *     prefix: 'theme',
+ *     medias: { md: '(min-width: 768px)' },
+ *     tokens: { colors: { black: '#000' } }
+ *   },
+ *   ({ colors }) => ({
+ *     palette: { text: colors.black }
+ *   })
+ * )
+ * ```
+ */
 export default function themizer<
   const M extends Medias,
   const T extends Atoms,
   const A extends Atoms<Extract<keyof M, string>>,
 >(options: ThemizerOptions<M, T>, aliases: (tokens: ResolveAtoms<never, T>) => A) {
+  // Validate inputs
+  validatePrefix(options.prefix)
+  validateTokens(options.tokens as Record<string, unknown>)
+
   const tokenized = atomizer<never, T>(options.tokens, {
     prefix: `${options.prefix}-tokens`,
   })
@@ -26,7 +55,7 @@ export default function themizer<
     prefix: `${options.prefix}-aliases`,
   })
 
-  AtomsTempFile.write(getCSS({ ...tokenized.vars, ...aliased.vars }))
+  ThemeTempFile.write(getCSS({ ...tokenized.vars, ...aliased.vars }))
 
   return {
     aliases: aliased.ref,

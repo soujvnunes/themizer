@@ -1,314 +1,206 @@
 # themizer
 
-Provide a theme-like scheme (with design tokens and aliases) to generate CSS custom properties and a JavaScript object to be used as its reference.
+> Transform verbose CSS utility classes into semantic, maintainable design tokens
 
-## Installation
+[![npm version](https://img.shields.io/npm/v/themizer.svg)](https://www.npmjs.com/package/themizer)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/npm/l/themizer.svg)](https://github.com/soujvnunes/themizer/blob/main/LICENSE)
 
-1. Install **themizer** via `pnpm` or another preferred package manager.
+## The Problem
+
+Utility-first CSS frameworks create a maintainability trap. Your components become littered with verbose, brittle class names:
+
+```tsx
+<button className="text-white dark:text-black hover:text-white/60 dark:hover:text-white/60 transition-colors">
+  Click me
+</button>
+```
+
+Need to change your brand color? Good luck finding and updating every instance of `text-blue-500` across your codebase. There's no single source of truth, just scattered utility classes everywhere.
+
+## The Solution
+
+**themizer** generates type-safe design tokens and semantic aliases that work seamlessly with Tailwind CSS or any CSS-in-JS solution:
+
+```tsx
+<button className="text-foreground hover:text-foreground-secondary transition-colors">
+  Click me
+</button>
+```
+
+Change your design system once in your configuration, and all components update automatically.
+
+## Features
+
+- **Framework-Aware Setup** - Automatically detects Next.js, Remix, Vite, and more
+- **Type-Safe Tokens** - Full TypeScript support with autocomplete
+- **Responsive Design** - Built-in media query support
+- **Single Source of Truth** - Define your design system once, use everywhere
+- **Tailwind Integration** - Extend Tailwind's theme with your tokens
+- **CSS-in-JS Compatible** - Works with styled-jsx, styled-components, emotion, etc.
+
+## Quick Start
 
 ```bash
-pnpm add themizer@latest
+# Install themizer
+pnpm add themizer
+
+# Initialize (auto-detects your framework)
+npx themizer init
+
+# Generate theme.css
+pnpm run themizer:theme
 ```
 
-2. Add the script into the `package.json` file to whenever the scheme is ready to start the build process.
-
-```diff
-  "scripts": {
-+   "themizer:atoms": "themizer --out-dir=./src/app"
-  },
-```
-
-## API
-
-Import **themizer** to generate the atoms, and **unwrapAtom** along with **resolveAtom** as helpers to get the custom property or default value of an atom.
-
-```ts
-import themizer, { unwrapAtom, resolveAtom } from "themizer";
-
-const { aliases, medias, tokens } = themizer({ prefix, medias, tokens }, aliases);
-
-const unwrapedAtom = unwrapAtom(aliases[key] /* or tokens[key] */);
-
-const resolvedAtom = resolveAtom(aliases[key] /* or tokens[key] */)
-```
-
-### themizer
-
-#### Parameters
-
-| Property | Description |
-| - | - |
-| tokens | `Object` that writes CSS responsive custom properties to `atoms.css` file, serves `aliases` as its function parameter, and `theme.tokens` as a JavaScript reference |
-| options.medias | `Object` with values as media queries and key as its own aliases to replace the responsive properties in the `aliases` object values. It's also accessed throught `theme.medias` as it is as a JavaScript reference with the addition of `@media *` in its values |
-| options.prefix? | `String` to prefix all the generated CSS custom properties. It's required to avoid colision with other libraries custom properties |
-| aliases | `Function` to generate `theme.rules` having `options.tokens` passed as parameter, and `theme.aliases` as a JavaScript reference |
-
-#### Return
-
-| Property      | Type   | Description                                                                                                                                                               |
-| ------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| theme.aliases | Object | Object containing the same keys as `aliases` parameter, but returning its CSS custom properties wrapped within `var(*)`. Use the utility `unwrapAtom` to unwrap it        |
-| theme.tokens  | Object | Object containing the same keys as `options.tokens` parameter, but returning its CSS custom properties wrapped within `var(*)`. Use the utility `unwrapAtom` to unwrap it |
-| theme.medias  | Object | Object containing the `options.medias` to be also used as reference in JavaScript                                                                                         |
-
-### unwrapAtom
-
-#### Parameters
-
-| Type   | Description                                                                                                                                       |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| string | Function to get generated custom properties. I.e. `unwrapAtom('var(--property)')` returns `--property`. Useful to change scoped custom properties |
-
-#### Return
-
-| Type   | Description                                     |
-| ------ | ----------------------------------------------- |
-| string | String containing the unwrapped custom property |
-
-### resolveAtom
-
-#### Parameters
-
-| Type   | Description                                                                                                                                                                   |
-| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| string | Function to get the default value of a custom propertie. I.e. `resolveAtom('var(--property, value)')` returns `value`. Useful for reusability and keeping its source of truth |
-
-#### Return
-
-| Type   | Description                                              |
-| ------ | -------------------------------------------------------- |
-| string | String containing the default value of a custom property |
-
-When the configuration is done, execute `pnpm run themizer` to inject the generated responsive custom properties into the choosen output directory.
-
-| Parameter | Description                                                            |
-| --------- | ---------------------------------------------------------------------- |
-| --watch   | Executes the command everytime the file `themizer.config.ts` is saved  |
-| --out-dir | Injects the generated responsive custom properties into the given file |
+The `init` command creates `themizer.config.ts` with example tokens and adds a script to your `package.json`.
 
 ## Usage
 
-1. Create a file and provide any tokens and options based on the product's design system needs.
+### 1. Configuration
 
 ```ts
-// src/lib/theme.ts
-
+// themizer.config.ts
 import themizer from 'themizer'
 
-const theme = themizer(
-  {
-    // "jv" in this example stands to João Victor, my name
-    prefix: 'jv',
-    medias: {
-      desktop: '(min-width: 1024px)',
-      // Nothing surprising, queries can be combined
-      darkNonprint: '(prefers-color-scheme: dark) and not print',
-      motion: '(prefers-reduced-motion: no-preference)',
-    },
-    tokens: {
-      alphas: {
-        primary: 0.8,
-      },
-      units: {
-        16: '1rem',
-        24: '1.5rem',
-        40: '2.5rem',
-      },
-      timing: {
-        bounce: 'cubic-bezier(0.5, -0.5, 0.25, 1.5)',
-      },
-      duration: {
-        fast: '200ms',
-      },
-      colors: {
-        amber: {
-          50: '#fffbf4',
-          500: '245 158 11',
-          950: '#100a01',
-        },
-      },
-    },
+const medias = {
+  md: '(min-width: 768px)',
+  lg: '(min-width: 1024px)',
+  dark: '(prefers-color-scheme: dark)',
+} as const
+
+const tokens = {
+  colors: {
+    black: '#000000',
+    white: '#ffffff',
+    green: { 500: '#22c55e', 600: '#16a34a' },
   },
-  (tokens) => ({
+  alphas: { primary: 1, secondary: 0.8 },
+  units: { 16: '1rem', 24: '1.5rem', 40: '2.5rem' },
+}
+
+const { aliases, tokens: resolvedTokens } = themizer(
+  { prefix: 'theme', medias, tokens },
+  ({ colors, alphas, units }) => ({
+    // Semantic aliases grouped by context
     palette: {
-      main: {
-        primary: `rgb(${tokens.colors.amber[500]} / ${tokens.alphas.primary})`,
-      },
-      foreground: [{ darkNonprint: tokens.colors.amber[50] }, tokens.colors.amber[950]],
-      background: [{ darkNonprint: tokens.colors.amber[950] }, tokens.colors.amber[50]],
+      text: [{ dark: `rgb(${colors.white} / ${alphas.primary})` }, `rgb(${colors.black} / ${alphas.secondary})`],
+      background: [{ dark: colors.black }, colors.white],
+      main: colors.green[500],
     },
     typography: {
-      heading: [{ desktop: tokens.units[40] }, tokens.units[24]],
-      body: tokens.units[16],
-    },
-    motion: {
-      bounce: [{ motion: `${tokens.trans.duration.fast} ${tokens.trans.timing.bounce}` }],
+      title: [{ lg: units[40] }, units[24]],
+      body: units[16],
     },
   }),
 )
 
-export default theme
+export { aliases, resolvedTokens as tokens, medias }
 ```
 
-> Note that `prefix` was specified as "jv". Otherwise, the generated custom properties would start with `--tokens-*` for tokens and `--aliases-*` for aliases.
+**Key Concept:**
+- **Tokens** = Raw values (`colors.green[500]`)
+- **Aliases** = Semantic names (`palette.text`, `typography.title`)
+- Responsive values use array syntax: `[{ mediaKey: value }, defaultValue]`
 
-The generated custom properties would be written in your product's app `src/app/atoms.css` path, and look like this:
+### 2. Generate CSS
+
+```bash
+pnpm run themizer:theme        # Generate once
+pnpm run themizer:theme:watch  # Watch mode (if configured with --watch)
+```
+
+The CLI automatically executes your `themizer.config.ts` and generates `theme.css` with CSS custom properties:
 
 ```css
-/* src/app/atoms.css */
-
 :root {
-  --jv-tokens-alphas-primary: 0.8;
-  --jv-tokens-units-16: 1rem;
-  --jv-tokens-units-24: 1.5rem;
-  --jv-tokens-units-40: 2.5rem;
-  --jv-tokens-timing-bounce: cubic-bezier(0.5, -0.5, 0.25, 1.5);
-  --jv-tokens-duration-fast: 200ms;
-  --jv-tokens-colors-amber-50: #fffbf4;
-  --jv-tokens-colors-amber-500: 245 158 11; /* #f59e0b */
-  --jv-tokens-colors-amber-950: #100a01;
-  --jv-aliases-palette-main-primary: rgb(var(--jv-tokens-colors-amber-500) / var(--jv-tokens-alphas-primary));
-  --jv-aliases-palette-foreground: var(--jv-tokens-colors-amber-950);
-  --jv-aliases-palette-background: var(--jv-tokens-colors-amber-50);
-  --jv-aliases-typography-heading: var(--jv-tokens-units-24);
-  --jv-aliases-typography-body: var(--jv-tokens-units-16);
+  --theme-tokens-colors-green-500: #22c55e;
+  --theme-aliases-palette-text: rgb(var(--theme-tokens-colors-black) / var(--theme-tokens-alphas-secondary));
+  --theme-aliases-palette-main: var(--theme-tokens-colors-green-500);
+  --theme-aliases-typography-title: var(--theme-tokens-units-24);
+  /* ... */
 }
 
-@media (prefers-color-scheme: dark) and not print {
+@media (prefers-color-scheme: dark) {
   :root {
-    --jv-aliases-palette-foreground: var(--jv-tokens-colors-amber-50);
-    --jv-aliases-palette-background: var(--jv-tokens-colors-amber-950);
-  }
-}
-
-@media (min-width: 1024px) {
-  :root {
-    --jv-aliases-typography-heading: var(--jv-tokens-units-40);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  :root {
-    --jv-aliases-motion-bounce: var(--jv-tokens-duration-fast) var(--jv-tokens-timing-bounce);
+    --theme-aliases-palette-text: rgb(var(--theme-tokens-colors-white) / var(--theme-tokens-alphas-primary));
+    --theme-aliases-palette-background: var(--theme-tokens-colors-black);
   }
 }
 ```
 
-2. Index the generated CSS in the project's top-level file, and also start using themizer's helpers.
+### 3. Import in Your App
 
-```diff
-  // Example of src/app/layout.tsx Next.js file.
-
-  import { type Viewport } from 'next'
-
-+ import { resolveAtom } from 'themizer'
-
-+ import theme from '@/lib/theme'
-
-  import './global.css'
-+ import './atoms.css'
-
-  export const viewport: Viewport = {
-    themeColor: [
-      {
-        media: '(prefers-color-scheme: dark)',
-+       color: `rgb(${resolveAtom(theme.tokens.colors.amber[950])})`,
--       color: '#100a01',
-      },
-      {
-        media: '(prefers-color-scheme: light)',
-+       color: `rgb(${resolveAtom(theme.tokens.colors.amber[50])})`,
--       color: '#fffbf4',
-      },
-    ],
-  }
-
-  export default function AppLayout({ children }: React.PropsWithChildren) {
-    return (
-      <html lang="en">
-        <body>
-          {children}
-        </body>
-      </html>
-    )
-  }
+```tsx
+// Next.js: app/layout.tsx or pages/_app.tsx
+// React/Vite: src/index.tsx or src/main.tsx
+import './theme.css'
+import './globals.css'
 ```
 
-### Extending Talwind CSS' v3 theme
+## Framework Integration
 
-Customize Tailwind CSS' default theme with the generated by `themizer`.
+**Note:** You only need to import `themizer.config` in your TypeScript/JavaScript code if you want to use the theme object programmatically (e.g., in Tailwind config, styled-components). For just using CSS custom properties, importing `theme.css` is sufficient.
 
-```diff
-  // tailwind.config.ts
+### Tailwind CSS v4
 
-  import { type Config } from 'tailwindcss';
-  import plugin from 'tailwindcss/plugin';
-  import { type CSSRuleObject } from 'tailwindcss/types/config';
+```css
+/* app/globals.css */
+@import "tailwindcss";
+@import "./theme.css";
 
-+ import theme from './lib/theme';
+@theme {
+  --color-text: var(--theme-aliases-palette-text);
+  --color-background: var(--theme-aliases-palette-background);
+  --color-main: var(--theme-aliases-palette-main);
+  --font-size-title: var(--theme-aliases-typography-title);
+}
+```
 
-  export default {
-    content: ['./app/**/*.{tsx,ts,mdx}', './components/**/*.{tsx,ts,mdx}'],
-    theme: {
+### Tailwind CSS v3
+
+```ts
+// tailwind.config.ts
+import { type Config } from 'tailwindcss'
+import theme from './themizer.config'
+
+export default {
+  content: ['./src/**/*.{tsx,ts,jsx,js}'],
+  theme: {
+    extend: {
       colors: {
-        transparent: 'transparent',
-        current: 'currentColor',
-+       background: theme.aliases.palette.background,
-+       foreground: theme.aliases.palette.foreground,
+        text: theme.aliases.palette.text,
+        background: theme.aliases.palette.background,
+        main: theme.aliases.palette.main,
       },
       fontSize: {
-+       heading: [theme.aliases.typography.heading, { lineHeight: theme.tokens.units[24] }],
-+       body: [theme.aliases.typography.body],
+        title: [theme.aliases.typography.title],
       },
     },
-  } satisfies Config
+  },
+} satisfies Config
 ```
 
-### Composing components
-
-#### React and Tailwind CSS
-
-Implement React components using the generated theme.
+Use semantic class names:
 
 ```tsx
-// src/components/Heading.tsx
-
-import { unwrapAtom } from 'themizer'
-
-export default function Heading({ className = '', ...props }: React.ComponentProps<'h1'>) {
-  return (
-    <h1
-      className={`text-heading ${className}`}
-      {...props}
-      styles={{
-        /* If this component has to have it's font-size locked for some reason */
-        [unwrapAtom(theme.aliases.typography.heading)]: theme.tokens.units[24],
-      }}
-    />
-  )
-}
+<div className="bg-background text-text">
+  <h1 className="text-title text-main">Hello World</h1>
+</div>
 ```
 
-> Apply the class names normally to style anything. And don't worry, intellisense will charmingly work.
-
-![Intellisense Example](intellisense-example.png)
-
-#### Next.js and styled-jsx (Next.js' built-in JSS solution)
+### Next.js with styled-jsx
 
 ```tsx
-// src/components/Title.tsx
+import theme from './themizer.config'
 
-import theme from '@/lib/theme'
-
-export default function Title({ children, className = '', ...props }: React.ComponentProps<'h1'>) {
+export default function Title({ children }) {
   return (
-    <h1
-      className={`heading ${className}`}
-      {...props}>
+    <h1 className="heading">
       {children}
       <style jsx>{`
         .heading {
-          font-size: ${theme.aliases.typography.heading};
+          color: ${theme.aliases.palette.main};
+          font-size: ${theme.aliases.typography.title};
         }
       `}</style>
     </h1>
@@ -316,4 +208,220 @@ export default function Title({ children, className = '', ...props }: React.Comp
 }
 ```
 
-> Remember to create a **styled-jsx** [registry](https://nextjs.org/docs/app/building-your-application/styling/css-in-js#styled-jsx) to collect all CSS rules in a render and inject the theme rules in the document.
+### CSS-in-JS (styled-components, emotion)
+
+```tsx
+import styled from 'styled-components'
+import theme from './themizer.config'
+
+const Button = styled.button`
+  background-color: ${theme.aliases.palette.main};
+  color: ${theme.aliases.palette.text};
+  padding: ${theme.aliases.typography.body};
+
+  &:hover {
+    opacity: ${theme.tokens.alphas.secondary};
+  }
+`
+```
+
+## CLI Commands
+
+### `themizer init`
+
+Create configuration with auto-detected framework support.
+
+```bash
+themizer init                    # Interactive setup
+themizer init --watch            # Include watch mode script
+themizer init --out-dir ./path   # Skip prompts, use custom path
+```
+
+**Detects:** Next.js (App/Pages Router), Remix, Vite, CRA, and more.
+
+### `themizer theme`
+
+Generate theme.css from your configuration.
+
+```bash
+themizer theme --out-dir ./src/app         # Generate once
+themizer theme --out-dir ./src/app --watch # Watch for changes
+```
+
+## API
+
+### `themizer(options, aliases)`
+
+Main function to generate design tokens and aliases.
+
+#### Parameters
+
+- `options.prefix` - Prefix for CSS custom properties (e.g., `'theme'` → `--theme-*`)
+- `options.medias` - Media query definitions for responsive design
+- `options.tokens` - Design tokens object (colors, spacing, typography, etc.)
+- `aliases` - Function that receives resolved tokens and returns semantic aliases
+
+#### Returns
+
+- `aliases` - Semantic aliases wrapped in `var()` for use in CSS/JS
+- `tokens` - Design tokens wrapped in `var()` for use in CSS/JS
+- `medias` - Media queries prefixed with `@media`
+
+#### Example
+
+```ts
+import theme from './themizer.config'
+
+// Using aliases (semantic names)
+theme.aliases.palette.main        // → "var(--theme-aliases-palette-main)"
+theme.aliases.typography.title    // → "var(--theme-aliases-typography-title)"
+
+// Using tokens (raw values)
+theme.tokens.colors.green[500]    // → "var(--theme-tokens-colors-green-500)"
+theme.tokens.units[16]            // → "var(--theme-tokens-units-16)"
+
+// Using media queries
+theme.medias.lg                   // → "@media (min-width: 1024px)"
+theme.medias.dark                 // → "@media (prefers-color-scheme: dark)"
+```
+
+### `unwrapAtom(atom)`
+
+Extract CSS custom property name from `var()` expression.
+
+#### Parameters
+
+- `atom` - A CSS custom property wrapped in `var()`
+
+#### Returns
+
+The unwrapped custom property name (string)
+
+#### Example
+
+```ts
+import { unwrapAtom } from 'themizer'
+import theme from './themizer.config'
+
+unwrapAtom(theme.aliases.palette.main)  // → "--theme-aliases-palette-main"
+
+// Useful for scoped overrides:
+<div style={{ [unwrapAtom(theme.aliases.palette.main)]: '#ff0000' }}>
+  This div has red text
+</div>
+```
+
+### `resolveAtom(atom)`
+
+Extract default value from `var()` expression.
+
+#### Parameters
+
+- `atom` - A CSS custom property with a default value
+
+#### Returns
+
+The resolved default value (string or number)
+
+#### Example
+
+```ts
+import { resolveAtom } from 'themizer'
+import theme from './themizer.config'
+
+resolveAtom(theme.tokens.colors.green[500])  // → "#22c55e"
+resolveAtom(theme.tokens.units[16])          // → "1rem"
+
+// Useful for non-CSS contexts:
+export const viewport = {
+  themeColor: resolveAtom(theme.tokens.colors.green[500]),
+}
+```
+
+## Advanced
+
+### Dark Mode
+
+```ts
+const { aliases } = themizer(
+  {
+    prefix: 'theme',
+    medias: { dark: '(prefers-color-scheme: dark)' },
+    tokens: { colors: { white: '#fff', black: '#000' } },
+  },
+  (t) => ({
+    foreground: [{ dark: t.colors.white }, t.colors.black],
+    background: [{ dark: t.colors.black }, t.colors.white],
+  }),
+)
+```
+
+### Motion & Accessibility
+
+Respect user preferences for reduced motion while providing smooth animations:
+
+```ts
+const { aliases } = themizer(
+  {
+    prefix: 'theme',
+    medias: {
+      motion: '(prefers-reduced-motion: no-preference)',
+    },
+    tokens: {
+      transitions: {
+        bounce: '200ms cubic-bezier(0.5, -0.5, 0.25, 1.5)',
+        ease: '200ms cubic-bezier(0.25, 0.1, 0.25, 1)',
+      },
+    },
+  },
+  (t) => ({
+    animations: {
+      bounce: [{ motion: t.transitions.bounce }],
+      ease: [{ motion: t.transitions.ease }],
+    },
+  }),
+)
+```
+
+Generated CSS:
+
+```css
+@media (prefers-reduced-motion: no-preference) {
+  :root {
+    --theme-aliases-animations-bounce: var(--theme-tokens-transitions-bounce);
+    --theme-aliases-animations-ease: var(--theme-tokens-transitions-ease);
+  }
+}
+```
+
+Users with `prefers-reduced-motion: reduce` get no animation variables (they remain undefined), while users who prefer motion get smooth transitions. This ensures accessibility without sacrificing user experience.
+
+### Component Overrides
+
+```tsx
+import { unwrapAtom } from 'themizer'
+import theme from './themizer.config'
+
+export default function Heading({ className = '', ...props }) {
+  return (
+    <h1
+      className={`text-2xl ${className}`}
+      style={{
+        // Override color for this component only
+        [unwrapAtom(theme.aliases.palette.main)]: theme.tokens.colors.green[600],
+      }}
+      {...props}
+    />
+  )
+}
+```
+
+## Links
+
+- [GitHub Repository](https://github.com/soujvnunes/themizer)
+- [npm Package](https://www.npmjs.com/package/themizer)
+- [Report Issues](https://github.com/soujvnunes/themizer/issues)
+
+## License
+
+ISC

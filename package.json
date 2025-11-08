@@ -23,8 +23,8 @@
     "CSS Custom Properties",
     "TypeScript"
   ],
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
     "./dist"
@@ -32,12 +32,12 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "bin": {
-    "themizer": "./dist/cli/index.cjs"
+    "themizer": "./dist/cli/bin.cjs"
   },
   "engines": {
     "node": ">= 16.0.0",
@@ -54,16 +54,16 @@
     "changeset:major": "pnpm changeset && pnpm version major"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.29.2",
+    "@changesets/cli": "^2.29.7",
     "@types/commander": "^2.12.5",
     "@types/jest": "^29.5.14",
-    "@types/node": "^22.7.9",
+    "@types/node": "^22.19.0",
+    "@types/prompts": "^2.4.9",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
-    "commander": "^13.1.0",
     "eslint": "^8.57.1",
-    "eslint-config-prettier": "^8.10.0",
-    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-config-prettier": "^8.10.2",
+    "eslint-plugin-prettier": "^4.2.5",
     "eslint-scope": "^7.2.2",
     "eslint-visitor-keys": "^3.4.3",
     "expect-puppeteer": "^10.1.4",
@@ -72,13 +72,18 @@
     "jest-puppeteer": "^10.1.4",
     "prettier": "^2.8.8",
     "prettier-linter-helpers": "^1.0.0",
-    "puppeteer": "^23.7.0",
-    "ts-jest": "^29.2.5",
+    "puppeteer": "^23.11.1",
+    "ts-jest": "^29.4.5",
     "ts-node": "^10.9.2",
-    "tsup": "^8.3.5",
-    "typescript": "^5.6.3"
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3"
   },
   "peerDependencies": {
     "typescript": ">=5.0.0"
+  },
+  "dependencies": {
+    "chokidar": "^4.0.3",
+    "commander": "^13.1.0",
+    "prompts": "^2.4.2"
   }
 }

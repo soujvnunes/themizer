@@ -2,7 +2,7 @@ import * as themizer from './index'
 
 describe('themizer', () => {
   describe('exporting modules', () => {
-    const modules = ['unwrapAtom', 'resolveAtom', 'cssToFile', 'default'] as const
+    const modules = ['unwrapAtom', 'resolveAtom', 'default'] as const
 
     it('returns its functions', () => {
       modules.forEach((module) => expect(themizer[module]).toBeInstanceOf(Function))

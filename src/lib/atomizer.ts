@@ -3,20 +3,49 @@ import PATH_UNIFIER from '../consts/PATH_UNIFIER'
 import isAtom, { type Atom } from './isAtom'
 import getVar from './getVar'
 
+/**
+ * Represents a flat object mapping CSS variable names to atomic values.
+ */
 export type Vars = { [variable: string]: Atom }
 
+/**
+ * Represents flattened CSS variables that can include media queries.
+ * Keys can be variable names or media query strings (e.g., '@media (prefers-color-scheme: dark)').
+ */
 export type FlattenVars = { [mediaQuery: string]: Atom | Vars }
 
+/**
+ * Represents CSS variables organized by media queries.
+ */
 export type ResponsiveVars = { [mediaQuery: string]: Vars }
 
+/**
+ * Represents a mapping of media query names to their conditions.
+ * @example { dark: '(prefers-color-scheme: dark)', mobile: '(max-width: 768px)' }
+ */
 export type Medias = { [media: string]: string }
 
+/**
+ * Represents responsive atoms: a tuple of media-specific values and an optional default.
+ * @template M - Media query name type
+ */
 export type R8eAtoms<M extends string> = [{ [Media in M]: Atom }, Atom?]
 
+/**
+ * Represents a recursive structure of atomic values and nested atom objects.
+ * @template M - Media query name type (defaults to never for non-responsive atoms)
+ */
 export interface Atoms<M extends string = never> {
   [key: string | number]: (Atom | Atoms<M>) | (M extends string ? R8eAtoms<M> : never)
 }
 
+/**
+ * Resolves the atoms structure to return the resolved reference types.
+ * Recursively processes nested atoms and responsive values to determine final types.
+ *
+ * @template M - Medias configuration type
+ * @template A - Atoms structure type
+ */
 export type ResolveAtoms<M extends Medias, A extends Atoms<Extract<keyof M, string>>> = {
   [Key in keyof A]: A[Key] extends [unknown, infer D]
     ? D
@@ -29,16 +58,73 @@ export type ResolveAtoms<M extends Medias, A extends Atoms<Extract<keyof M, stri
     : A[Key]
 }
 
+/**
+ * Configuration options for the atomizer function.
+ * @template M - Medias configuration type
+ */
 export type AtomizerOptions<M extends Medias> = {
+  /** Optional prefix for generated CSS variable names */
   prefix?: string
+  /** Optional media query definitions for responsive values */
   medias?: M
 }
 
+/**
+ * Result of the atomizer function containing both variables and references.
+ * @template M - Medias configuration type
+ * @template A - Atoms structure type
+ */
 export interface Atomized<M extends Medias, A extends Atoms<Extract<keyof M, string>>> {
+  /** Generated CSS variables (flat and responsive) */
   vars: Vars & M extends string ? ResponsiveVars : never
+  /** Type-safe references to use in place of the original atoms */
   ref: ResolveAtoms<M, A>
 }
 
+/**
+ * Converts a nested structure of atomic values into CSS custom properties and references.
+ *
+ * The atomizer recursively processes an atoms object, generating:
+ * - CSS custom property definitions (variables)
+ * - Type-safe var() references to those properties
+ * - Support for responsive values via media queries
+ * - Hierarchical naming based on object nesting
+ *
+ * @template M - Medias configuration type (constrained to Medias)
+ * @template A - Atoms structure type (constrained to Atoms)
+ *
+ * @param atoms - Nested structure of atomic values to convert
+ * @param options - Optional configuration (prefix, media queries)
+ * @param __path - Internal: Current path in the recursion (do not use)
+ * @param __r8eAtoms - Internal: Accumulated responsive atoms (do not use)
+ *
+ * @returns Object containing `vars` (CSS variables) and `ref` (type-safe references)
+ *
+ * @example
+ * ```typescript
+ * const result = atomizer(
+ *   {
+ *     color: {
+ *       primary: '#000',
+ *       secondary: '#666'
+ *     }
+ *   },
+ *   { prefix: 'theme' }
+ * )
+ * // result.vars = {
+ * //   '--theme-color-primary': '#000',
+ * //   '--theme-color-secondary': '#666'
+ * // }
+ * // result.ref = {
+ * //   color: {
+ * //     primary: 'var(--theme-color-primary, #000)',
+ * //     secondary: 'var(--theme-color-secondary, #666)'
+ * //   }
+ * // }
+ * ```
+ *
+ * @internal
+ */
 export default function atomizer<
   const M extends Medias,
   const A extends Atoms<Extract<keyof M, string>>,

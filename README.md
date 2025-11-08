@@ -38,6 +38,7 @@ Change your design system once in your configuration, and all components update 
 - **Single Source of Truth** - Define your design system once, use everywhere
 - **Tailwind Integration** - Extend Tailwind's theme with your tokens
 - **CSS-in-JS Compatible** - Works with styled-jsx, styled-components, emotion, etc.
+- **CSS @property Registration** - Automatic type validation for enhanced security and browser optimization
 
 ## Quick Start
 
@@ -338,6 +339,7 @@ Main function to generate design tokens and aliases.
 - `options.prefix` - Prefix for CSS custom properties (e.g., `'theme'` → `--theme-*`)
 - `options.medias` - Media query definitions for responsive design
 - `options.tokens` - Design tokens object (colors, spacing, typography, etc.)
+- `options.overrides` - Optional array of property paths to exclude from `@property` registration (e.g., `['tokens.colors.primary']`)
 - `aliases` - Function that receives resolved tokens and returns semantic aliases
 
 #### Returns
@@ -418,6 +420,134 @@ export const viewport = {
 ```
 
 ## Advanced
+
+### CSS @property Registration (Enhanced Security)
+
+**themizer** automatically registers all generated CSS custom properties using the CSS `@property` at-rule. This provides two key benefits:
+
+1. **Type Validation** - Browsers validate that property values match their declared syntax (e.g., `<color>`, `<length>`, `<percentage>`)
+2. **Security** - Prevents external stylesheets from injecting invalid values into your application's custom properties
+
+#### How It Works
+
+When you generate your theme, themizer analyzes each token and alias value to infer its CSS syntax type:
+
+```ts
+export default themizer(
+  {
+    prefix: 'theme',
+    medias: {},
+    tokens: {
+      colors: {
+        primary: 'oklch(76.9% 0.188 70.08)', // → <color>
+      },
+      spacing: {
+        md: '1rem',                            // → <length>
+      },
+      opacity: {
+        full: '100%',                          // → <percentage>
+      },
+      rotation: {
+        quarter: '90deg',                      // → <angle>
+      },
+      duration: {
+        fast: '200ms',                         // → <time>
+      },
+    },
+  },
+  (t) => ({
+    // Aliases are also registered
+    foreground: t.colors.primary,              // → <color>
+  }),
+)
+```
+
+Generated CSS includes `@property` declarations:
+
+```css
+@property --theme-tokens-colors-primary {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: oklch(76.9% 0.188 70.08);
+}
+
+@property --theme-tokens-spacing-md {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 1rem;
+}
+
+@property --theme-aliases-foreground {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: var(--theme-tokens-colors-primary);
+}
+
+:root {
+  --theme-tokens-colors-primary: oklch(76.9% 0.188 70.08);
+  --theme-tokens-spacing-md: 1rem;
+  --theme-aliases-foreground: var(--theme-tokens-colors-primary);
+}
+```
+
+#### Security Benefits
+
+With `@property` registration, browsers will **reject** invalid values:
+
+```css
+/* External stylesheet tries to inject a malicious value */
+:root {
+  --theme-tokens-colors-primary: "javascript:alert('xss')"; /* REJECTED by browser */
+  --theme-tokens-spacing-md: 999999999px;                   /* REJECTED by browser */
+}
+```
+
+The browser validates that values match the declared syntax type, preventing potential security issues and ensuring type safety.
+
+#### Supported Syntax Types
+
+themizer automatically detects and registers these CSS syntax types:
+
+- `<color>` - Colors (hex, rgb, hsl, oklch, oklab, color-mix, etc.)
+- `<length>` - Lengths (px, rem, em, vh, vw, etc.)
+- `<percentage>` - Percentages (%)
+- `<angle>` - Angles (deg, rad, grad, turn)
+- `<time>` - Time values (ms, s)
+- `<number>` - Decimal numbers
+- `<integer>` - Whole numbers
+- `*` - Universal syntax (for complex expressions like `var()`, `cubic-bezier()`, strings, etc.)
+
+#### Property Overrides
+
+If you need certain properties to accept any value type (bypassing validation), use the `overrides` option:
+
+```ts
+export default themizer(
+  {
+    prefix: 'theme',
+    medias: {},
+    tokens: {
+      colors: {
+        primary: '#f00',
+        accent: '#0f0',
+      },
+    },
+    // These properties won't be registered with @property
+    overrides: ['tokens.colors.primary'],
+  },
+  (t) => ({
+    foreground: t.colors.primary,
+    background: t.colors.accent,
+  }),
+)
+```
+
+Properties listed in `overrides` will:
+- Still be generated as CSS custom properties
+- Not have `@property` registration
+- Accept any value type without validation
+
+This is useful for properties that you want to allow dynamic overriding from external sources or that have complex computed values that change types.
 
 ### Dark Mode
 

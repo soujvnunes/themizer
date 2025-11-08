@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { validatePlainObject } from './src/lib/validators'
+import { validatePlainObject } from './src/cli/validators'
 
 // Read version from package.json with error handling
 function getVersion(): string {
@@ -9,7 +9,7 @@ function getVersion(): string {
     const packageJson = JSON.parse(readFileSync(join(__dirname, 'package.json'), 'utf-8'))
 
     // Validate structure (must be plain object, not array or null)
-    validatePlainObject(packageJson)
+    validatePlainObject<{ version: string }>(packageJson)
 
     return packageJson.version || '0.0.0'
   } catch (error) {

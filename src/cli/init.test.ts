@@ -141,7 +141,9 @@ describe('init', () => {
 
       expect(mockWriteFileSync).toHaveBeenCalledWith(
         expect.stringContaining('package.json'),
-        expect.stringContaining('"themizer:theme:watch": "themizer theme --out-dir \'./src/app\' --watch"'),
+        expect.stringContaining(
+          '"themizer:theme:watch": "themizer theme --out-dir \'./src/app\' --watch"',
+        ),
         'utf-8',
       )
       expect(console.log).toHaveBeenCalledWith(

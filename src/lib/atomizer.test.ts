@@ -182,5 +182,186 @@ describe('atomizer', () => {
         })
       })
     })
+    describe('with metadata generation', () => {
+      it('generates metadata for all properties', () => {
+        const atomized = atomizer({
+          color: {
+            primary: '#f00',
+          },
+          spacing: {
+            md: '1rem',
+          },
+          opacity: {
+            full: '100%',
+          },
+        })
+
+        expect(atomized.metadata).toEqual({
+          '--color-primary': {
+            syntax: '<color>',
+            inherits: false,
+            initialValue: '#f00',
+          },
+          '--spacing-md': {
+            syntax: '<length>',
+            inherits: false,
+            initialValue: '1rem',
+          },
+          '--opacity-full': {
+            syntax: '<percentage>',
+            inherits: false,
+            initialValue: '100%',
+          },
+        })
+      })
+
+      it('generates metadata with prefix', () => {
+        const atomized = atomizer(
+          {
+            color: {
+              primary: 'oklch(76.9% 0.188 70.08)',
+            },
+          },
+          {
+            prefix: 'tokens',
+          },
+        )
+
+        expect(atomized.metadata).toEqual({
+          '--tokens-color-primary': {
+            syntax: '<color>',
+            inherits: false,
+            initialValue: 'oklch(76.9% 0.188 70.08)',
+          },
+        })
+      })
+
+      it('generates metadata for responsive properties using default value', () => {
+        const atomized = atomizer(
+          {
+            spacing: {
+              md: [{ desktop: '1.5rem' }, '1rem'],
+            },
+          },
+          {
+            medias: {
+              desktop: '(min-width: 1024px)',
+            },
+          },
+        )
+
+        expect(atomized.metadata).toEqual({
+          '--spacing-md': {
+            syntax: '<length>',
+            inherits: false,
+            initialValue: '1rem',
+          },
+        })
+      })
+    })
+    describe('with overrides option', () => {
+      it('excludes overridden properties from metadata', () => {
+        const atomized = atomizer(
+          {
+            color: {
+              primary: '#f00',
+              secondary: '#00f',
+            },
+            spacing: {
+              md: '1rem',
+            },
+          },
+          {
+            overrides: ['color-primary'],
+          },
+        )
+
+        expect(atomized.metadata).toEqual({
+          '--color-secondary': {
+            syntax: '<color>',
+            inherits: false,
+            initialValue: '#00f',
+          },
+          '--spacing-md': {
+            syntax: '<length>',
+            inherits: false,
+            initialValue: '1rem',
+          },
+        })
+        expect(atomized.metadata['--color-primary']).toBeUndefined()
+      })
+
+      it('excludes nested overridden properties from metadata', () => {
+        const atomized = atomizer(
+          {
+            colors: {
+              red: {
+                500: '#f00',
+                600: '#e00',
+              },
+            },
+          },
+          {
+            overrides: ['colors-red-500'],
+          },
+        )
+
+        expect(atomized.metadata).toEqual({
+          '--colors-red-600': {
+            syntax: '<color>',
+            inherits: false,
+            initialValue: '#e00',
+          },
+        })
+        expect(atomized.metadata['--colors-red-500']).toBeUndefined()
+      })
+
+      it('still generates vars for overridden properties', () => {
+        const atomized = atomizer(
+          {
+            color: {
+              primary: '#f00',
+            },
+          },
+          {
+            overrides: ['color-primary'],
+          },
+        )
+
+        expect(atomized.vars).toEqual({
+          '--color-primary': '#f00',
+        })
+        expect(atomized.ref).toEqual({
+          color: {
+            primary: 'var(--color-primary, #f00)',
+          },
+        })
+      })
+
+      it('supports dot notation in overrides', () => {
+        const atomized = atomizer(
+          {
+            colors: {
+              red: {
+                500: '#f00',
+                600: '#e00',
+              },
+            },
+          },
+          {
+            overrides: ['colors.red.500'],
+          },
+        )
+
+        expect(atomized.metadata).toEqual({
+          '--colors-red-600': {
+            syntax: '<color>',
+            inherits: false,
+            initialValue: '#e00',
+          },
+        })
+        expect(atomized.metadata['--colors-red-500']).toBeUndefined()
+      })
+    })
   })
 })

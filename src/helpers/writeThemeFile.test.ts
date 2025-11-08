@@ -37,10 +37,7 @@ describe('writeThemeFile', () => {
     expect(process.cwd).toHaveBeenCalled()
     expect(process.cwd).toHaveReturnedWith(ROOT_DIR)
     expect(path.resolve).toHaveBeenCalledWith(ROOT_DIR, OUT_DIR, THEME_FILE_NAME)
-    expect(fs.promises.mkdir).toHaveBeenCalledWith(
-      `${ROOT_DIR}/${OUT_DIR}`,
-      { recursive: true },
-    )
+    expect(fs.promises.mkdir).toHaveBeenCalledWith(`${ROOT_DIR}/${OUT_DIR}`, { recursive: true })
     expect(fs.promises.writeFile).toHaveBeenCalledWith(
       `${ROOT_DIR}/${OUT_DIR}/${THEME_FILE_NAME}`,
       CSS,

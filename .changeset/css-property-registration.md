@@ -35,7 +35,7 @@ export default themizer(
       spacing: { md: '1rem' }
     },
     // Optional: exclude properties from type validation
-    overrides: ['tokens.colors.primary']
+    overrides: ['colors.primary']
   },
   (t) => ({ foreground: t.colors.primary })
 )

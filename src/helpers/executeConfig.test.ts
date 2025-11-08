@@ -1,6 +1,8 @@
 import { pathToFileURL } from 'node:url'
 import executeConfig from './executeConfig'
 
+const mockImportModule = jest.fn()
+
 describe('executeConfig', () => {
   const mockConfigPath = '/path/to/themizer.config.ts'
   const mockCSS = ':root{--color-primary:#000;}'
@@ -28,9 +30,9 @@ describe('executeConfig', () => {
     }
 
     // Mock dynamic import
-    jest.spyOn(global, 'import' as never).mockResolvedValue(mockModule as never)
+    mockImportModule.mockResolvedValue(mockModule)
 
-    const result = await executeConfig(mockConfigPath)
+    const result = await executeConfig(mockConfigPath, mockImportModule)
 
     expect(result).toBe(mockCSS)
   })
@@ -42,23 +44,25 @@ describe('executeConfig', () => {
       },
     }
 
-    const importSpy = jest.spyOn(global, 'import' as never).mockResolvedValue(mockModule as never)
+    mockImportModule.mockResolvedValue(mockModule)
 
-    await executeConfig(mockConfigPath)
+    await executeConfig(mockConfigPath, mockImportModule)
 
     // Verify pathToFileURL was used and timestamp was added
     const expectedUrl = pathToFileURL(mockConfigPath).href
-    const callArg = (importSpy.mock.calls[0] as string[])[0]
+    const callArg = (mockImportModule.mock.calls[0] as string[])[0]
 
-    expect(callArg).toMatch(new RegExp(`^${expectedUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\?t=\\d+$`))
+    expect(callArg).toMatch(
+      new RegExp(`^${expectedUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\?t=\\d+$`),
+    )
   })
 
   it('throws error when config does not export default', async () => {
     const mockModule = {}
 
-    jest.spyOn(global, 'import' as never).mockResolvedValue(mockModule as never)
+    mockImportModule.mockResolvedValue(mockModule)
 
-    await expect(executeConfig(mockConfigPath)).rejects.toThrow(
+    await expect(executeConfig(mockConfigPath, mockImportModule)).rejects.toThrow(
       'Failed to execute config file: Config file must export a theme object with rules.css property',
     )
   })
@@ -71,9 +75,9 @@ describe('executeConfig', () => {
       },
     }
 
-    jest.spyOn(global, 'import' as never).mockResolvedValue(mockModule as never)
+    mockImportModule.mockResolvedValue(mockModule)
 
-    await expect(executeConfig(mockConfigPath)).rejects.toThrow(
+    await expect(executeConfig(mockConfigPath, mockImportModule)).rejects.toThrow(
       'Config file must export a theme object with rules.css property',
     )
   })
@@ -87,9 +91,9 @@ describe('executeConfig', () => {
       },
     }
 
-    jest.spyOn(global, 'import' as never).mockResolvedValue(mockModule as never)
+    mockImportModule.mockResolvedValue(mockModule)
 
-    await expect(executeConfig(mockConfigPath)).rejects.toThrow(
+    await expect(executeConfig(mockConfigPath, mockImportModule)).rejects.toThrow(
       'Config file must export a theme object with rules.css property',
     )
   })
@@ -97,16 +101,16 @@ describe('executeConfig', () => {
   it('wraps import errors with helpful message', async () => {
     const originalError = new Error('Module not found')
 
-    jest.spyOn(global, 'import' as never).mockRejectedValue(originalError as never)
+    mockImportModule.mockRejectedValue(originalError)
 
-    await expect(executeConfig(mockConfigPath)).rejects.toThrow(
+    await expect(executeConfig(mockConfigPath, mockImportModule)).rejects.toThrow(
       'Failed to execute config file: Module not found',
     )
   })
 
   it('preserves non-Error thrown values', async () => {
-    jest.spyOn(global, 'import' as never).mockRejectedValue('string error' as never)
+    mockImportModule.mockRejectedValue('string error')
 
-    await expect(executeConfig(mockConfigPath)).rejects.toBe('string error')
+    await expect(executeConfig(mockConfigPath, mockImportModule)).rejects.toBe('string error')
   })
 })

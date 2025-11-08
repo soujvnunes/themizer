@@ -492,20 +492,25 @@ Generated CSS includes `@property` declarations:
 
 #### Type Safety Benefits
 
-With `@property` registration, browsers will **reject** values that do not match the declared type:
+With `@property` registration, browsers validate that custom property values match the declared syntax type:
 
 ```css
-/* External stylesheet tries to inject an invalid value */
 :root {
-  --theme-tokens-colors-primary: "not-a-color";            /* REJECTED: not a valid <color> value */
-  --theme-tokens-spacing-md: 999999999px;                   /* REJECTED: not a valid <length> value */
+  --theme-tokens-colors-primary: red;            /* ✓ Valid <color> value */
+  --theme-tokens-colors-primary: 16px;           /* ✗ Rejected: not a <color> value */
+
+  --theme-tokens-spacing-md: 1rem;               /* ✓ Valid <length> value */
+  --theme-tokens-spacing-md: #f00;               /* ✗ Rejected: not a <length> value */
 }
+```
+
+The browser enforces that values match the declared type, preventing type confusion errors.
 
 #### Supported Syntax Types
 
 themizer automatically detects and registers these CSS syntax types:
 
-- `<color>` - Colors (hex, rgb, hsl, oklch, oklab, color-mix, etc.)
+- `<color>` - Colors (hex, rgb, hsl, oklch, oklab, lab, lch, hwb, color, color-mix, etc.)
 - `<length>` - Lengths (px, rem, em, vh, vw, etc.)
 - `<percentage>` - Percentages (%)
 - `<angle>` - Angles (deg, rad, grad, turn)
@@ -529,8 +534,9 @@ export default themizer(
         accent: '#0f0',
       },
     },
-    // These properties won't be registered with @property
-    overrides: ['tokens.colors.primary'],
+    // Exclude specific properties from @property registration
+    // Supports both dot notation and dash notation
+    overrides: ['tokens.colors.primary'], // or ['tokens-colors-primary']
   },
   (t) => ({
     foreground: t.colors.primary,

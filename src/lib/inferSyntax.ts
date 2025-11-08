@@ -255,11 +255,20 @@ function isColor(value: string): boolean {
   // oklch(), oklab()
   if (/^okl(ch|ab)\s*\([^)]+\)/.test(value)) return true
 
+  // lab(), lch()
+  if (/^l(ab|ch)\s*\([^)]+\)/.test(value)) return true
+
   // rgb(), rgba()
   if (/^rgba?\s*\([^)]+\)/.test(value)) return true
 
   // hsl(), hsla()
   if (/^hsla?\s*\([^)]+\)/.test(value)) return true
+
+  // hwb()
+  if (/^hwb\s*\([^)]+\)/.test(value)) return true
+
+  // color() - generic color function for different color spaces
+  if (/^color\s*\([^)]+\)/.test(value)) return true
 
   // color-mix()
   if (/^color-mix\s*\([^)]+\)/.test(value)) return true

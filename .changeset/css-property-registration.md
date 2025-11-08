@@ -2,9 +2,9 @@
 "themizer": minor
 ---
 
-Add CSS @property registration for enhanced security and type validation
+Add CSS @property registration for type validation and browser optimization
 
-This release introduces automatic CSS `@property` registration for all generated custom properties, providing type validation and enhanced security.
+This release introduces automatic CSS `@property` registration for all generated custom properties, providing type validation and browser optimization.
 
 **New Features:**
 

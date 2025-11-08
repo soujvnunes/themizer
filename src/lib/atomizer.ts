@@ -151,7 +151,7 @@ export default function atomizer<
 
   // Precompute a Set of normalized overrides for O(1) lookup
   const overridesSet = options?.overrides
-    ? new Set(options.overrides.map(override => override.split('.').join(PATH_UNIFIER)))
+    ? new Set(options.overrides.map((override) => override.split('.').join(PATH_UNIFIER)))
     : null
 
   // Helper to check if a property path should be excluded from registration

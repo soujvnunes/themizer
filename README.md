@@ -490,19 +490,16 @@ Generated CSS includes `@property` declarations:
 }
 ```
 
-#### Security Benefits
+#### Type Safety Benefits
 
-With `@property` registration, browsers will **reject** invalid values:
+With `@property` registration, browsers will **reject** values that do not match the declared type:
 
 ```css
-/* External stylesheet tries to inject a malicious value */
+/* External stylesheet tries to inject an invalid value */
 :root {
   --theme-tokens-colors-primary: "not-a-color";            /* REJECTED: not a valid <color> value */
   --theme-tokens-spacing-md: 999999999px;                   /* REJECTED: not a valid <length> value */
 }
-```
-
-The browser validates that values match the declared syntax type, preventing potential security issues and ensuring type safety.
 
 #### Supported Syntax Types
 

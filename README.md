@@ -64,7 +64,7 @@ import themizer from 'themizer'
 
 const alpha = (color: string, percentage: string) => `color-mix(in srgb, ${color} ${percentage}, transparent)`
 
-export const { aliases, tokens, medias } = themizer(
+export default themizer(
   {
     prefix: 'theme',
     medias: {

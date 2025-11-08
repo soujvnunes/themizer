@@ -17,7 +17,7 @@ describe('getJSS', () => {
     })
 
     describe('with media queries', () => {
-      it('returns custom properties within each correspondent media query', () => {
+      it('returns custom properties within each corresponding media query', () => {
         const jss = getJSS({
           '--spaces-md': 16,
           '--bounce': 'cubic-bezier(0.5, -0.5, 0.25, 1.5)',

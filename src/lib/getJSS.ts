@@ -18,11 +18,9 @@ import isAtom from './isAtom'
 export type RJSS = {
   ':root'?: Vars
 } & {
-  [mediaQuery: string]:
-    | {
-        ':root': Vars
-      }
-    | Vars
+  [mediaQuery: string]: {
+    ':root': Vars
+  }
 }
 
 /**

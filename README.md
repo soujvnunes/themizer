@@ -580,9 +580,9 @@ themizer generates a `theme.css.map.json` file alongside your CSS for debugging:
 
 ```json
 {
-  "--a0": "--theme-tokens-colors-amber-light",
-  "--a1": "--theme-tokens-colors-amber-dark",
-  "--a2": "--theme-aliases-palette-foreground"
+  "--theme0": "--theme-tokens-colors-amber-light",
+  "--theme1": "--theme-tokens-colors-amber-dark",
+  "--theme2": "--theme-aliases-palette-foreground"
 }
 ```
 
@@ -605,11 +605,11 @@ Your TypeScript autocomplete remains unchanged! The minification only affects th
 ```ts
 // TypeScript still shows semantic names
 theme.aliases.palette.foreground
-// ✓ Type: "var(--a0, rgb(251, 191, 36))"
+// ✓ Type: "var(--theme0, rgb(251, 191, 36))"
 
 // At runtime, it uses minified names
 console.log(theme.aliases.palette.foreground)
-// → "var(--a0, rgb(251, 191, 36))"
+// → "var(--theme0, rgb(251, 191, 36))"
 ```
 
 ### Consistency Guarantee

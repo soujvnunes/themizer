@@ -25,7 +25,7 @@ function indexToLetters(index: number): string {
 
 /**
  * Generates a minified CSS variable name using the pattern:
- * a0...z9, A0...Z9, aa0...zz9, AA0...ZZ9, etc.
+ * a0...z9, A0...Z9, aa0...aZ9, ba0...bZ9, ..., ZZ9, aaa0, etc. (bijective base-52)
  *
  * When a prefix is provided, it replaces the initial letter, preventing collisions:
  * prefix0, prefix1, ..., prefix9, prefixa0, prefixa1, ..., prefixa9, prefixb0, ...

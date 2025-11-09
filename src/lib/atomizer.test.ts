@@ -57,25 +57,25 @@ describe('atomizer', () => {
         )
 
         expect(atomized.vars).toEqual({
-          '--a0': '#f00',
-          '--a1': 1,
-          '--a2': 'cubic-bezier(0.5, -0.5, 0.25, 1.5)',
+          '--atoms0': '#f00',
+          '--atoms1': 1,
+          '--atoms2': 'cubic-bezier(0.5, -0.5, 0.25, 1.5)',
         })
         expect(atomized.ref).toEqual({
           color: {
             red: {
-              500: 'var(--a0, #f00)',
+              500: 'var(--atoms0, #f00)',
             },
           },
           opacity: {
-            primary: 'var(--a1, 1)',
+            primary: 'var(--atoms1, 1)',
           },
-          bounce: 'var(--a2, cubic-bezier(0.5, -0.5, 0.25, 1.5))',
+          bounce: 'var(--atoms2, cubic-bezier(0.5, -0.5, 0.25, 1.5))',
         })
         expect(atomized.variableMap).toEqual({
-          '--a0': '--atoms-color-red-500',
-          '--a1': '--atoms-opacity-primary',
-          '--a2': '--atoms-bounce',
+          '--atoms0': '--atoms-color-red-500',
+          '--atoms1': '--atoms-opacity-primary',
+          '--atoms2': '--atoms-bounce',
         })
       })
     })
@@ -252,7 +252,7 @@ describe('atomizer', () => {
         )
 
         expect(atomized.metadata).toEqual({
-          '--a0': {
+          '--tokens0': {
             syntax: '<color>',
             inherits: false,
             initialValue: 'oklch(76.9% 0.188 70.08)',

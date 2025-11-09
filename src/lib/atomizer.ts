@@ -97,6 +97,7 @@ interface AtomizerInternal {
   metadata?: PropertyMetadataMap
   minify?: Map<string, string>
   minifyReverse?: Map<string, string>
+  minifyPrefix?: string
 }
 
 /**
@@ -108,6 +109,7 @@ function getMinifiedVariable(
   counter: number,
   forwardMap: Map<string, string>,
   reverseMap: Map<string, string>,
+  prefix?: string,
 ): string {
   // O(1) lookup using reverse map
   const existing = reverseMap.get(originalVariable)
@@ -116,7 +118,7 @@ function getMinifiedVariable(
     return existing
   }
 
-  const minified = `--${minifyVariableName(counter)}`
+  const minified = `--${minifyVariableName(counter, prefix)}`
   forwardMap.set(minified, originalVariable)
   reverseMap.set(originalVariable, minified)
   return minified
@@ -211,6 +213,9 @@ export default function atomizer<
 
   const minifyMap = _internal?.minify ?? new Map<string, string>()
   const minifyReverseMap = _internal?.minifyReverse ?? new Map<string, string>()
+  // Use minifyPrefix from _internal if available (for recursive calls),
+  // otherwise strip -tokens or -aliases suffix from prefix
+  const minifyPrefix = _internal?.minifyPrefix ?? options?.prefix?.replace(/-(tokens|aliases)$/, '')
 
   const vars = {} as FlattenVars
   const ref = {} as Record<string, unknown>
@@ -229,6 +234,7 @@ export default function atomizer<
         minifyMap.size,
         minifyMap,
         minifyReverseMap,
+        minifyPrefix,
       )
 
       vars[variable] = atom
@@ -240,6 +246,7 @@ export default function atomizer<
         minifyMap.size,
         minifyMap,
         minifyReverseMap,
+        minifyPrefix,
       )
 
       ref[key] = processResponsiveAtoms(atom as R8eAtoms<Extract<keyof M, string>>, variable, context)
@@ -253,6 +260,7 @@ export default function atomizer<
           metadata,
           minify: minifyMap,
           minifyReverse: minifyReverseMap,
+          minifyPrefix,
         },
       )
 

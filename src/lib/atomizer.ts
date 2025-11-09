@@ -101,25 +101,25 @@ interface AtomizerInternal {
 
 /**
  * Gets or creates a minified variable name.
- * Returns a tuple of [minified name, updated counter].
+ * Returns the minified name as a string.
  */
 function getMinifiedVariable(
   originalVariable: string,
   counter: number,
   forwardMap: Map<string, string>,
   reverseMap: Map<string, string>,
-): [string, number] {
+): string {
   // O(1) lookup using reverse map
   const existing = reverseMap.get(originalVariable)
 
   if (existing) {
-    return [existing, counter]
+    return existing
   }
 
   const minified = `--${minifyVariableName(counter)}`
   forwardMap.set(minified, originalVariable)
   reverseMap.set(originalVariable, minified)
-  return [minified, counter + 1]
+  return minified
 }
 
 /**
@@ -229,7 +229,7 @@ export default function atomizer<
         minifyMap.size,
         minifyMap,
         minifyReverseMap,
-      )[0]
+      )
 
       vars[variable] = atom
       ref[key] = getVar(variable, atom)
@@ -240,7 +240,7 @@ export default function atomizer<
         minifyMap.size,
         minifyMap,
         minifyReverseMap,
-      )[0]
+      )
 
       ref[key] = processResponsiveAtoms(atom as R8eAtoms<Extract<keyof M, string>>, variable, context)
     } else {

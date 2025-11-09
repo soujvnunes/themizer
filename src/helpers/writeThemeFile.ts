@@ -7,7 +7,7 @@ import executeConfig from './executeConfig'
 
 /**
  * Executes the themizer config and writes the generated CSS to a theme.css file.
- * If a variable map is present (production mode), also writes a source map file.
+ * Also writes a source map file (theme.css.map.json) for debugging minified variable names.
  *
  * @param outDir - Output directory path
  * @param configPath - Path to the themizer config file
@@ -21,7 +21,7 @@ export default async function writeThemeFile(outDir: string, configPath: string)
   // Write CSS file
   await fs.promises.writeFile(outputDirectory, css, FILE_ENCODING)
 
-  // Write source map file if variableMap exists (production mode)
+  // Write source map file if variableMap exists
   if (variableMap) {
     const sourceMapPath = `${outputDirectory}.map.json`
     const sourceMapContent = JSON.stringify(variableMap, null, 2)

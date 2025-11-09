@@ -1,11 +1,6 @@
 import atomizer from './atomizer'
 
-const originalEnv = process.env.NODE_ENV
-
 describe('atomizer', () => {
-  afterAll(() => {
-    process.env.NODE_ENV = originalEnv
-  })
   describe('when providing the atoms parameter', () => {
     it('returns the vars and its reference', () => {
       const atomized = atomizer({

@@ -99,7 +99,7 @@ interface AtomizerInternal {
 }
 
 /**
- * Gets or creates a minified variable name for production builds.
+ * Gets or creates a minified variable name.
  * Returns a tuple of [minified name, updated counter].
  */
 function getMinifiedVariable(

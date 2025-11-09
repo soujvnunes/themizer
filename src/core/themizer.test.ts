@@ -1,12 +1,6 @@
 import themizer from './themizer'
 
-const originalEnv = process.env.NODE_ENV
-
 describe('themizer', () => {
-  afterAll(() => {
-    jest.resetModules()
-    process.env.NODE_ENV = originalEnv
-  })
 
   it('returns its prefixed reference and tokens one with specified media and CSS rules', () => {
     const theme = themizer(

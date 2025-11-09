@@ -182,5 +182,82 @@ describe('atomizer', () => {
         })
       })
     })
+    describe('with metadata generation', () => {
+      it('generates metadata for all properties', () => {
+        const atomized = atomizer({
+          color: {
+            primary: '#f00',
+          },
+          spacing: {
+            md: '1rem',
+          },
+          opacity: {
+            full: '100%',
+          },
+        })
+
+        expect(atomized.metadata).toEqual({
+          '--color-primary': {
+            syntax: '<color>',
+            inherits: false,
+            initialValue: '#f00',
+          },
+          '--spacing-md': {
+            syntax: '<length>',
+            inherits: false,
+            initialValue: '1rem',
+          },
+          '--opacity-full': {
+            syntax: '<percentage>',
+            inherits: false,
+            initialValue: '100%',
+          },
+        })
+      })
+
+      it('generates metadata with prefix', () => {
+        const atomized = atomizer(
+          {
+            color: {
+              primary: 'oklch(76.9% 0.188 70.08)',
+            },
+          },
+          {
+            prefix: 'tokens',
+          },
+        )
+
+        expect(atomized.metadata).toEqual({
+          '--tokens-color-primary': {
+            syntax: '<color>',
+            inherits: false,
+            initialValue: 'oklch(76.9% 0.188 70.08)',
+          },
+        })
+      })
+
+      it('generates metadata for responsive properties using default value', () => {
+        const atomized = atomizer(
+          {
+            spacing: {
+              md: [{ desktop: '1.5rem' }, '1rem'],
+            },
+          },
+          {
+            medias: {
+              desktop: '(min-width: 1024px)',
+            },
+          },
+        )
+
+        expect(atomized.metadata).toEqual({
+          '--spacing-md': {
+            syntax: '<length>',
+            inherits: false,
+            initialValue: '1rem',
+          },
+        })
+      })
+    })
   })
 })

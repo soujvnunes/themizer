@@ -50,18 +50,19 @@ export default function themizer<
     prefix: `${options.prefix}-tokens`,
   })
   const aliased = atomizer(aliases(tokenized.ref), {
-    ...options,
     prefix: `${options.prefix}-aliases`,
+    medias: options.medias,
   })
 
   const flattenVars = { ...tokenized.vars, ...aliased.vars }
+  const flattenMetadata = { ...tokenized.metadata, ...aliased.metadata }
 
   return {
     aliases: aliased.ref,
     tokens: tokenized.ref,
     medias: addAtMedia(options.medias),
     rules: {
-      css: getCSS(flattenVars),
+      css: getCSS(flattenVars, flattenMetadata),
       jss: getJSS(flattenVars),
     },
   }

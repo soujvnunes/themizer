@@ -38,6 +38,7 @@ Change your design system once in your configuration, and all components update 
 - **Single Source of Truth** - Define your design system once, use everywhere
 - **Tailwind Integration** - Extend Tailwind's theme with your tokens
 - **CSS-in-JS Compatible** - Works with styled-jsx, styled-components, emotion, etc.
+- **CSS @property Registration** - Automatic type validation and browser optimization
 
 ## Quick Start
 
@@ -419,6 +420,104 @@ export const viewport = {
 
 ## Advanced
 
+### CSS @property Registration (Type Validation)
+
+**themizer** automatically registers all generated CSS custom properties using the CSS `@property` at-rule. This provides two key benefits:
+
+1. **Type Validation** - Browsers validate that property values match their declared syntax (e.g., `<color>`, `<length>`, `<percentage>`)
+2. **Type Safety** - Invalid values set by external stylesheets or scripts are rejected by the browser, helping prevent accidental type mismatches (but this is not a comprehensive security mechanism)
+
+#### How It Works
+
+When you generate your theme, themizer analyzes each token and alias value to infer its CSS syntax type:
+
+```ts
+export default themizer(
+  {
+    prefix: 'theme',
+    medias: {},
+    tokens: {
+      colors: {
+        primary: 'oklch(76.9% 0.188 70.08)', // → <color>
+      },
+      spacing: {
+        md: '1rem',                            // → <length>
+      },
+      opacity: {
+        full: '100%',                          // → <percentage>
+      },
+      rotation: {
+        quarter: '90deg',                      // → <angle>
+      },
+      duration: {
+        fast: '200ms',                         // → <time>
+      },
+    },
+  },
+  ({ colors }) => ({
+    // Aliases are also registered
+    foreground: colors.primary,              // → * (var reference)
+  }),
+)
+```
+
+Generated CSS includes `@property` declarations:
+
+```css
+@property --theme-tokens-colors-primary {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: oklch(76.9% 0.188 70.08);
+}
+
+@property --theme-tokens-spacing-md {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 1rem;
+}
+
+@property --theme-aliases-foreground {
+  syntax: "*";
+  inherits: false;
+  initial-value: var(--theme-tokens-colors-primary);
+}
+
+:root {
+  --theme-tokens-colors-primary: oklch(76.9% 0.188 70.08);
+  --theme-tokens-spacing-md: 1rem;
+  --theme-aliases-foreground: var(--theme-tokens-colors-primary);
+}
+```
+
+#### Type Safety Benefits
+
+With `@property` registration, browsers validate that custom property values match the declared syntax type:
+
+```css
+:root {
+  --theme-tokens-colors-primary: red;            /* ✓ Valid <color> value */
+  --theme-tokens-colors-primary: 16px;           /* ✗ Rejected: not a <color> value */
+
+  --theme-tokens-spacing-md: 1rem;               /* ✓ Valid <length> value */
+  --theme-tokens-spacing-md: #f00;               /* ✗ Rejected: not a <length> value */
+}
+```
+
+The browser enforces that values match the declared type, preventing type confusion errors.
+
+#### Supported Syntax Types
+
+themizer automatically detects and registers these CSS syntax types:
+
+- `<color>` - Colors (hex, rgb, hsl, oklch, oklab, lab, lch, hwb, color, color-mix, etc.)
+- `<length>` - Lengths (px, rem, em, vh, vw, etc.)
+- `<percentage>` - Percentages (%)
+- `<angle>` - Angles (deg, rad, grad, turn)
+- `<time>` - Time values (ms, s)
+- `<number>` - Decimal numbers
+- `<integer>` - Whole numbers
+- `*` - Universal syntax (for complex expressions like `var()`, `cubic-bezier()`, strings, etc.)
+
 ### Dark Mode
 
 ```ts
@@ -428,9 +527,9 @@ const { aliases } = themizer(
     medias: { dark: '(prefers-color-scheme: dark)' },
     tokens: { colors: { white: '#fff', black: '#000' } },
   },
-  (t) => ({
-    foreground: [{ dark: t.colors.white }, t.colors.black],
-    background: [{ dark: t.colors.black }, t.colors.white],
+  ({ colors }) => ({
+    foreground: [{ dark: colors.white }, colors.black],
+    background: [{ dark: colors.black }, colors.white],
   }),
 )
 ```
@@ -453,10 +552,10 @@ const { aliases } = themizer(
       },
     },
   },
-  (t) => ({
+  ({ transitions }) => ({
     animations: {
-      bounce: [{ motion: t.transitions.bounce }],
-      ease: [{ motion: t.transitions.ease }],
+      bounce: [{ motion: transitions.bounce }],
+      ease: [{ motion: transitions.ease }],
     },
   }),
 )

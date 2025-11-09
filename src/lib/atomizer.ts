@@ -2,6 +2,7 @@ import PATH_UNIFIER from '../consts/PATH_UNIFIER'
 
 import isAtom, { type Atom } from './isAtom'
 import getVar from './getVar'
+import { createPropertyMetadata, type PropertyMetadataMap } from './inferSyntax'
 
 /**
  * Represents a flat object mapping CSS variable names to atomic values.
@@ -79,6 +80,8 @@ export interface Atomized<M extends Medias, A extends Atoms<Extract<keyof M, str
   vars: Vars & M extends string ? ResponsiveVars : never
   /** Type-safe references to use in place of the original atoms */
   ref: ResolveAtoms<M, A>
+  /** Property metadata for @property registration */
+  metadata: PropertyMetadataMap
 }
 
 /**
@@ -128,12 +131,19 @@ export interface Atomized<M extends Medias, A extends Atoms<Extract<keyof M, str
 export default function atomizer<
   const M extends Medias,
   const A extends Atoms<Extract<keyof M, string>>,
->(atoms: A, options?: AtomizerOptions<M>, __path?: string, __r8eAtoms?: ResponsiveVars) {
+>(
+  atoms: A,
+  options?: AtomizerOptions<M>,
+  __path?: string,
+  __r8eAtoms?: ResponsiveVars,
+  __metadata?: PropertyMetadataMap,
+) {
   const prefix = options?.prefix ? `${options.prefix}${PATH_UNIFIER}` : ''
   const unifiedPath = __path ? `${__path}${PATH_UNIFIER}` : ''
 
   const vars = {} as FlattenVars
   const ref = {} as Record<string, unknown>
+  const metadata = __metadata ?? {}
 
   const r8eAtoms = __r8eAtoms ?? {}
 
@@ -144,6 +154,7 @@ export default function atomizer<
     if (isAtom(atom)) {
       vars[variable] = atom
       ref[key] = getVar(variable, atom)
+      metadata[variable] = createPropertyMetadata(atom) // Add metadata for @property registration
     } else if (Array.isArray(atom)) {
       const [medias, defaultValue] = atom as R8eAtoms<Extract<keyof M, string>>
 
@@ -153,13 +164,17 @@ export default function atomizer<
         r8eAtoms[mediaQuery] = { ...r8eAtoms[mediaQuery], [variable]: medias[media] }
       }
 
-      if (isAtom(defaultValue)) vars[variable] = defaultValue
+      if (isAtom(defaultValue)) {
+        vars[variable] = defaultValue
+        metadata[variable] = createPropertyMetadata(defaultValue) // Add metadata for responsive properties using default value
+      }
 
       ref[key] = getVar(variable, defaultValue)
     } else {
-      const atomized = atomizer(atom, { ...options, prefix: '' }, path, r8eAtoms)
+      const atomized = atomizer(atom, { ...options, prefix: '' }, path, r8eAtoms, metadata)
 
       Object.assign(vars, atomized.vars)
+      Object.assign(metadata, atomized.metadata)
       ref[key] = atomized.ref
     }
   }
@@ -169,5 +184,6 @@ export default function atomizer<
   return {
     vars,
     ref,
+    metadata,
   } as Atomized<M, A>
 }

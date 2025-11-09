@@ -45,7 +45,8 @@ function indexToLetters(index: number): string {
  * minifyVariableName(0, 'ui')   // "ui0"
  * minifyVariableName(9, 'ui')   // "ui9"
  * minifyVariableName(10, 'ui')  // "uia0"
- * minifyVariableName(260, 'ui') // "uiA0"
+ * minifyVariableName(260, 'ui') // "uiz0"
+ * minifyVariableName(270, 'ui') // "uiA0"
  * minifyVariableName(520, 'ds') // "dsaa0"
  */
 export function minifyVariableName(counter: number, prefix?: string): string {

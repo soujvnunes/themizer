@@ -171,7 +171,24 @@ The CLI automatically executes your `themizer.config.ts` and generates `theme.cs
 }
 ```
 
-> **Note:** Variable names are minified for production. See `theme.css.map.json` for the mapping to original semantic names.
+#### Source Map for Debugging
+
+A `theme.css.map.json` file is automatically generated alongside your CSS, mapping minified names back to semantic names:
+
+```json
+{
+  "--theme0": "--theme-tokens-colors-amber-50",
+  "--theme1": "--theme-tokens-colors-amber-500",
+  "--theme2": "--theme-tokens-colors-amber-900",
+  "--theme3": "--theme-tokens-colors-amber-950",
+  "--theme4": "--theme-tokens-alphas-secondary",
+  "--theme5": "--theme-tokens-units-16",
+  "--themea0": "--theme-aliases-palette-foreground",
+  "--themea1": "--theme-aliases-typography-headline"
+}
+```
+
+This allows you to identify original variable names when debugging minified CSS in DevTools.
 
 #### CSS @property Registration
 

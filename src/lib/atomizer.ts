@@ -219,19 +219,16 @@ export default function atomizer<
     const originalVariable = `--${path}`
 
     if (isAtom(atom)) {
-      // Always minify variable names
       const variable = getMinifiedVariable(originalVariable, minifyMap.size, minifyMap)[0]
 
       vars[variable] = atom
       ref[key] = getVar(variable, atom)
       metadata[variable] = createPropertyMetadata(atom)
     } else if (Array.isArray(atom)) {
-      // Always minify variable names
       const variable = getMinifiedVariable(originalVariable, minifyMap.size, minifyMap)[0]
 
       ref[key] = processResponsiveAtoms(atom as R8eAtoms<Extract<keyof M, string>>, variable, context)
     } else {
-      // Recursive call for nested objects - don't minify at this level
       const atomized = atomizer(
         atom,
         { ...options, prefix: '' },
@@ -251,15 +248,13 @@ export default function atomizer<
 
   Object.assign(vars, r8eAtoms)
 
-  // Convert Map to plain object for variableMap (only at the top level)
   const result: Atomized<M, A> = {
     vars,
     ref,
     metadata,
   } as Atomized<M, A>
 
-  // Always include variableMap at the root level (when path is not provided)
-  // This handles both: 1) no _internal at all, 2) _internal with minify but no path
+  // Include variableMap at root level (when not recursing into nested objects)
   if (!_internal?.path && minifyMap.size > 0) {
     result.variableMap = Object.fromEntries(minifyMap)
   }

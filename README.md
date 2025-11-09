@@ -339,7 +339,6 @@ Main function to generate design tokens and aliases.
 - `options.prefix` - Prefix for CSS custom properties (e.g., `'theme'` → `--theme-*`)
 - `options.medias` - Media query definitions for responsive design
 - `options.tokens` - Design tokens object (colors, spacing, typography, etc.)
-- `options.overrides` - Optional array of property paths to exclude from `@property` registration (e.g., `['tokens.colors.primary']`)
 - `aliases` - Function that receives resolved tokens and returns semantic aliases
 
 #### Returns
@@ -455,9 +454,9 @@ export default themizer(
       },
     },
   },
-  (t) => ({
+  ({ colors }) => ({
     // Aliases are also registered
-    foreground: t.colors.primary,              // → <color>
+    foreground: colors.primary,              // → <color>
   }),
 )
 ```
@@ -519,43 +518,6 @@ themizer automatically detects and registers these CSS syntax types:
 - `<integer>` - Whole numbers
 - `*` - Universal syntax (for complex expressions like `var()`, `cubic-bezier()`, strings, etc.)
 
-#### Property Overrides
-
-If you need certain properties to accept any value type (bypassing validation), use the `overrides` option:
-
-```ts
-export default themizer(
-  {
-    prefix: 'theme',
-    medias: {},
-    tokens: {
-      colors: {
-        primary: '#f00',
-        accent: '#0f0',
-      },
-    },
-    // Exclude specific properties from @property registration
-    // Supports both dot notation and dash notation
-    overrides: ['tokens.colors.primary'], // or ['tokens-colors-primary']
-  },
-  (t) => ({
-    foreground: t.colors.primary,
-    background: t.colors.accent,
-  }),
-)
-```
-
-Properties listed in `overrides` will:
-- Still be generated as CSS custom properties
-- Not have `@property` registration
-- Accept any value type without validation
-
-**Important:** Override paths match the structure of your tokens/aliases objects, not the generated CSS variable names:
-- For tokens: Use the path within the `tokens` object (e.g., `'colors.primary'` for `tokens.colors.primary`)
-- For aliases: Use the path within the aliases object (e.g., `'foreground'` for the `foreground` alias)
-
-This is useful for properties that you want to allow dynamic overriding from external sources or that have complex computed values that change types.
-
 ### Dark Mode
 
 ```ts
@@ -565,9 +527,9 @@ const { aliases } = themizer(
     medias: { dark: '(prefers-color-scheme: dark)' },
     tokens: { colors: { white: '#fff', black: '#000' } },
   },
-  (t) => ({
-    foreground: [{ dark: t.colors.white }, t.colors.black],
-    background: [{ dark: t.colors.black }, t.colors.white],
+  ({ colors }) => ({
+    foreground: [{ dark: colors.white }, colors.black],
+    background: [{ dark: colors.black }, colors.white],
   }),
 )
 ```
@@ -590,10 +552,10 @@ const { aliases } = themizer(
       },
     },
   },
-  (t) => ({
+  ({ transitions }) => ({
     animations: {
-      bounce: [{ motion: t.transitions.bounce }],
-      ease: [{ motion: t.transitions.ease }],
+      bounce: [{ motion: transitions.bounce }],
+      ease: [{ motion: transitions.ease }],
     },
   }),
 )

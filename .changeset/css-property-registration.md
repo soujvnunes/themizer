@@ -10,7 +10,6 @@ This release introduces automatic CSS `@property` registration for all generated
 
 - Automatic type inference for CSS custom properties (colors, lengths, percentages, angles, time values, etc.)
 - CSS `@property` at-rule generation with syntax validation
-- Optional `overrides` configuration to exclude specific properties from registration
 - Comprehensive support for 160+ CSS named colors and all CSS syntax types
 
 **Type Validation Benefits:**
@@ -33,11 +32,9 @@ export default themizer(
     tokens: {
       colors: { primary: 'oklch(76.9% 0.188 70.08)' },
       spacing: { md: '1rem' }
-    },
-    // Optional: exclude properties from type validation
-    overrides: ['tokens.colors.primary']
+    }
   },
-  (t) => ({ foreground: t.colors.primary })
+  ({ colors }) => ({ foreground: colors.primary })
 )
 ```
 

@@ -68,8 +68,6 @@ export type AtomizerOptions<M extends Medias> = {
   prefix?: string
   /** Optional media query definitions for responsive values */
   medias?: M
-  /** Optional array of property paths to exclude from @property registration */
-  overrides?: string[]
 }
 
 /**
@@ -149,20 +147,6 @@ export default function atomizer<
 
   const r8eAtoms = __r8eAtoms ?? {}
 
-  // Precompute a Set of normalized overrides for O(1) lookup
-  const overridesSet = options?.overrides
-    ? new Set(options.overrides.map((override) => override.split('.').join(PATH_UNIFIER)))
-    : null
-
-  // Helper to check if a property path should be excluded from registration
-  const isOverridden = (propertyPath: string): boolean => {
-    if (!overridesSet) return false
-    const normalizedPath = propertyPath.startsWith(prefix)
-      ? propertyPath.slice(prefix.length)
-      : propertyPath
-    return overridesSet.has(normalizedPath)
-  }
-
   for (const [key, atom] of Object.entries(atoms)) {
     const path = `${prefix}${unifiedPath}${key}`
     const variable = `--${path}`
@@ -170,11 +154,7 @@ export default function atomizer<
     if (isAtom(atom)) {
       vars[variable] = atom
       ref[key] = getVar(variable, atom)
-
-      // Add metadata for @property registration if not overridden
-      if (!isOverridden(path)) {
-        metadata[variable] = createPropertyMetadata(atom)
-      }
+      metadata[variable] = createPropertyMetadata(atom) // Add metadata for @property registration
     } else if (Array.isArray(atom)) {
       const [medias, defaultValue] = atom as R8eAtoms<Extract<keyof M, string>>
 
@@ -186,11 +166,7 @@ export default function atomizer<
 
       if (isAtom(defaultValue)) {
         vars[variable] = defaultValue
-
-        // Add metadata for responsive properties using default value if not overridden
-        if (!isOverridden(path)) {
-          metadata[variable] = createPropertyMetadata(defaultValue)
-        }
+        metadata[variable] = createPropertyMetadata(defaultValue) // Add metadata for responsive properties using default value
       }
 
       ref[key] = getVar(variable, defaultValue)

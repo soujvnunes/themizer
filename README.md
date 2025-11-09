@@ -564,8 +564,8 @@ export default function Heading({ className = '', ...props }) {
 --theme-aliases-palette-foreground: var(--theme-tokens-colors-amber-light);
 
 // With minification (what themizer generates)
---a0: rgb(251, 191, 36);
---a1: var(--a0);
+--theme0: rgb(251, 191, 36);
+--theme1: var(--theme0);
 ```
 
 ### Bundle Size Savings

@@ -49,13 +49,32 @@ export default function themizer<
   const tokenized = atomizer<never, T>(options.tokens, {
     prefix: `${options.prefix}-tokens`,
   })
-  const aliased = atomizer(aliases(tokenized.ref), {
-    prefix: `${options.prefix}-aliases`,
-    medias: options.medias,
-  })
+
+  // Pass the minification map from tokens to aliases to avoid variable name collisions
+  const minifyMap = new Map<string, string>()
+  const minifyReverseMap = new Map<string, string>()
+  if (tokenized.variableMap) {
+    Object.entries(tokenized.variableMap).forEach(([minified, original]) => {
+      minifyMap.set(minified, original)
+      minifyReverseMap.set(original, minified)
+    })
+  }
+
+  const aliased = atomizer(
+    aliases(tokenized.ref),
+    {
+      prefix: `${options.prefix}-aliases`,
+      medias: options.medias,
+    },
+    {
+      minify: minifyMap,
+      minifyReverse: minifyReverseMap,
+    },
+  )
 
   const flattenVars = { ...tokenized.vars, ...aliased.vars }
   const flattenMetadata = { ...tokenized.metadata, ...aliased.metadata }
+  const flattenVariableMap = { ...(tokenized.variableMap ?? {}), ...(aliased.variableMap ?? {}) }
 
   return {
     aliases: aliased.ref,
@@ -65,5 +84,6 @@ export default function themizer<
       css: getCSS(flattenVars, flattenMetadata),
       jss: getJSS(flattenVars),
     },
+    variableMap: Object.keys(flattenVariableMap).length > 0 ? flattenVariableMap : undefined,
   }
 }

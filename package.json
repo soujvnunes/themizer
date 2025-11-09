@@ -2,6 +2,7 @@
   "type": "module",
   "license": "ISC",
   "version": "1.5.0",
+  "packageManager": "pnpm@10.8.1",
   "name": "themizer",
   "description": "Generate CSS custom properties based on a given theme with tokens and aliases serving as a reference.",
   "author": "soujvnunes <soujvnunes@gmail.com> (https://soujvnunes.github.io)",
@@ -40,8 +41,8 @@
     "themizer": "./dist/cli/bin.cjs"
   },
   "engines": {
-    "node": ">= 16.0.0",
-    "pnpm": ">= 8.0.0"
+    "node": ">= 18.0.0",
+    "pnpm": ">= 10.0.0"
   },
   "sideEffects": false,
   "scripts": {

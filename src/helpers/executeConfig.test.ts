@@ -16,7 +16,7 @@ describe('executeConfig', () => {
     jest.restoreAllMocks()
   })
 
-  it('imports config file and returns rules.css', async () => {
+  it('imports config file and returns rules.css and variableMap', async () => {
     const mockModule = {
       default: {
         rules: {
@@ -26,6 +26,7 @@ describe('executeConfig', () => {
         aliases: {},
         tokens: {},
         medias: {},
+        variableMap: { '--a0': '--theme-tokens-color-primary' },
       },
     }
 
@@ -34,7 +35,10 @@ describe('executeConfig', () => {
 
     const result = await executeConfig(mockConfigPath, mockImportModule)
 
-    expect(result).toBe(mockCSS)
+    expect(result).toEqual({
+      css: mockCSS,
+      variableMap: { '--a0': '--theme-tokens-color-primary' },
+    })
   })
 
   it('converts file path to file:// URL with cache busting timestamp', async () => {

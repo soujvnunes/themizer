@@ -1,10 +1,6 @@
 import themizer from './themizer'
 
 describe('themizer', () => {
-  afterAll(() => {
-    jest.resetModules()
-  })
-
   it('returns its prefixed reference and tokens one with specified media and CSS rules', () => {
     const theme = themizer(
       {
@@ -25,48 +21,57 @@ describe('themizer', () => {
     expect(theme.tokens).toEqual({
       colors: {
         amber: {
-          light: 'var(--ds-tokens-colors-amber-light, rgb(251, 191, 36))',
-          dark: 'var(--ds-tokens-colors-amber-dark, rgb(217, 119, 6))',
+          light: 'var(--ds0, rgb(251, 191, 36))',
+          dark: 'var(--ds1, rgb(217, 119, 6))',
         },
       },
-      units: { '16': 'var(--ds-tokens-units-16, 16px)', '24': 'var(--ds-tokens-units-24, 24px)' },
+      units: { '16': 'var(--ds2, 16px)', '24': 'var(--ds3, 24px)' },
     })
     expect(theme.aliases).toEqual({
       palette: {
-        main: 'var(--ds-aliases-palette-main, var(--ds-tokens-colors-amber-dark, rgb(217, 119, 6)))',
+        main: 'var(--ds4, var(--ds1, rgb(217, 119, 6)))',
       },
       sizing: {
-        md: 'var(--ds-aliases-sizing-md, var(--ds-tokens-units-16, 16px))',
+        md: 'var(--ds6, var(--ds2, 16px))',
       },
       spacing: {
-        md: 'var(--ds-aliases-spacing-md, var(--ds-tokens-units-24, 24px))',
+        md: 'var(--ds5, var(--ds3, 24px))',
       },
+    })
+    expect(theme.variableMap).toEqual({
+      '--ds0': '--ds-tokens-colors-amber-light',
+      '--ds1': '--ds-tokens-colors-amber-dark',
+      '--ds2': '--ds-tokens-units-16',
+      '--ds3': '--ds-tokens-units-24',
+      '--ds4': '--ds-aliases-palette-main',
+      '--ds5': '--ds-aliases-spacing-md',
+      '--ds6': '--ds-aliases-sizing-md',
     })
     expect(theme.medias).toEqual({
       dark: '@media (prefers-color-scheme: dark)',
       desktop: '@media (min-width: 1024px)',
     })
     expect(theme.rules.css).toBe(
-      '@property --ds-tokens-colors-amber-light{syntax:"<color>";inherits:false;initial-value:rgb(251, 191, 36);}@property --ds-tokens-colors-amber-dark{syntax:"<color>";inherits:false;initial-value:rgb(217, 119, 6);}@property --ds-tokens-units-16{syntax:"<length>";inherits:false;initial-value:16px;}@property --ds-tokens-units-24{syntax:"<length>";inherits:false;initial-value:24px;}@property --ds-aliases-palette-main{syntax:"*";inherits:false;initial-value:var(--ds-tokens-colors-amber-dark, rgb(217, 119, 6));}@property --ds-aliases-spacing-md{syntax:"*";inherits:false;initial-value:var(--ds-tokens-units-24, 24px);}@property --ds-aliases-sizing-md{syntax:"*";inherits:false;initial-value:var(--ds-tokens-units-16, 16px);}:root{--ds-tokens-colors-amber-light:rgb(251, 191, 36);--ds-tokens-colors-amber-dark:rgb(217, 119, 6);--ds-tokens-units-16:16px;--ds-tokens-units-24:24px;--ds-aliases-palette-main:var(--ds-tokens-colors-amber-dark, rgb(217, 119, 6));--ds-aliases-spacing-md:var(--ds-tokens-units-24, 24px);--ds-aliases-sizing-md:var(--ds-tokens-units-16, 16px);}@media (prefers-color-scheme: dark){:root{--ds-aliases-palette-main:var(--ds-tokens-colors-amber-light, rgb(251, 191, 36));}}@media (min-width: 1024px){:root{--ds-aliases-sizing-md:var(--ds-tokens-units-24, 24px);}}',
+      '@property --ds0{syntax:"<color>";inherits:false;initial-value:rgb(251, 191, 36);}@property --ds1{syntax:"<color>";inherits:false;initial-value:rgb(217, 119, 6);}@property --ds2{syntax:"<length>";inherits:false;initial-value:16px;}@property --ds3{syntax:"<length>";inherits:false;initial-value:24px;}@property --ds4{syntax:"*";inherits:false;initial-value:var(--ds1, rgb(217, 119, 6));}@property --ds5{syntax:"*";inherits:false;initial-value:var(--ds3, 24px);}@property --ds6{syntax:"*";inherits:false;initial-value:var(--ds2, 16px);}:root{--ds0:rgb(251, 191, 36);--ds1:rgb(217, 119, 6);--ds2:16px;--ds3:24px;--ds4:var(--ds1, rgb(217, 119, 6));--ds5:var(--ds3, 24px);--ds6:var(--ds2, 16px);}@media (prefers-color-scheme: dark){:root{--ds4:var(--ds0, rgb(251, 191, 36));}}@media (min-width: 1024px){:root{--ds6:var(--ds3, 24px);}}',
     )
     expect(theme.rules.jss).toEqual({
       ':root': {
-        '--ds-tokens-colors-amber-light': 'rgb(251, 191, 36)',
-        '--ds-tokens-colors-amber-dark': 'rgb(217, 119, 6)',
-        '--ds-tokens-units-16': '16px',
-        '--ds-tokens-units-24': '24px',
-        '--ds-aliases-palette-main': 'var(--ds-tokens-colors-amber-dark, rgb(217, 119, 6))',
-        '--ds-aliases-spacing-md': 'var(--ds-tokens-units-24, 24px)',
-        '--ds-aliases-sizing-md': 'var(--ds-tokens-units-16, 16px)',
+        '--ds0': 'rgb(251, 191, 36)',
+        '--ds1': 'rgb(217, 119, 6)',
+        '--ds2': '16px',
+        '--ds3': '24px',
+        '--ds4': 'var(--ds1, rgb(217, 119, 6))',
+        '--ds5': 'var(--ds3, 24px)',
+        '--ds6': 'var(--ds2, 16px)',
       },
       '@media (prefers-color-scheme: dark)': {
         ':root': {
-          '--ds-aliases-palette-main': 'var(--ds-tokens-colors-amber-light, rgb(251, 191, 36))',
+          '--ds4': 'var(--ds0, rgb(251, 191, 36))',
         },
       },
       '@media (min-width: 1024px)': {
         ':root': {
-          '--ds-aliases-sizing-md': 'var(--ds-tokens-units-24, 24px)',
+          '--ds6': 'var(--ds3, 24px)',
         },
       },
     })

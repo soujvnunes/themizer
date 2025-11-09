@@ -3,6 +3,7 @@ import PATH_UNIFIER from '../consts/PATH_UNIFIER'
 import isAtom, { type Atom } from './isAtom'
 import getVar from './getVar'
 import { createPropertyMetadata, type PropertyMetadataMap } from './inferSyntax'
+import { minifyVariableName } from './minifyVariableName'
 
 /**
  * Represents a flat object mapping CSS variable names to atomic values.
@@ -82,26 +83,97 @@ export interface Atomized<M extends Medias, A extends Atoms<Extract<keyof M, str
   ref: ResolveAtoms<M, A>
   /** Property metadata for @property registration */
   metadata: PropertyMetadataMap
+  /** Mapping of minified variable names to original names */
+  variableMap?: { [minified: string]: string }
+}
+
+/**
+ * Internal state for recursive atomizer calls.
+ * @internal
+ */
+interface AtomizerInternal {
+  path?: string
+  r8eAtoms?: ResponsiveVars
+  metadata?: PropertyMetadataMap
+  minify?: Map<string, string>
+  minifyReverse?: Map<string, string>
+  minifyPrefix?: string
+}
+
+/**
+ * Gets or creates a minified variable name.
+ * Returns the minified name as a string.
+ */
+function getMinifiedVariable(
+  originalVariable: string,
+  counter: number,
+  forwardMap: Map<string, string>,
+  reverseMap: Map<string, string>,
+  prefix?: string,
+): string {
+  // O(1) lookup using reverse map
+  const existing = reverseMap.get(originalVariable)
+
+  if (existing) {
+    return existing
+  }
+
+  const minified = `--${minifyVariableName(counter, prefix)}`
+  forwardMap.set(minified, originalVariable)
+  reverseMap.set(originalVariable, minified)
+  return minified
+}
+
+/**
+ * Context for processing atoms, grouped to reduce parameter count.
+ */
+interface AtomContext<M extends Medias> {
+  vars: FlattenVars
+  r8eAtoms: ResponsiveVars
+  metadata: PropertyMetadataMap
+  options?: AtomizerOptions<M>
+}
+
+/**
+ * Processes responsive atoms with media queries.
+ */
+function processResponsiveAtoms<M extends Medias>(
+  atom: R8eAtoms<Extract<keyof M, string>>,
+  variable: string,
+  context: AtomContext<M>,
+): string {
+  const [medias, defaultValue] = atom
+
+  for (const media in medias) {
+    const mediaQuery = `@media ${context.options?.medias?.[media]}`
+    context.r8eAtoms[mediaQuery] = { ...context.r8eAtoms[mediaQuery], [variable]: medias[media] }
+  }
+
+  if (isAtom(defaultValue)) {
+    context.vars[variable] = defaultValue
+    context.metadata[variable] = createPropertyMetadata(defaultValue)
+  }
+
+  return getVar(variable, defaultValue)
 }
 
 /**
  * Converts a nested structure of atomic values into CSS custom properties and references.
  *
  * The atomizer recursively processes an atoms object, generating:
- * - CSS custom property definitions (variables)
+ * - Minified CSS custom property definitions (e.g., --a0, --a1)
  * - Type-safe var() references to those properties
  * - Support for responsive values via media queries
- * - Hierarchical naming based on object nesting
+ * - Variable map for debugging (mapping minified to original names)
  *
  * @template M - Medias configuration type (constrained to Medias)
  * @template A - Atoms structure type (constrained to Atoms)
  *
  * @param atoms - Nested structure of atomic values to convert
  * @param options - Optional configuration (prefix, media queries)
- * @param __path - Internal: Current path in the recursion (do not use)
- * @param __r8eAtoms - Internal: Accumulated responsive atoms (do not use)
+ * @param _internal - Internal state for recursion (do not use directly)
  *
- * @returns Object containing `vars` (CSS variables) and `ref` (type-safe references)
+ * @returns Object containing `vars` (minified CSS variables), `ref` (type-safe references), `metadata`, and `variableMap`
  *
  * @example
  * ```typescript
@@ -115,14 +187,18 @@ export interface Atomized<M extends Medias, A extends Atoms<Extract<keyof M, str
  *   { prefix: 'theme' }
  * )
  * // result.vars = {
- * //   '--theme-color-primary': '#000',
- * //   '--theme-color-secondary': '#666'
+ * //   '--a0': '#000',
+ * //   '--a1': '#666'
  * // }
  * // result.ref = {
  * //   color: {
- * //     primary: 'var(--theme-color-primary, #000)',
- * //     secondary: 'var(--theme-color-secondary, #666)'
+ * //     primary: 'var(--a0, #000)',
+ * //     secondary: 'var(--a1, #666)'
  * //   }
+ * // }
+ * // result.variableMap = {
+ * //   '--a0': '--theme-color-primary',
+ * //   '--a1': '--theme-color-secondary'
  * // }
  * ```
  *
@@ -131,47 +207,62 @@ export interface Atomized<M extends Medias, A extends Atoms<Extract<keyof M, str
 export default function atomizer<
   const M extends Medias,
   const A extends Atoms<Extract<keyof M, string>>,
->(
-  atoms: A,
-  options?: AtomizerOptions<M>,
-  __path?: string,
-  __r8eAtoms?: ResponsiveVars,
-  __metadata?: PropertyMetadataMap,
-) {
+>(atoms: A, options?: AtomizerOptions<M>, _internal?: AtomizerInternal) {
   const prefix = options?.prefix ? `${options.prefix}${PATH_UNIFIER}` : ''
-  const unifiedPath = __path ? `${__path}${PATH_UNIFIER}` : ''
+  const unifiedPath = _internal?.path ? `${_internal.path}${PATH_UNIFIER}` : ''
+
+  const minifyMap = _internal?.minify ?? new Map<string, string>()
+  const minifyReverseMap = _internal?.minifyReverse ?? new Map<string, string>()
+  // Use minifyPrefix from _internal if available (for recursive calls),
+  // otherwise strip -tokens or -aliases suffix from prefix
+  const minifyPrefix = _internal?.minifyPrefix ?? options?.prefix?.replace(/-(tokens|aliases)$/, '')
 
   const vars = {} as FlattenVars
   const ref = {} as Record<string, unknown>
-  const metadata = __metadata ?? {}
+  const metadata = _internal?.metadata ?? {}
+  const r8eAtoms = _internal?.r8eAtoms ?? {}
 
-  const r8eAtoms = __r8eAtoms ?? {}
+  const context: AtomContext<M> = { vars, r8eAtoms, metadata, options }
 
   for (const [key, atom] of Object.entries(atoms)) {
     const path = `${prefix}${unifiedPath}${key}`
-    const variable = `--${path}`
+    const originalVariable = `--${path}`
 
     if (isAtom(atom)) {
+      const variable = getMinifiedVariable(
+        originalVariable,
+        minifyMap.size,
+        minifyMap,
+        minifyReverseMap,
+        minifyPrefix,
+      )
+
       vars[variable] = atom
       ref[key] = getVar(variable, atom)
-      metadata[variable] = createPropertyMetadata(atom) // Add metadata for @property registration
+      metadata[variable] = createPropertyMetadata(atom)
     } else if (Array.isArray(atom)) {
-      const [medias, defaultValue] = atom as R8eAtoms<Extract<keyof M, string>>
+      const variable = getMinifiedVariable(
+        originalVariable,
+        minifyMap.size,
+        minifyMap,
+        minifyReverseMap,
+        minifyPrefix,
+      )
 
-      for (const media in medias) {
-        const mediaQuery = `@media ${options?.medias?.[media]}`
-
-        r8eAtoms[mediaQuery] = { ...r8eAtoms[mediaQuery], [variable]: medias[media] }
-      }
-
-      if (isAtom(defaultValue)) {
-        vars[variable] = defaultValue
-        metadata[variable] = createPropertyMetadata(defaultValue) // Add metadata for responsive properties using default value
-      }
-
-      ref[key] = getVar(variable, defaultValue)
+      ref[key] = processResponsiveAtoms(atom as R8eAtoms<Extract<keyof M, string>>, variable, context)
     } else {
-      const atomized = atomizer(atom, { ...options, prefix: '' }, path, r8eAtoms, metadata)
+      const atomized = atomizer(
+        atom,
+        { ...options, prefix: '' },
+        {
+          path,
+          r8eAtoms,
+          metadata,
+          minify: minifyMap,
+          minifyReverse: minifyReverseMap,
+          minifyPrefix,
+        },
+      )
 
       Object.assign(vars, atomized.vars)
       Object.assign(metadata, atomized.metadata)
@@ -181,9 +272,16 @@ export default function atomizer<
 
   Object.assign(vars, r8eAtoms)
 
-  return {
+  const result: Atomized<M, A> = {
     vars,
     ref,
     metadata,
   } as Atomized<M, A>
+
+  // Include variableMap at root level (when not recursing into nested objects)
+  if (!_internal?.path && minifyMap.size > 0) {
+    result.variableMap = Object.fromEntries(minifyMap)
+  }
+
+  return result
 }

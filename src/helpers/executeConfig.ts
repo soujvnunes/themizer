@@ -9,18 +9,26 @@ export async function importModule(url: string) {
 }
 
 /**
+ * Result from executing the themizer config
+ */
+export interface ExecuteConfigResult {
+  css: string
+  variableMap?: { [minified: string]: string }
+}
+
+/**
  * Dynamically imports and executes the themizer config file.
- * Returns the generated CSS from the config.
+ * Returns the generated CSS and optional variable map from the config.
  *
  * @param configPath - Absolute path to the config file
  * @param _importModule - Optional import function for testing
- * @returns The generated CSS string from the config
+ * @returns Object containing CSS string and optional variableMap
  * @throws Error if the config file cannot be imported or doesn't export a valid theme
  */
 export default async function executeConfig(
   configPath: string,
   _importModule: typeof importModule = importModule,
-): Promise<string> {
+): Promise<ExecuteConfigResult> {
   // Convert file path to file:// URL for dynamic import
   // This is necessary for proper module resolution across platforms
   const configUrl = pathToFileURL(configPath).href
@@ -41,8 +49,11 @@ export default async function executeConfig(
       )
     }
 
-    // Return CSS directly
-    return module.default.rules.css
+    // Return CSS and optional variableMap
+    return {
+      css: module.default.rules.css,
+      variableMap: module.default.variableMap,
+    }
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(`Failed to execute config file: ${error.message}`)

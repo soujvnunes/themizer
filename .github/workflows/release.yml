@@ -66,6 +66,6 @@ jobs:
 
       - name: Publish to npmjs.org
         if: steps.check_changesets.outputs.has_changesets == 'true'
-        run: pnpm publish --access public --provenance
+        run: pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

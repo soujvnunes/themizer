@@ -52,9 +52,11 @@ export default function themizer<
 
   // Pass the minification map from tokens to aliases to avoid variable name collisions
   const minifyMap = new Map<string, string>()
+  const minifyReverseMap = new Map<string, string>()
   if (tokenized.variableMap) {
     Object.entries(tokenized.variableMap).forEach(([minified, original]) => {
       minifyMap.set(minified, original)
+      minifyReverseMap.set(original, minified)
     })
   }
 
@@ -66,6 +68,7 @@ export default function themizer<
     },
     {
       minify: minifyMap,
+      minifyReverse: minifyReverseMap,
     },
   )
 

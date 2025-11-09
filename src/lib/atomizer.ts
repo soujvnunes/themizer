@@ -96,6 +96,7 @@ interface AtomizerInternal {
   r8eAtoms?: ResponsiveVars
   metadata?: PropertyMetadataMap
   minify?: Map<string, string>
+  minifyReverse?: Map<string, string>
 }
 
 /**
@@ -105,16 +106,19 @@ interface AtomizerInternal {
 function getMinifiedVariable(
   originalVariable: string,
   counter: number,
-  map: Map<string, string>,
+  forwardMap: Map<string, string>,
+  reverseMap: Map<string, string>,
 ): [string, number] {
-  const existingEntry = Array.from(map.entries()).find(([_, orig]) => orig === originalVariable)
+  // O(1) lookup using reverse map
+  const existing = reverseMap.get(originalVariable)
 
-  if (existingEntry) {
-    return [existingEntry[0], counter]
+  if (existing) {
+    return [existing, counter]
   }
 
   const minified = `--${minifyVariableName(counter)}`
-  map.set(minified, originalVariable)
+  forwardMap.set(minified, originalVariable)
+  reverseMap.set(originalVariable, minified)
   return [minified, counter + 1]
 }
 
@@ -206,6 +210,7 @@ export default function atomizer<
   const unifiedPath = _internal?.path ? `${_internal.path}${PATH_UNIFIER}` : ''
 
   const minifyMap = _internal?.minify ?? new Map<string, string>()
+  const minifyReverseMap = _internal?.minifyReverse ?? new Map<string, string>()
 
   const vars = {} as FlattenVars
   const ref = {} as Record<string, unknown>
@@ -219,13 +224,13 @@ export default function atomizer<
     const originalVariable = `--${path}`
 
     if (isAtom(atom)) {
-      const variable = getMinifiedVariable(originalVariable, minifyMap.size, minifyMap)[0]
+      const variable = getMinifiedVariable(originalVariable, minifyMap.size, minifyMap, minifyReverseMap)[0]
 
       vars[variable] = atom
       ref[key] = getVar(variable, atom)
       metadata[variable] = createPropertyMetadata(atom)
     } else if (Array.isArray(atom)) {
-      const variable = getMinifiedVariable(originalVariable, minifyMap.size, minifyMap)[0]
+      const variable = getMinifiedVariable(originalVariable, minifyMap.size, minifyMap, minifyReverseMap)[0]
 
       ref[key] = processResponsiveAtoms(atom as R8eAtoms<Extract<keyof M, string>>, variable, context)
     } else {
@@ -237,6 +242,7 @@ export default function atomizer<
           r8eAtoms,
           metadata,
           minify: minifyMap,
+          minifyReverse: minifyReverseMap,
         },
       )
 

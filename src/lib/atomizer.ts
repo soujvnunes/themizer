@@ -224,13 +224,23 @@ export default function atomizer<
     const originalVariable = `--${path}`
 
     if (isAtom(atom)) {
-      const variable = getMinifiedVariable(originalVariable, minifyMap.size, minifyMap, minifyReverseMap)[0]
+      const variable = getMinifiedVariable(
+        originalVariable,
+        minifyMap.size,
+        minifyMap,
+        minifyReverseMap,
+      )[0]
 
       vars[variable] = atom
       ref[key] = getVar(variable, atom)
       metadata[variable] = createPropertyMetadata(atom)
     } else if (Array.isArray(atom)) {
-      const variable = getMinifiedVariable(originalVariable, minifyMap.size, minifyMap, minifyReverseMap)[0]
+      const variable = getMinifiedVariable(
+        originalVariable,
+        minifyMap.size,
+        minifyMap,
+        minifyReverseMap,
+      )[0]
 
       ref[key] = processResponsiveAtoms(atom as R8eAtoms<Extract<keyof M, string>>, variable, context)
     } else {

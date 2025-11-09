@@ -39,7 +39,7 @@ Change your design system once in your configuration, and all components update 
 - **Tailwind Integration** - Extend Tailwind's theme with your tokens
 - **CSS-in-JS Compatible** - Works with styled-jsx, styled-components, emotion, etc.
 - **CSS @property Registration** - Automatic type validation and browser optimization
-- **Production Optimization** - Automatic CSS variable minification for smaller bundles
+- **Production Optimization** - Base-52 CSS variable minification (a-z, A-Z) for maximum compression
 
 ## Quick Start
 
@@ -123,31 +123,71 @@ pnpm run themizer:theme        # Generate once
 pnpm run themizer:theme:watch  # Watch mode (if configured with --watch)
 ```
 
-The CLI automatically executes your `themizer.config.ts` and generates `theme.css` with CSS custom properties:
+The CLI automatically executes your `themizer.config.ts` and generates `theme.css` with minified CSS custom properties:
 
 ```css
+@property --theme0 { syntax: "<color>"; inherits: false; initial-value: oklch(98% 0.02 85); }
+@property --theme1 { syntax: "<color>"; inherits: false; initial-value: oklch(76.9% 0.188 70.08); }
+@property --theme2 { syntax: "<color>"; inherits: false; initial-value: oklch(12% 0.03 70); }
+@property --theme3 { syntax: "<color>"; inherits: false; initial-value: oklch(6% 0.02 70); }
+@property --theme4 { syntax: "<percentage>"; inherits: false; initial-value: 80%; }
+@property --theme5 { syntax: "<length>"; inherits: false; initial-value: 1rem; }
+@property --theme6 { syntax: "<length>"; inherits: false; initial-value: 1.5rem; }
+@property --theme7 { syntax: "<length>"; inherits: false; initial-value: 2.5rem; }
+@property --theme8 { syntax: "<length>"; inherits: false; initial-value: 4rem; }
+@property --theme9 { syntax: "*"; inherits: false; initial-value: color-mix(in srgb, var(--theme3) var(--theme4), transparent); }
+@property --themea0 { syntax: "*"; inherits: false; initial-value: var(--theme0); }
+@property --themea1 { syntax: "*"; inherits: false; initial-value: var(--theme7); }
+@property --themea2 { syntax: "*"; inherits: false; initial-value: var(--theme6); }
+
 :root {
-  --theme-tokens-colors-amber-500: oklch(76.9% 0.188 70.08);
-  --theme-aliases-palette-foreground: color-mix(in srgb, var(--theme-tokens-colors-amber-950) var(--theme-tokens-alphas-secondary), transparent);
-  --theme-aliases-palette-background: var(--theme-tokens-colors-amber-50);
-  --theme-aliases-typography-title: var(--theme-tokens-units-24);
-  /* ... */
+  --theme0: oklch(98% 0.02 85);
+  --theme1: oklch(76.9% 0.188 70.08);
+  --theme2: oklch(12% 0.03 70);
+  --theme3: oklch(6% 0.02 70);
+  --theme4: 80%;
+  --theme5: 1rem;
+  --theme6: 1.5rem;
+  --theme7: 2.5rem;
+  --theme8: 4rem;
+  --theme9: color-mix(in srgb, var(--theme3) var(--theme4), transparent);
+  --themea0: var(--theme0);
+  --themea1: var(--theme7);
+  --themea2: var(--theme6);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --theme-aliases-palette-foreground: var(--theme-tokens-colors-amber-50);
-    --theme-aliases-palette-background: var(--theme-tokens-colors-amber-950);
+    --theme9: var(--theme0);
+    --themea0: var(--theme3);
   }
 }
 
 @media (min-width: 1024px) {
   :root {
-    --theme-aliases-typography-headline: var(--theme-tokens-units-64);
-    --theme-aliases-typography-title: var(--theme-tokens-units-40);
+    --themea1: var(--theme8);
+    --themea2: var(--theme7);
   }
 }
 ```
+
+> **Note:** Variable names are minified for production. See `theme.css.map.json` for the mapping to original semantic names.
+
+#### CSS @property Registration
+
+**themizer** automatically registers all CSS custom properties using the `@property` at-rule for type validation:
+
+- **Type Validation** - Browsers validate that values match their declared syntax (`<color>`, `<length>`, `<percentage>`, etc.)
+- **Browser Enforcement** - Invalid values are rejected, preventing type confusion errors
+
+**Supported syntax types:**
+- `<color>` - Colors (hex, rgb, hsl, oklch, color-mix, etc.)
+- `<length>` - Lengths (px, rem, em, vh, vw, etc.)
+- `<percentage>` - Percentages (%)
+- `<angle>` - Angles (deg, rad, grad, turn)
+- `<time>` - Time values (ms, s)
+- `<number>` / `<integer>` - Numbers
+- `*` - Universal (for complex expressions like `var()`, `cubic-bezier()`, etc.)
 
 ### 3. Import in Your App
 
@@ -421,104 +461,6 @@ export const viewport = {
 
 ## Advanced
 
-### CSS @property Registration (Type Validation)
-
-**themizer** automatically registers all generated CSS custom properties using the CSS `@property` at-rule. This provides two key benefits:
-
-1. **Type Validation** - Browsers validate that property values match their declared syntax (e.g., `<color>`, `<length>`, `<percentage>`)
-2. **Type Safety** - Invalid values set by external stylesheets or scripts are rejected by the browser, helping prevent accidental type mismatches (but this is not a comprehensive security mechanism)
-
-#### How It Works
-
-When you generate your theme, themizer analyzes each token and alias value to infer its CSS syntax type:
-
-```ts
-export default themizer(
-  {
-    prefix: 'theme',
-    medias: {},
-    tokens: {
-      colors: {
-        primary: 'oklch(76.9% 0.188 70.08)', // → <color>
-      },
-      spacing: {
-        md: '1rem',                            // → <length>
-      },
-      opacity: {
-        full: '100%',                          // → <percentage>
-      },
-      rotation: {
-        quarter: '90deg',                      // → <angle>
-      },
-      duration: {
-        fast: '200ms',                         // → <time>
-      },
-    },
-  },
-  ({ colors }) => ({
-    // Aliases are also registered
-    foreground: colors.primary,              // → * (var reference)
-  }),
-)
-```
-
-Generated CSS includes `@property` declarations:
-
-```css
-@property --theme-tokens-colors-primary {
-  syntax: "<color>";
-  inherits: false;
-  initial-value: oklch(76.9% 0.188 70.08);
-}
-
-@property --theme-tokens-spacing-md {
-  syntax: "<length>";
-  inherits: false;
-  initial-value: 1rem;
-}
-
-@property --theme-aliases-foreground {
-  syntax: "*";
-  inherits: false;
-  initial-value: var(--theme-tokens-colors-primary);
-}
-
-:root {
-  --theme-tokens-colors-primary: oklch(76.9% 0.188 70.08);
-  --theme-tokens-spacing-md: 1rem;
-  --theme-aliases-foreground: var(--theme-tokens-colors-primary);
-}
-```
-
-#### Type Safety Benefits
-
-With `@property` registration, browsers validate that custom property values match the declared syntax type:
-
-```css
-:root {
-  --theme-tokens-colors-primary: red;            /* ✓ Valid <color> value */
-  --theme-tokens-colors-primary: 16px;           /* ✗ Rejected: not a <color> value */
-
-  --theme-tokens-spacing-md: 1rem;               /* ✓ Valid <length> value */
-  --theme-tokens-spacing-md: #f00;               /* ✗ Rejected: not a <length> value */
-}
-```
-
-The browser enforces that values match the declared type, preventing type confusion errors.
-
-#### Supported Syntax Types
-
-themizer automatically detects and registers these CSS syntax types:
-
-- `<color>` - Colors (hex, rgb, hsl, oklch, oklab, lab, lch, hwb, color, color-mix, etc.)
-- `<length>` - Lengths (px, rem, em, vh, vw, etc.)
-- `<percentage>` - Percentages (%)
-- `<angle>` - Angles (deg, rad, grad, turn)
-- `<time>` - Time values (ms, s)
-- `<number>` - Decimal numbers
-- `<integer>` - Whole numbers
-- `*` - Universal syntax (for complex expressions like `var()`, `cubic-bezier()`, strings, etc.)
-
 ### Dark Mode
 
 ```ts
@@ -597,7 +539,7 @@ export default function Heading({ className = '', ...props }) {
 
 ## CSS Variable Minification
 
-**themizer** always minifies CSS custom property names to reduce bundle size.
+**themizer** always minifies CSS custom property names using base-52 encoding (a-z, A-Z) to reduce bundle size.
 
 ```ts
 // Without minification (original semantic names)
@@ -631,13 +573,13 @@ This allows you to identify original variable names when debugging minified CSS.
 
 ### Naming Pattern
 
-Minified names follow a compact sequential pattern for maximum compression:
+Minified names use base-52 encoding (a-z, A-Z) for maximum compression:
 
-- `a0, a1, ..., a9` (10 variables)
-- `b0, b1, ..., b9` (10 variables)
-- `z0, z1, ..., z9` (260 variables total for single letter)
-- `aa0, aa1, ..., zz9` (6,760 variables total for double letter)
-- Continues with `aaa0, aaa1, ...` for larger design systems
+- Single letters: `a0-z9, A0-Z9` (520 variables)
+- Double letters: `aa0-ZZ9` (27,040 variables)
+- Triple letters and beyond for larger design systems
+
+The generated `theme.css.map.json` shows the mapping from minified to original names.
 
 ### TypeScript References
 

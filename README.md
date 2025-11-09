@@ -456,7 +456,7 @@ export default themizer(
   },
   ({ colors }) => ({
     // Aliases are also registered
-    foreground: colors.primary,              // → <color>
+    foreground: colors.primary,              // → * (var reference)
   }),
 )
 ```
@@ -477,7 +477,7 @@ Generated CSS includes `@property` declarations:
 }
 
 @property --theme-aliases-foreground {
-  syntax: "<color>";
+  syntax: "*";
   inherits: false;
   initial-value: var(--theme-tokens-colors-primary);
 }

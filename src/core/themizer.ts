@@ -49,10 +49,25 @@ export default function themizer<
   const tokenized = atomizer<never, T>(options.tokens, {
     prefix: `${options.prefix}-tokens`,
   })
-  const aliased = atomizer(aliases(tokenized.ref), {
-    prefix: `${options.prefix}-aliases`,
-    medias: options.medias,
-  })
+
+  // Pass the minification map from tokens to aliases to avoid variable name collisions
+  const minifyMap = new Map<string, string>()
+  if (tokenized.variableMap) {
+    Object.entries(tokenized.variableMap).forEach(([minified, original]) => {
+      minifyMap.set(minified, original)
+    })
+  }
+
+  const aliased = atomizer(
+    aliases(tokenized.ref),
+    {
+      prefix: `${options.prefix}-aliases`,
+      medias: options.medias,
+    },
+    {
+      minify: minifyMap,
+    },
+  )
 
   const flattenVars = { ...tokenized.vars, ...aliased.vars }
   const flattenMetadata = { ...tokenized.metadata, ...aliased.metadata }

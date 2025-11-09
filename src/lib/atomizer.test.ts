@@ -21,20 +21,25 @@ describe('atomizer', () => {
       })
 
       expect(atomized.vars).toEqual({
-        '--color-red-500': '#f00',
-        '--opacity-primary': 1,
-        '--bounce': 'cubic-bezier(0.5, -0.5, 0.25, 1.5)',
+        '--a0': '#f00',
+        '--a1': 1,
+        '--a2': 'cubic-bezier(0.5, -0.5, 0.25, 1.5)',
       })
       expect(atomized.ref).toEqual({
         color: {
           red: {
-            500: 'var(--color-red-500, #f00)',
+            500: 'var(--a0, #f00)',
           },
         },
         opacity: {
-          primary: 'var(--opacity-primary, 1)',
+          primary: 'var(--a1, 1)',
         },
-        bounce: 'var(--bounce, cubic-bezier(0.5, -0.5, 0.25, 1.5))',
+        bounce: 'var(--a2, cubic-bezier(0.5, -0.5, 0.25, 1.5))',
+      })
+      expect(atomized.variableMap).toEqual({
+        '--a0': '--color-red-500',
+        '--a1': '--opacity-primary',
+        '--a2': '--bounce',
       })
     })
     describe('with the prefix option', () => {
@@ -57,20 +62,25 @@ describe('atomizer', () => {
         )
 
         expect(atomized.vars).toEqual({
-          '--atoms-color-red-500': '#f00',
-          '--atoms-opacity-primary': 1,
-          '--atoms-bounce': 'cubic-bezier(0.5, -0.5, 0.25, 1.5)',
+          '--a0': '#f00',
+          '--a1': 1,
+          '--a2': 'cubic-bezier(0.5, -0.5, 0.25, 1.5)',
         })
         expect(atomized.ref).toEqual({
           color: {
             red: {
-              500: 'var(--atoms-color-red-500, #f00)',
+              500: 'var(--a0, #f00)',
             },
           },
           opacity: {
-            primary: 'var(--atoms-opacity-primary, 1)',
+            primary: 'var(--a1, 1)',
           },
-          bounce: 'var(--atoms-bounce, cubic-bezier(0.5, -0.5, 0.25, 1.5))',
+          bounce: 'var(--a2, cubic-bezier(0.5, -0.5, 0.25, 1.5))',
+        })
+        expect(atomized.variableMap).toEqual({
+          '--a0': '--atoms-color-red-500',
+          '--a1': '--atoms-opacity-primary',
+          '--a2': '--atoms-bounce',
         })
       })
     })
@@ -120,70 +130,84 @@ describe('atomizer', () => {
         )
 
         expect(atomized.vars).toEqual({
-          '--colors-black': '#111',
-          '--colors-gray': '#ddd',
-          '--colors-white': '#fff',
-          '--colors-red-500': '#f00',
-          '--spaces-md': '1rem',
-          '--font-sizes-xl': '2rem',
-          '--font-sans': 'sofia-pro',
-          '--font-weight-500': 400,
-          '--alphas-primary': 0.8,
-          '--alphas-secondary': 0.6,
+          '--a0': '#111',
+          '--a1': '#ddd',
+          '--a2': '#fff',
+          '--a3': '#f00',
+          '--a4': '1rem',
+          '--a5': 'sofia-pro',
+          '--a6': '2rem',
+          '--a7': 400,
+          '--a8': 0.8,
+          '--a9': 0.6,
           '@media (prefers-color-scheme: dark)': {
-            '--colors-white': '#333',
-            '--alphas-primary': 1,
+            '--a2': '#333',
+            '--a8': 1,
           },
           '@media print': {
-            '--colors-gray': '#fff',
-            '--colors-red-500': '#000',
+            '--a1': '#fff',
+            '--a3': '#000',
           },
           '@media (min-width: 1024px)': {
-            '--spaces-md': '1.5rem',
-            '--font-sizes-xl': '3rem',
-            '--font-weight-500': 800,
+            '--a4': '1.5rem',
+            '--a6': '3rem',
+            '--a7': 800,
           },
           '@media (prefers-reduced-motion: no-preference)': {
-            '--trans-bounce': '200ms cubic-bezier(0.5, -0.5, 0.25, 1.5)',
-            '--trans-ease': '200ms cubic-bezier(0.25, 0.1, 0.25, 1)',
+            '--b0': '200ms cubic-bezier(0.5, -0.5, 0.25, 1.5)',
+            '--b1': '200ms cubic-bezier(0.25, 0.1, 0.25, 1)',
           },
           '@media print and (prefers-color-scheme: dark)': {
-            '--colors-white': '#000',
+            '--a2': '#000',
           },
           '@media (min-width: 512px)': {
-            '--spaces-md': '1.25rem',
-            '--font-weight-500': 600,
+            '--a4': '1.25rem',
+            '--a7': 600,
           },
         })
         expect(atomized.ref).toEqual({
           colors: {
-            black: 'var(--colors-black, #111)',
-            gray: 'var(--colors-gray, #ddd)',
-            white: 'var(--colors-white, #fff)',
+            black: 'var(--a0, #111)',
+            gray: 'var(--a1, #ddd)',
+            white: 'var(--a2, #fff)',
             red: {
-              500: 'var(--colors-red-500, #f00)',
+              500: 'var(--a3, #f00)',
             },
           },
           spaces: {
-            md: 'var(--spaces-md, 1rem)',
+            md: 'var(--a4, 1rem)',
           },
           font: {
-            sans: 'var(--font-sans, sofia-pro)',
+            sans: 'var(--a5, sofia-pro)',
             weight: {
-              '500': 'var(--font-weight-500, 400)',
+              '500': 'var(--a7, 400)',
             },
             sizes: {
-              xl: 'var(--font-sizes-xl, 2rem)',
+              xl: 'var(--a6, 2rem)',
             },
           },
           alphas: {
-            primary: 'var(--alphas-primary, 0.8)',
-            secondary: 'var(--alphas-secondary, 0.6)',
+            primary: 'var(--a8, 0.8)',
+            secondary: 'var(--a9, 0.6)',
           },
           trans: {
-            bounce: 'var(--trans-bounce)',
-            ease: 'var(--trans-ease)',
+            bounce: 'var(--b0)',
+            ease: 'var(--b1)',
           },
+        })
+        expect(atomized.variableMap).toEqual({
+          '--a0': '--colors-black',
+          '--a1': '--colors-gray',
+          '--a2': '--colors-white',
+          '--a3': '--colors-red-500',
+          '--a4': '--spaces-md',
+          '--a5': '--font-sans',
+          '--a6': '--font-sizes-xl',
+          '--a7': '--font-weight-500',
+          '--a8': '--alphas-primary',
+          '--a9': '--alphas-secondary',
+          '--b0': '--trans-bounce',
+          '--b1': '--trans-ease',
         })
       })
     })
@@ -202,17 +226,17 @@ describe('atomizer', () => {
         })
 
         expect(atomized.metadata).toEqual({
-          '--color-primary': {
+          '--a0': {
             syntax: '<color>',
             inherits: false,
             initialValue: '#f00',
           },
-          '--spacing-md': {
+          '--a1': {
             syntax: '<length>',
             inherits: false,
             initialValue: '1rem',
           },
-          '--opacity-full': {
+          '--a2': {
             syntax: '<percentage>',
             inherits: false,
             initialValue: '100%',
@@ -233,7 +257,7 @@ describe('atomizer', () => {
         )
 
         expect(atomized.metadata).toEqual({
-          '--tokens-color-primary': {
+          '--a0': {
             syntax: '<color>',
             inherits: false,
             initialValue: 'oklch(76.9% 0.188 70.08)',
@@ -256,7 +280,7 @@ describe('atomizer', () => {
         )
 
         expect(atomized.metadata).toEqual({
-          '--spacing-md': {
+          '--a0': {
             syntax: '<length>',
             inherits: false,
             initialValue: '1rem',
@@ -266,16 +290,8 @@ describe('atomizer', () => {
     })
   })
 
-  describe('production mode', () => {
-    beforeAll(() => {
-      process.env.NODE_ENV = 'production'
-    })
-
-    afterAll(() => {
-      process.env.NODE_ENV = originalEnv
-    })
-
-    it('minifies CSS variable names', () => {
+  describe('minification', () => {
+    it('always minifies CSS variable names', () => {
       const atomized = atomizer({
         color: {
           red: { 500: '#f00' },

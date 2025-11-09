@@ -83,7 +83,7 @@ export interface Atomized<M extends Medias, A extends Atoms<Extract<keyof M, str
   ref: ResolveAtoms<M, A>
   /** Property metadata for @property registration */
   metadata: PropertyMetadataMap
-  /** Mapping of minified variable names to original names (only in production) */
+  /** Mapping of minified variable names to original names */
   variableMap?: { [minified: string]: string }
 }
 
@@ -155,11 +155,10 @@ function processResponsiveAtoms<M extends Medias>(
  * Converts a nested structure of atomic values into CSS custom properties and references.
  *
  * The atomizer recursively processes an atoms object, generating:
- * - CSS custom property definitions (variables)
+ * - Minified CSS custom property definitions (e.g., --a0, --a1)
  * - Type-safe var() references to those properties
  * - Support for responsive values via media queries
- * - Hierarchical naming based on object nesting
- * - Automatic minification in production (NODE_ENV=production)
+ * - Variable map for debugging (mapping minified to original names)
  *
  * @template M - Medias configuration type (constrained to Medias)
  * @template A - Atoms structure type (constrained to Atoms)
@@ -168,7 +167,7 @@ function processResponsiveAtoms<M extends Medias>(
  * @param options - Optional configuration (prefix, media queries)
  * @param _internal - Internal state for recursion (do not use directly)
  *
- * @returns Object containing `vars` (CSS variables), `ref` (type-safe references), `metadata`, and `variableMap` (production only)
+ * @returns Object containing `vars` (minified CSS variables), `ref` (type-safe references), `metadata`, and `variableMap`
  *
  * @example
  * ```typescript
@@ -182,14 +181,18 @@ function processResponsiveAtoms<M extends Medias>(
  *   { prefix: 'theme' }
  * )
  * // result.vars = {
- * //   '--theme-color-primary': '#000',
- * //   '--theme-color-secondary': '#666'
+ * //   '--a0': '#000',
+ * //   '--a1': '#666'
  * // }
  * // result.ref = {
  * //   color: {
- * //     primary: 'var(--theme-color-primary, #000)',
- * //     secondary: 'var(--theme-color-secondary, #666)'
+ * //     primary: 'var(--a0, #000)',
+ * //     secondary: 'var(--a1, #666)'
  * //   }
+ * // }
+ * // result.variableMap = {
+ * //   '--a0': '--theme-color-primary',
+ * //   '--a1': '--theme-color-secondary'
  * // }
  * ```
  *
@@ -202,7 +205,6 @@ export default function atomizer<
   const prefix = options?.prefix ? `${options.prefix}${PATH_UNIFIER}` : ''
   const unifiedPath = _internal?.path ? `${_internal.path}${PATH_UNIFIER}` : ''
 
-  const isProduction = process.env.NODE_ENV === 'production'
   const minifyMap = _internal?.minify ?? new Map<string, string>()
 
   const vars = {} as FlattenVars
@@ -217,19 +219,15 @@ export default function atomizer<
     const originalVariable = `--${path}`
 
     if (isAtom(atom)) {
-      // In production, minify the variable name (only for actual variables)
-      const variable = isProduction
-        ? getMinifiedVariable(originalVariable, minifyMap.size, minifyMap)[0]
-        : originalVariable
+      // Always minify variable names
+      const variable = getMinifiedVariable(originalVariable, minifyMap.size, minifyMap)[0]
 
       vars[variable] = atom
       ref[key] = getVar(variable, atom)
       metadata[variable] = createPropertyMetadata(atom)
     } else if (Array.isArray(atom)) {
-      // In production, minify the variable name (only for actual variables)
-      const variable = isProduction
-        ? getMinifiedVariable(originalVariable, minifyMap.size, minifyMap)[0]
-        : originalVariable
+      // Always minify variable names
+      const variable = getMinifiedVariable(originalVariable, minifyMap.size, minifyMap)[0]
 
       ref[key] = processResponsiveAtoms(atom as R8eAtoms<Extract<keyof M, string>>, variable, context)
     } else {
@@ -260,8 +258,9 @@ export default function atomizer<
     metadata,
   } as Atomized<M, A>
 
-  // Only include variableMap at the top level (when _internal is undefined)
-  if (isProduction && !_internal && minifyMap.size > 0) {
+  // Always include variableMap at the root level (when path is not provided)
+  // This handles both: 1) no _internal at all, 2) _internal with minify but no path
+  if (!_internal?.path && minifyMap.size > 0) {
     result.variableMap = Object.fromEntries(minifyMap)
   }
 

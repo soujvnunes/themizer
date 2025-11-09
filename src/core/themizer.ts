@@ -74,7 +74,7 @@ export default function themizer<
 
   const flattenVars = { ...tokenized.vars, ...aliased.vars }
   const flattenMetadata = { ...tokenized.metadata, ...aliased.metadata }
-  const flattenVariableMap = { ...tokenized.variableMap, ...aliased.variableMap }
+  const flattenVariableMap = { ...(tokenized.variableMap ?? {}), ...(aliased.variableMap ?? {}) }
 
   return {
     aliases: aliased.ref,

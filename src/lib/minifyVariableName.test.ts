@@ -37,7 +37,7 @@ describe('minifyVariableName', () => {
   })
 
   it('should handle large counters', () => {
-    // 676 letter groups * 10 digits = 6760 counters for aa-zz range
+    // Counter 6760 is letterIndex 676 which maps to 'za'
     expect(minifyVariableName(6760)).toBe('za0')
     expect(minifyVariableName(6769)).toBe('za9')
     // letterIndex 701 = 'zz', counter 7010 = 'zz0'

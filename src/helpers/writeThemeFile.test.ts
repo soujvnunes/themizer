@@ -21,7 +21,7 @@ describe('writeThemeFile', () => {
     jest.spyOn(path, 'dirname').mockImplementation((p) => p.split('/').slice(0, -1).join('/'))
     jest.spyOn(fs.promises, 'mkdir').mockResolvedValue(undefined)
     jest.spyOn(fs.promises, 'writeFile').mockResolvedValue()
-    ;(executeConfig as jest.Mock).mockResolvedValue(CSS)
+    ;(executeConfig as jest.Mock).mockResolvedValue({ css: CSS })
   })
 
   afterEach(() => {

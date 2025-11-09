@@ -56,6 +56,7 @@ export default function themizer<
 
   const flattenVars = { ...tokenized.vars, ...aliased.vars }
   const flattenMetadata = { ...tokenized.metadata, ...aliased.metadata }
+  const flattenVariableMap = { ...tokenized.variableMap, ...aliased.variableMap }
 
   return {
     aliases: aliased.ref,
@@ -65,5 +66,6 @@ export default function themizer<
       css: getCSS(flattenVars, flattenMetadata),
       jss: getJSS(flattenVars),
     },
+    variableMap: Object.keys(flattenVariableMap).length > 0 ? flattenVariableMap : undefined,
   }
 }

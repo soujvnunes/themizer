@@ -1,8 +1,11 @@
 import themizer from './themizer'
 
+const originalEnv = process.env.NODE_ENV
+
 describe('themizer', () => {
   afterAll(() => {
     jest.resetModules()
+    process.env.NODE_ENV = originalEnv
   })
 
   it('returns its prefixed reference and tokens one with specified media and CSS rules', () => {
@@ -69,6 +72,58 @@ describe('themizer', () => {
           '--ds-aliases-sizing-md': 'var(--ds-tokens-units-24, 24px)',
         },
       },
+    })
+  })
+
+  describe('production mode', () => {
+    beforeAll(() => {
+      process.env.NODE_ENV = 'production'
+    })
+
+    afterAll(() => {
+      process.env.NODE_ENV = originalEnv
+    })
+
+    it('minifies CSS variable names in production', () => {
+      const theme = themizer(
+        {
+          prefix: 'ds',
+          medias: {},
+          tokens: {
+            colors: { primary: '#000' },
+          },
+        },
+        (tokens) => ({
+          text: tokens.colors.primary,
+        }),
+      )
+
+      // Should have variable map
+      expect(theme.variableMap).toBeDefined()
+      expect(Object.keys(theme.variableMap ?? {}).length).toBeGreaterThan(0)
+
+      // CSS should use minified names (not full names)
+      expect(theme.rules.css).not.toContain('--ds-tokens-colors-primary')
+      expect(theme.rules.css).not.toContain('--ds-aliases-text')
+    })
+
+    it('maintains type-safe references with minified names', () => {
+      const theme = themizer(
+        {
+          prefix: 'theme',
+          medias: {},
+          tokens: {
+            colors: { red: '#f00' },
+          },
+        },
+        (tokens) => ({
+          foreground: tokens.colors.red,
+        }),
+      )
+
+      // TypeScript types remain unchanged, but runtime values are minified
+      expect(theme.tokens.colors.red).toMatch(/^var\(--a\d+,/)
+      expect(theme.aliases.foreground).toMatch(/^var\(--a\d+,/)
     })
   })
 })

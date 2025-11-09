@@ -39,6 +39,7 @@ Change your design system once in your configuration, and all components update 
 - **Tailwind Integration** - Extend Tailwind's theme with your tokens
 - **CSS-in-JS Compatible** - Works with styled-jsx, styled-components, emotion, etc.
 - **CSS @property Registration** - Automatic type validation and browser optimization
+- **Production Optimization** - Automatic CSS variable minification for smaller bundles
 
 ## Quick Start
 
@@ -593,6 +594,93 @@ export default function Heading({ className = '', ...props }) {
   )
 }
 ```
+
+## Production Optimization
+
+**themizer** automatically minifies CSS custom property names in production builds to reduce bundle size.
+
+### Automatic Minification
+
+When `NODE_ENV=production`, CSS variable names are automatically shortened:
+
+```ts
+// Development
+--theme-tokens-colors-amber-light: rgb(251, 191, 36);
+--theme-aliases-palette-foreground: var(--theme-tokens-colors-amber-light);
+
+// Production (automatically minified)
+--a0: rgb(251, 191, 36);
+--a1: var(--a0);
+```
+
+### Bundle Size Savings
+
+For a typical design system with 100-200 variables:
+- **Variable name reduction**: ~88% (from ~35 characters to ~4 characters)
+- **Overall CSS reduction**: 15-30% depending on value lengths
+
+### Usage
+
+Minification is automatically enabled when `NODE_ENV=production`.
+
+**Next.js & Vercel:**
+```bash
+# NODE_ENV is set automatically during build
+pnpm build
+```
+
+**Other frameworks (Vite, Remix, etc.):**
+```bash
+# Set NODE_ENV before running the theme generation
+NODE_ENV=production pnpm run themizer:theme
+```
+
+**Important:** Do **not** set `NODE_ENV` in `.env` or `.env.production` files. Deployment platforms (Vercel, Digital Ocean, Railway, etc.) manage this automatically, and manual configuration can cause build failures.
+
+### Source Maps for Debugging
+
+In production builds, themizer generates a `theme.css.map.json` file alongside your CSS for debugging:
+
+```json
+{
+  "--a0": "--theme-tokens-colors-amber-light",
+  "--a1": "--theme-tokens-colors-amber-dark",
+  "--a2": "--theme-aliases-palette-foreground"
+}
+```
+
+This allows you to identify original variable names when debugging production builds.
+
+### Naming Pattern
+
+Minified names follow a compact sequential pattern for maximum compression:
+
+- `a0, a1, ..., a9` (10 variables)
+- `b0, b1, ..., b9` (10 variables)
+- `z0, z1, ..., z9` (260 variables total for single letter)
+- `aa0, aa1, ..., zz9` (6,760 variables total for double letter)
+- Continues with `aaa0, aaa1, ...` for larger design systems
+
+### TypeScript References
+
+Your TypeScript autocomplete remains unchanged! The minification only affects the generated CSS output:
+
+```ts
+// TypeScript still shows semantic names
+theme.aliases.palette.foreground
+// ✓ Type: "var(--a0, rgb(251, 191, 36))"
+
+// At runtime in production, it uses minified names
+console.log(theme.aliases.palette.foreground)
+// → "var(--a0, rgb(251, 191, 36))"
+```
+
+### Consistency Guarantee
+
+The minification is **deterministic** - the same configuration always generates the same minified names, ensuring:
+- Consistent builds across environments
+- Reliable caching
+- No cache-busting issues
 
 ## Links
 

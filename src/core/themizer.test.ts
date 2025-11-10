@@ -55,6 +55,41 @@ describe('themizer', () => {
       '@property --ds0{syntax:"<color>";inherits:false;initial-value:rgb(251, 191, 36);}@property --ds1{syntax:"<color>";inherits:false;initial-value:rgb(217, 119, 6);}@property --ds2{syntax:"<length>";inherits:false;initial-value:16px;}@property --ds3{syntax:"<length>";inherits:false;initial-value:24px;}@property --ds4{syntax:"*";inherits:false;initial-value:var(--ds1, rgb(217, 119, 6));}@property --ds5{syntax:"*";inherits:false;initial-value:var(--ds3, 24px);}@property --ds6{syntax:"*";inherits:false;initial-value:var(--ds2, 16px);}:root{--ds0:rgb(251, 191, 36);--ds1:rgb(217, 119, 6);--ds2:16px;--ds3:24px;--ds4:var(--ds1, rgb(217, 119, 6));--ds5:var(--ds3, 24px);--ds6:var(--ds2, 16px);}@media (prefers-color-scheme: dark){:root{--ds4:var(--ds0, rgb(251, 191, 36));}}@media (min-width: 1024px){:root{--ds6:var(--ds3, 24px);}}',
     )
     expect(theme.rules.jss).toEqual({
+      '@property --ds0': {
+        syntax: '"<color>"',
+        inherits: false,
+        initialValue: 'rgb(251, 191, 36)',
+      },
+      '@property --ds1': {
+        syntax: '"<color>"',
+        inherits: false,
+        initialValue: 'rgb(217, 119, 6)',
+      },
+      '@property --ds2': {
+        syntax: '"<length>"',
+        inherits: false,
+        initialValue: '16px',
+      },
+      '@property --ds3': {
+        syntax: '"<length>"',
+        inherits: false,
+        initialValue: '24px',
+      },
+      '@property --ds4': {
+        syntax: '"*"',
+        inherits: false,
+        initialValue: 'var(--ds1, rgb(217, 119, 6))',
+      },
+      '@property --ds5': {
+        syntax: '"*"',
+        inherits: false,
+        initialValue: 'var(--ds3, 24px)',
+      },
+      '@property --ds6': {
+        syntax: '"*"',
+        inherits: false,
+        initialValue: 'var(--ds2, 16px)',
+      },
       ':root': {
         '--ds0': 'rgb(251, 191, 36)',
         '--ds1': 'rgb(217, 119, 6)',

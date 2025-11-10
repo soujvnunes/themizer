@@ -82,7 +82,7 @@ export default function themizer<
     medias: addAtMedia(options.medias),
     rules: {
       css: getCSS(flattenVars, flattenMetadata),
-      jss: getJSS(flattenVars),
+      jss: getJSS(flattenVars, flattenMetadata),
     },
     variableMap: Object.keys(flattenVariableMap).length > 0 ? flattenVariableMap : undefined,
   }

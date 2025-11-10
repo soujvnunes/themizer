@@ -283,10 +283,9 @@ A `theme.css.map.json` file is generated alongside your CSS, mapping minified na
 {
   "--theme0": "--theme-tokens-colors-amber-50",
   "--theme1": "--theme-tokens-colors-amber-500",
-  "--theme2": "--theme-tokens-colors-amber-900",
-  "--theme3": "--theme-tokens-colors-amber-950",
-  "--theme4": "--theme-tokens-alphas-80",
-  "--theme5": "--theme-tokens-units-16",
+  "--theme2": "--theme-tokens-colors-amber-950",
+  "--theme3": "--theme-tokens-alphas-80",
+  "--theme4": "--theme-tokens-units-16",
   "--themea0": "--theme-aliases-palette-ground-fore",
   "--themea1": "--theme-aliases-typography-headline"
 }

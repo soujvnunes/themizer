@@ -27,7 +27,6 @@ export default themizer(
         amber: {
           50: "oklch(98% 0.02 85)",
           500: "oklch(76.9% 0.188 70.08)",
-          900: "oklch(12% 0.03 70)",
           950: "oklch(6% 0.02 70)",
         },
       },

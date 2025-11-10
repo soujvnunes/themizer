@@ -1,5 +1,11 @@
 # @soujvnunes/themizer
 
+## 1.6.3
+
+### Patch Changes
+
+- 96f4b01: Add @property registration rules to JSS output. The getJSS function now includes CSS @property rules with type validation for all custom properties.
+
 ## 1.6.2
 
 ### Patch Changes

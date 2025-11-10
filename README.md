@@ -177,7 +177,7 @@ export default themizer(
     palette: {
       main: colors.amber[500],
       ground: {
-        fore: [{ dark: colors.amber[50] }, alpha(colors.amber[950], alphas.secondary)],
+        fore: [{ dark: colors.amber[50] }, alpha(colors.amber[950], alphas[80])],
         back: [{ dark: colors.amber[950] }, colors.amber[50]],
       },
     },
@@ -285,7 +285,7 @@ A `theme.css.map.json` file is generated alongside your CSS, mapping minified na
   "--theme1": "--theme-tokens-colors-amber-500",
   "--theme2": "--theme-tokens-colors-amber-900",
   "--theme3": "--theme-tokens-colors-amber-950",
-  "--theme4": "--theme-tokens-alphas-secondary",
+  "--theme4": "--theme-tokens-alphas-80",
   "--theme5": "--theme-tokens-units-16",
   "--themea0": "--theme-aliases-palette-ground-fore",
   "--themea1": "--theme-aliases-typography-headline"
@@ -380,7 +380,7 @@ The minification is **deterministic** - the same configuration always generates 
 import { type Config } from 'tailwindcss'
 import theme from './themizer.config'
 
-export {
+export default {
   content: ['./src/**/*.{tsx,ts,jsx,js}'],
   theme: {
     extend: {

@@ -8,38 +8,110 @@
 
 ## The Problem
 
-Utility-first CSS frameworks create a maintainability trap. Your components become littered with verbose, brittle class names:
+Building maintainable design systems requires design tokens, but most CSS workflows don't support them:
+
+**With utility classes:**
 
 ```tsx
-<button className="text-white dark:text-black hover:text-white/60 dark:hover:text-white/60 transition-colors">
-  Click me
+// Button.tsx
+<button className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-400 dark:hover:bg-blue-300">
+  {/* Is this our primary color? No way to know */}
 </button>
+
+// Card.tsx
+<div className="border-blue-500 dark:border-blue-400">
+  {/* Same values, zero connection to design system */}
+</div>
 ```
 
-Need to change your brand color? Good luck finding and updating every instance of `text-blue-500` across your codebase. There's no single source of truth, just scattered utility classes everywhere.
+**With CSS-in-JS:**
+
+```tsx
+const Button = styled.button`
+  background: #3b82f6; /* Repeated in 15 files */
+
+  @media (prefers-color-scheme: dark) {
+    background: #60a5fa; /* Repeated in 18 files */
+  }
+`
+```
+
+Without design tokens, you get:
+
+- Hard-coded values scattered across components
+- No single source of truth for your design system
+- No way to rebrand without find-and-replace
+- Zero type safety
 
 ## The Solution
 
-**themizer** generates type-safe design tokens and semantic aliases that work seamlessly with Tailwind CSS or any CSS-in-JS solution:
+**themizer** generates type-safe design tokens and semantic aliases. Define tokens once, compose them into aliases, build components from aliases.
 
-```tsx
-<button className="text-foreground hover:text-foreground-secondary transition-colors">
-  Click me
-</button>
+**Define your tokens:**
+
+```ts
+// themizer.config.ts
+export default themizer(
+  {
+    // Tokens: Raw design values
+    tokens: {
+      colors: { blue: { 300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb' } },
+    },
+  },
+  // Compose tokens into semantic aliases
+  ({ colors }) => ({
+    palette: {
+      main: {
+        primary: [{ dark: colors.blue[400] }, colors.blue[500]],
+        secondary: [{ dark: colors.blue[300] }, colors.blue[600]],
+      },
+    },
+  }),
+)
 ```
 
-Change your design system once in your configuration, and all components update automatically.
+**Build components from aliases:**
+
+```tsx
+// Utility classes (Tailwind)
+<button className="bg-main-primary hover:bg-main-secondary">
+  Primary Action
+</button>
+
+// CSS-in-JS
+import theme from './themizer.config'
+
+const Button = styled.button`
+  background: ${theme.aliases.palette.main.primary};
+
+  &:hover {
+    background: ${theme.aliases.palette.main.secondary};
+  }
+  /* Dark mode handled by themizer configuration, applied natively by the browser */
+`
+```
+
+**Rebrand by updating aliases, not components:**
+
+```ts
+// Update aliases to use new tokens
+palette: {
+  main: {
+    primary: [{ dark: colors.purple[400] }, colors.purple[500]],
+    secondary: [{ dark: colors.purple[300] }, colors.purple[600]],
+  },
+}
+
+// All components using palette.main.primary reflect the configuration change
+```
 
 ## Features
 
-- **Framework-Aware Setup** - Automatically detects Next.js, Remix, Vite, and more
-- **Type-Safe Tokens** - Full TypeScript support with autocomplete
-- **Responsive Design** - Built-in media query support
-- **Single Source of Truth** - Define your design system once, use everywhere
-- **Tailwind Integration** - Extend Tailwind's theme with your tokens
-- **CSS-in-JS Compatible** - Works with styled-jsx, styled-components, emotion, etc.
-- **CSS @property Registration** - Automatic type validation and browser optimization
-- **Production Optimization** - Base-52 CSS variable minification (a-z, A-Z) for maximum compression
+- **Atomic Design** - Build from atoms (tokens) to molecules (semantic aliases) to organisms (components)
+- **Type-Safe** - Full TypeScript support with autocomplete for tokens and aliases
+- **Framework Agnostic** - Works with Tailwind, styled-jsx, styled-components, Linaria, emotion
+- **Responsive by Default** - Media queries configured through themizer, executed natively by the browser
+- **Production Ready** - Base-52 minification, CSS @property registration, source maps
 
 ## Quick Start
 
@@ -70,22 +142,23 @@ export default themizer(
   {
     prefix: 'theme',
     medias: {
-      desktop: '(min-width: 1024px)',
+      desktop: '(width >= 1024px)',
+      desktopPortrait: '(width >= 1024px) and (orientation: portrait)',
       dark: '(prefers-color-scheme: dark)',
+      motion: '(prefers-reduced-motion: no-preference)',
     },
     tokens: {
       colors: {
         amber: {
           50: 'oklch(98% 0.02 85)',
           500: 'oklch(76.9% 0.188 70.08)',
-          900: 'oklch(12% 0.03 70)',
           950: 'oklch(6% 0.02 70)',
         },
       },
       alphas: {
-        primary: '100%',
-        secondary: '80%',
-        tertiary: '60%',
+        100: '100%',
+        80: '80%',
+        60: '60%',
       },
       units: {
         16: '1rem',
@@ -93,28 +166,47 @@ export default themizer(
         40: '2.5rem',
         64: '4rem',
       },
+      transitions: {
+        bounce: '200ms cubic-bezier(0.5, -0.5, 0.25, 1.5)',
+        ease: '200ms cubic-bezier(0.25, 0.1, 0.25, 1)',
+      },
     },
   },
-  ({ colors, alphas, units }) => ({
-    // Semantic aliases grouped by context
+  ({ colors, alphas, units, transitions }) => ({
+    // Semantic aliases composed from tokens
     palette: {
-      foreground: [{ dark: colors.amber[50] }, alpha(colors.amber[950], alphas.secondary)],
-      background: [{ dark: colors.amber[950] }, colors.amber[50]],
+      main: colors.amber[500],
+      ground: {
+        fore: [{ dark: colors.amber[50] }, alpha(colors.amber[950], alphas.secondary)],
+        back: [{ dark: colors.amber[950] }, colors.amber[50]],
+      },
     },
     typography: {
       headline: [{ desktop: units[64] }, units[40]],
       title: [{ desktop: units[40] }, units[24]],
       body: units[16],
     },
+    spacing: {
+      section: [{ desktopPortrait: units[64] }, units[40]],
+      block: units[24],
+    },
+    animations: {
+      bounce: [{ motion: transitions.bounce }],
+      ease: [{ motion: transitions.ease }],
+    },
   }),
 )
 ```
 
-**Key Concept:**
-- **Tokens** = Raw values (`colors.amber[500]`)
-- **Aliases** = Semantic names (`palette.foreground`, `typography.title`)
-- Responsive values use array syntax: `[{ mediaKey: value }, defaultValue]`
-- Use modern CSS color spaces like `oklch()` for better color manipulation
+**Key Concepts:**
+- **Tokens** = Raw design values (`colors.amber[500]`, `units[16]`, `transitions.bounce`)
+- **Aliases** = Semantic names composed from tokens (`palette.ground.fore`, `typography.title`, `animations.ease`)
+- **Components** = Built using aliases, stay decoupled from raw values
+- **Responsive values** use array syntax: `[{ mediaKey: value }, defaultValue]`
+- **Dark mode** works via media queries - aliases switch values based on `prefers-color-scheme`, applied natively by the browser
+- **Complex media queries** combine conditions like `desktopPortrait: '(width >= 1024px) and (orientation: portrait)'`
+- **Motion preferences** respect accessibility - users with `prefers-reduced-motion: reduce` get undefined animation variables, while users who prefer motion get smooth transitions
+- **Browser-native execution** - themizer generates CSS custom properties with @media queries, the browser handles all responsive and preference-based switching
 
 ### 2. Generate CSS
 
@@ -123,7 +215,7 @@ pnpm run themizer:theme        # Generate once
 pnpm run themizer:theme:watch  # Watch mode (if configured with --watch)
 ```
 
-The CLI automatically executes your `themizer.config.ts` and generates `theme.css` with minified CSS custom properties:
+The CLI executes your `themizer.config.ts` and generates `theme.css` with minified CSS custom properties:
 
 ```css
 @property --theme0 { syntax: "<color>"; inherits: false; initial-value: oklch(98% 0.02 85); }
@@ -163,7 +255,7 @@ The CLI automatically executes your `themizer.config.ts` and generates `theme.cs
   }
 }
 
-@media (min-width: 1024px) {
+@media (width >= 1024px) {
   :root {
     --themea1: var(--theme8);
     --themea2: var(--theme7);
@@ -171,9 +263,21 @@ The CLI automatically executes your `themizer.config.ts` and generates `theme.cs
 }
 ```
 
+**themizer** always minifies CSS custom property names using base-52 encoding (a-z, A-Z) to reduce bundle size:
+
+```ts
+// Without minification (original semantic names)
+--theme-tokens-colors-amber-light: rgb(251, 191, 36);
+--theme-aliases-palette-ground-fore: var(--theme-tokens-colors-amber-light);
+
+// With minification (what themizer generates)
+--theme0: rgb(251, 191, 36);
+--themea0: var(--theme0);
+```
+
 #### Source Map for Debugging
 
-A `theme.css.map.json` file is automatically generated alongside your CSS, mapping minified names back to semantic names:
+A `theme.css.map.json` file is generated alongside your CSS, mapping minified names back to semantic names:
 
 ```json
 {
@@ -183,21 +287,35 @@ A `theme.css.map.json` file is automatically generated alongside your CSS, mappi
   "--theme3": "--theme-tokens-colors-amber-950",
   "--theme4": "--theme-tokens-alphas-secondary",
   "--theme5": "--theme-tokens-units-16",
-  "--themea0": "--theme-aliases-palette-foreground",
+  "--themea0": "--theme-aliases-palette-ground-fore",
   "--themea1": "--theme-aliases-typography-headline"
 }
 ```
 
 This allows you to identify original variable names when debugging minified CSS in DevTools.
 
+**Bundle Size Savings:**
+
+For a typical design system with 100-200 variables:
+- **Variable name reduction**: ~88% (from ~35 characters to ~4 characters)
+- **Overall CSS reduction**: 15-30% depending on value lengths
+
+**Naming Pattern:**
+
+Minified names use base-52 encoding (a-z, A-Z) for maximum compression:
+- Single letters: `a0-z9, A0-Z9` (520 variables)
+- Double letters: `aa0-ZZ9` (27,040 variables)
+- Triple letters and beyond for larger design systems
+
 #### CSS @property Registration
 
-**themizer** automatically registers all CSS custom properties using the `@property` at-rule for type validation:
+**themizer** generates CSS @property registration for all custom properties, with type validation enforced natively by the browser:
 
 - **Type Validation** - Browsers validate that values match their declared syntax (`<color>`, `<length>`, `<percentage>`, etc.)
 - **Browser Enforcement** - Invalid values are rejected, preventing type confusion errors
 
 **Supported syntax types:**
+
 - `<color>` - Colors (hex, rgb, hsl, oklch, color-mix, etc.)
 - `<length>` - Lengths (px, rem, em, vh, vw, etc.)
 - `<percentage>` - Percentages (%)
@@ -206,29 +324,50 @@ This allows you to identify original variable names when debugging minified CSS 
 - `<number>` / `<integer>` - Numbers
 - `*` - Universal (for complex expressions like `var()`, `cubic-bezier()`, etc.)
 
-### 3. Import in Your App
-
-```tsx
-// Next.js: app/layout.tsx or pages/_app.tsx
-// React/Vite: src/index.tsx or src/main.tsx
-import './theme.css'
-import './globals.css'
-```
-
 ## Framework Integration
 
-**Note:** You only need to import `themizer.config` in your TypeScript/JavaScript code if you want to use the theme object programmatically (e.g., in Tailwind config, styled-components). For just using CSS custom properties, importing `theme.css` is sufficient.
+**One token system, multiple frameworks.** Use tokens and aliases across:
+
+- **Tailwind** - Extend theme config with aliases, use semantic class names
+- **styled-jsx** - Use `theme.rules.css` for global styles, interpolate aliases in components
+- **styled-components/emotion** - Import theme, use tokens and aliases in templates
+- **Linaria** - Zero-runtime extraction, themizer works at build time
+
+Configure once, use everywhere.
+
+**Note:** You only need to import `themizer.config` in your TypeScript/JavaScript code if you want to use the theme object programmatically (e.g., in Tailwind config, styled-components). For just using CSS custom properties, importing `theme.css` at your app's globals/main CSS is sufficient.
+
+#### TypeScript References
+
+Your TypeScript autocomplete remains unchanged despite minification. The minification only affects the generated CSS output:
+
+```ts
+// TypeScript still shows semantic names
+theme.aliases.palette.ground.fore
+// ✓ Type: "var(--theme0, rgb(251, 191, 36))"
+
+// At runtime, it uses minified names
+console.log(theme.aliases.palette.ground.fore)
+// → "var(--theme0, rgb(251, 191, 36))"
+```
+
+#### Consistency Guarantee
+
+The minification is **deterministic** - the same configuration always generates the same minified names, ensuring:
+- Consistent builds across environments
+- Reliable caching
+- No cache-busting issues
 
 ### Tailwind CSS v4
 
 ```css
 /* app/globals.css */
-@import "tailwindcss";
-@import "./theme.css";
+@import 'tailwindcss';
+@import './theme.css';
 
 @theme {
-  --color-foreground: var(--theme-aliases-palette-foreground);
-  --color-background: var(--theme-aliases-palette-background);
+  --color-foreground: var(--theme-aliases-palette-ground-fore);
+  --color-background: var(--theme-aliases-palette-ground-back);
   --font-size-headline: var(--theme-aliases-typography-headline);
   --font-size-title: var(--theme-aliases-typography-title);
 }
@@ -241,13 +380,13 @@ import './globals.css'
 import { type Config } from 'tailwindcss'
 import theme from './themizer.config'
 
-export default {
+export {
   content: ['./src/**/*.{tsx,ts,jsx,js}'],
   theme: {
     extend: {
       colors: {
-        foreground: theme.aliases.palette.foreground,
-        background: theme.aliases.palette.background,
+        foreground: theme.aliases.palette.ground.fore,
+        background: theme.aliases.palette.ground.back,
       },
       fontSize: {
         headline: [theme.aliases.typography.headline],
@@ -258,36 +397,23 @@ export default {
 } satisfies Config
 ```
 
-Use semantic class names:
-
-```tsx
-<div className="bg-background text-foreground">
-  <h1 className="text-headline">Hello World</h1>
-  <h2 className="text-title">Subtitle</h2>
-</div>
-```
-
 ### Linaria (Zero-Runtime CSS-in-JS)
 
 **themizer** is designed to be side-effect-free, making it compatible with build-time CSS-in-JS solutions like [Linaria](https://linaria.dev/). Unlike runtime CSS-in-JS libraries, Linaria extracts CSS at build time for optimal performance.
 
 ```tsx
-// Button.tsx
+// app/_components/ui/button.tsx
 import { styled } from '@linaria/react'
 import theme from './themizer.config'
 
-const Button = styled.button`
-  background-color: ${theme.aliases.palette.background};
-  color: ${theme.aliases.palette.foreground};
+export const Button = styled.button`
+  background-color: ${theme.aliases.palette.ground.back};
+  color: ${theme.aliases.palette.ground.fore};
   font-size: ${theme.aliases.typography.body};
   padding: ${theme.tokens.units[16]};
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: opacity 150ms;
 
   &:hover {
-    opacity: ${theme.tokens.alphas.secondary};
+    opacity: ${theme.tokens.alphas[80]};
   }
 
   @media ${theme.medias.desktop} {
@@ -295,10 +421,6 @@ const Button = styled.button`
     font-size: ${theme.aliases.typography.title};
   }
 `
-
-export default function MyButton({ children }) {
-  return <Button>{children}</Button>
-}
 ```
 
 **Why it works:** The `themizer()` function is pure and doesn't perform file system operations during module evaluation, so Linaria can safely evaluate your config at build time and extract the theme values into static CSS.
@@ -309,8 +431,8 @@ export default function MyButton({ children }) {
 import { css } from '@linaria/core'
 import theme from './themizer.config'
 
-const cardStyles = css`
-  background: ${theme.aliases.palette.background};
+const cardClassNames = css`
+  background: ${theme.aliases.palette.ground.back};
   border: 1px solid ${theme.tokens.colors.amber[500]};
   padding: ${theme.tokens.units[24]};
 
@@ -319,8 +441,8 @@ const cardStyles = css`
   }
 `
 
-export default function Card({ children }) {
-  return <div className={cardStyles}>{children}</div>
+export function Card({ children }) {
+  return <div className={cardClassNames}>{children}</div>
 }
 ```
 
@@ -333,12 +455,12 @@ import styled from 'styled-components'
 import theme from './themizer.config'
 
 const Button = styled.button`
-  background-color: ${theme.aliases.palette.background};
-  color: ${theme.aliases.palette.foreground};
+  background-color: ${theme.aliases.palette.ground.back};
+  color: ${theme.aliases.palette.ground.fore};
   padding: ${theme.tokens.units[16]};
 
   &:hover {
-    opacity: ${theme.tokens.alphas.secondary};
+    opacity: ${theme.tokens.alphas[80]};
   }
 `
 ```
@@ -348,17 +470,22 @@ const Button = styled.button`
 ```tsx
 import theme from './themizer.config'
 
-export default function Title({ children }) {
+export function Title({ children }) {
   return (
-    <h1 className="heading">
-      {children}
-      <style jsx>{`
-        .heading {
-          color: ${theme.aliases.palette.foreground};
-          font-size: ${theme.aliases.typography.title};
-        }
-      `}</style>
-    </h1>
+    <>
+      {/* Global CSS with @property registration */}
+      <style jsx global>{`${theme.rules.css}`}</style>
+
+      <h1 className="heading">
+        {children}
+        <style jsx>{`
+          .heading {
+            color: ${theme.aliases.palette.ground.fore};
+            font-size: ${theme.aliases.typography.title};
+          }
+        `}</style>
+      </h1>
+    </>
   )
 }
 ```
@@ -419,7 +546,7 @@ theme.tokens.colors.green[500]    // → "var(--theme-tokens-colors-green-500)"
 theme.tokens.units[16]            // → "var(--theme-tokens-units-16)"
 
 // Using media queries
-theme.medias.lg                   // → "@media (min-width: 1024px)"
+theme.medias.desktop              // → "@media (width >= 1024px)"
 theme.medias.dark                 // → "@media (prefers-color-scheme: dark)"
 ```
 
@@ -475,149 +602,6 @@ export const viewport = {
   themeColor: resolveAtom(theme.tokens.colors.green[500]),
 }
 ```
-
-## Advanced
-
-### Dark Mode
-
-```ts
-const { aliases } = themizer(
-  {
-    prefix: 'theme',
-    medias: { dark: '(prefers-color-scheme: dark)' },
-    tokens: { colors: { white: '#fff', black: '#000' } },
-  },
-  ({ colors }) => ({
-    foreground: [{ dark: colors.white }, colors.black],
-    background: [{ dark: colors.black }, colors.white],
-  }),
-)
-```
-
-### Motion & Accessibility
-
-Respect user preferences for reduced motion while providing smooth animations:
-
-```ts
-const { aliases } = themizer(
-  {
-    prefix: 'theme',
-    medias: {
-      motion: '(prefers-reduced-motion: no-preference)',
-    },
-    tokens: {
-      transitions: {
-        bounce: '200ms cubic-bezier(0.5, -0.5, 0.25, 1.5)',
-        ease: '200ms cubic-bezier(0.25, 0.1, 0.25, 1)',
-      },
-    },
-  },
-  ({ transitions }) => ({
-    animations: {
-      bounce: [{ motion: transitions.bounce }],
-      ease: [{ motion: transitions.ease }],
-    },
-  }),
-)
-```
-
-Generated CSS:
-
-```css
-@media (prefers-reduced-motion: no-preference) {
-  :root {
-    --theme-aliases-animations-bounce: var(--theme-tokens-transitions-bounce);
-    --theme-aliases-animations-ease: var(--theme-tokens-transitions-ease);
-  }
-}
-```
-
-Users with `prefers-reduced-motion: reduce` get no animation variables (they remain undefined), while users who prefer motion get smooth transitions. This ensures accessibility without sacrificing user experience.
-
-### Component Overrides
-
-```tsx
-import { unwrapAtom } from 'themizer'
-import theme from './themizer.config'
-
-export default function Heading({ className = '', ...props }) {
-  return (
-    <h1
-      className={`text-2xl ${className}`}
-      style={{
-        // Override color for this component only
-        [unwrapAtom(theme.aliases.palette.main)]: theme.tokens.colors.green[600],
-      }}
-      {...props}
-    />
-  )
-}
-```
-
-## CSS Variable Minification
-
-**themizer** always minifies CSS custom property names using base-52 encoding (a-z, A-Z) to reduce bundle size.
-
-```ts
-// Without minification (original semantic names)
---theme-tokens-colors-amber-light: rgb(251, 191, 36);
---theme-aliases-palette-foreground: var(--theme-tokens-colors-amber-light);
-
-// With minification (what themizer generates)
---theme0: rgb(251, 191, 36);
---theme1: var(--theme0);
-```
-
-### Bundle Size Savings
-
-For a typical design system with 100-200 variables:
-- **Variable name reduction**: ~88% (from ~35 characters to ~4 characters)
-- **Overall CSS reduction**: 15-30% depending on value lengths
-
-### Source Maps for Debugging
-
-themizer generates a `theme.css.map.json` file alongside your CSS for debugging:
-
-```json
-{
-  "--theme0": "--theme-tokens-colors-amber-light",
-  "--theme1": "--theme-tokens-colors-amber-dark",
-  "--theme2": "--theme-aliases-palette-foreground"
-}
-```
-
-This allows you to identify original variable names when debugging minified CSS.
-
-### Naming Pattern
-
-Minified names use base-52 encoding (a-z, A-Z) for maximum compression:
-
-- Single letters: `a0-z9, A0-Z9` (520 variables)
-- Double letters: `aa0-ZZ9` (27,040 variables)
-- Triple letters and beyond for larger design systems
-
-The generated `theme.css.map.json` shows the mapping from minified to original names.
-
-### TypeScript References
-
-Your TypeScript autocomplete remains unchanged! The minification only affects the generated CSS output:
-
-```ts
-// TypeScript still shows semantic names
-theme.aliases.palette.foreground
-// ✓ Type: "var(--theme0, rgb(251, 191, 36))"
-
-// At runtime, it uses minified names
-console.log(theme.aliases.palette.foreground)
-// → "var(--theme0, rgb(251, 191, 36))"
-```
-
-### Consistency Guarantee
-
-The minification is **deterministic** - the same configuration always generates the same minified names, ensuring:
-- Consistent builds across environments
-- Reliable caching
-- No cache-busting issues
 
 ## Links
 

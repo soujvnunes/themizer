@@ -19,7 +19,7 @@ export default themizer(
   {
     prefix: 'theme',
     medias: {
-      desktop: '(min-width: 1024px)',
+      desktop: '(width >= 1024px)',
       dark: '(prefers-color-scheme: dark)',
     },
     tokens: {
@@ -27,21 +27,20 @@ export default themizer(
         amber: {
           50: "oklch(98% 0.02 85)",
           500: "oklch(76.9% 0.188 70.08)",
-          900: "oklch(12% 0.03 70)",
           950: "oklch(6% 0.02 70)",
         },
       },
       alphas: {
-        primary: "100%",
-        secondary: "80%",
-        tertiary: "60%",
-        quaternary: "40%",
-        quinary: "20%",
-        senary: "10%",
-        septenary: "6%",
-        octonary: "4%",
-        novenary: "2%",
-        denary: "0%",
+        100: "100%",
+        80: "80%",
+        60: "60%",
+        40: "40%",
+        20: "20%",
+        10: "10%",
+        6: "6%",
+        4: "4%",
+        2: "2%",
+        0: "0%",
       },
       units: {
         0: '0',
@@ -62,8 +61,10 @@ export default themizer(
     // Define your semantic aliases grouped by context
 
     palette: {
-      foreground: [{ dark: colors.amber[50] }, alpha(colors.amber[950], alphas.secondary)],
-      background: [{ dark: colors.amber[950] }, colors.amber[50]],
+      ground: {
+        fore: [{ dark: colors.amber[50] }, alpha(colors.amber[950], alphas[80])],
+        back: [{ dark: colors.amber[950] }, colors.amber[50]],
+      },
       main: colors.amber[500],
     },
 

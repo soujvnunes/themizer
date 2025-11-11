@@ -5,6 +5,9 @@
 
 import { type UnitsConfig, type ExpandedUnits, unitSuffixes } from './unitTypes'
 
+// Multiplier for rounding to 10 decimal places to avoid floating-point accumulation errors
+const PRECISION_MULTIPLIER = 1e10
+
 /**
  * Expand a single unit tuple into a sequence
  * @param tuple [from, step, to] numeric values
@@ -31,7 +34,7 @@ function expandUnitTuple(tuple: [number, number, number], unit: string): Record<
   for (let i = 0; i <= numSteps; i++) {
     const value = from + (i * step)
     // Round to avoid floating point precision issues
-    const key = Math.round(value * 1e10) / 1e10
+    const key = Math.round(value * PRECISION_MULTIPLIER) / PRECISION_MULTIPLIER
     result[key] = `${key}${unit}`
   }
 

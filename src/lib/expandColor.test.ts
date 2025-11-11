@@ -1,5 +1,11 @@
 import { expandColor } from './expandColor'
 
+// Test utility to extract lightness value from an OKLCH color string
+const getLightness = (color: string): number => {
+  const match = color.match(/oklch\(([\d.]+)%/)
+  return parseFloat(match?.[1] ?? '0')
+}
+
 describe('expandColor', () => {
   it('should expand a single oklch color to 7 shades with expected values', () => {
     const result = expandColor('oklch(76.9% 0.188 70.08)')
@@ -25,13 +31,12 @@ describe('expandColor', () => {
     expect(result.darkest).toMatch(/^oklch\([\d.]+%\s+[\d.]+\s+[\d.]+\)$/)
 
     // Verify actual values are reasonable (lighter shades should have higher lightness)
-    const parseL = (color: string) => parseFloat(color.match(/oklch\(([\d.]+)%/)?.[1] ?? '0')
-    expect(parseL(result.lightest)).toBeGreaterThan(parseL(result.lighter))
-    expect(parseL(result.lighter)).toBeGreaterThan(parseL(result.light))
-    expect(parseL(result.light)).toBeGreaterThan(76.9)
-    expect(76.9).toBeGreaterThan(parseL(result.dark))
-    expect(parseL(result.dark)).toBeGreaterThan(parseL(result.darker))
-    expect(parseL(result.darker)).toBeGreaterThan(parseL(result.darkest))
+    expect(getLightness(result.lightest)).toBeGreaterThan(getLightness(result.lighter))
+    expect(getLightness(result.lighter)).toBeGreaterThan(getLightness(result.light))
+    expect(getLightness(result.light)).toBeGreaterThan(76.9)
+    expect(76.9).toBeGreaterThan(getLightness(result.dark))
+    expect(getLightness(result.dark)).toBeGreaterThan(getLightness(result.darker))
+    expect(getLightness(result.darker)).toBeGreaterThan(getLightness(result.darkest))
   })
 
   it('should expand amber color to exact expected shades', () => {
@@ -137,9 +142,6 @@ describe('expandColor', () => {
   it('should create lighter shades closer to white', () => {
     const result = expandColor('oklch(50% 0.15 180)')
 
-    // Parse lightness values (first number in oklch)
-    const getLightness = (color: string) => parseFloat(color.match(/oklch\(([\d.]+)%/)?.[1] || '0')
-
     const baseLightness = getLightness(result.base)
     const lightestLightness = getLightness(result.lightest)
     const lighterLightness = getLightness(result.lighter)
@@ -153,9 +155,6 @@ describe('expandColor', () => {
 
   it('should create darker shades closer to black', () => {
     const result = expandColor('oklch(50% 0.15 180)')
-
-    // Parse lightness values
-    const getLightness = (color: string) => parseFloat(color.match(/oklch\(([\d.]+)%/)?.[1] || '0')
 
     const baseLightness = getLightness(result.base)
     const darkLightness = getLightness(result.dark)
@@ -178,8 +177,6 @@ describe('expandColor', () => {
 
   it('should create a smooth gradient from lightest to darkest', () => {
     const result = expandColor('oklch(50% 0.1 120)')
-
-    const getLightness = (color: string) => parseFloat(color.match(/oklch\(([\d.]+)%/)?.[1] || '0')
 
     const shades = [
       getLightness(result.lightest),

@@ -284,4 +284,213 @@ describe('atomizer', () => {
       })
     })
   })
+
+  describe('color expansion', () => {
+    it('expands color string inside colors property to 7 shades', () => {
+      const atomized = atomizer({
+        colors: {
+          amber: 'oklch(76.9% 0.188 70.08)',
+        },
+      })
+
+      // Should have all 7 shades
+      expect(atomized.ref).toHaveProperty('colors')
+      expect(atomized.ref.colors).toHaveProperty('amber')
+      expect(atomized.ref.colors.amber).toHaveProperty('lightest')
+      expect(atomized.ref.colors.amber).toHaveProperty('lighter')
+      expect(atomized.ref.colors.amber).toHaveProperty('light')
+      expect(atomized.ref.colors.amber).toHaveProperty('base')
+      expect(atomized.ref.colors.amber).toHaveProperty('dark')
+      expect(atomized.ref.colors.amber).toHaveProperty('darker')
+      expect(atomized.ref.colors.amber).toHaveProperty('darkest')
+
+      // Should create variables for all shades
+      const varCount = Object.keys(atomized.vars).length
+      expect(varCount).toBe(7) // 7 shades
+    })
+
+    it('keeps color objects as-is (no expansion)', () => {
+      const atomized = atomizer({
+        colors: {
+          blue: {
+            500: '#3b82f6',
+            700: '#1d4ed8',
+          },
+        },
+      })
+
+      // Should keep the object structure
+      expect(atomized.ref.colors.blue).toHaveProperty('500')
+      expect(atomized.ref.colors.blue).toHaveProperty('700')
+      expect(atomized.ref.colors.blue).not.toHaveProperty('lightest')
+
+      // Should have 2 variables
+      const varCount = Object.keys(atomized.vars).length
+      expect(varCount).toBe(2)
+    })
+
+    it('does not expand color strings in non-colors properties', () => {
+      const atomized = atomizer({
+        alphas: {
+          subtle: 'oklch(76.9% 0.188 70.08)', // Should NOT expand
+        },
+      })
+
+      // Should keep as a single value
+      expect(atomized.ref.alphas.subtle).toContain('var(')
+      expect(atomized.ref.alphas).not.toHaveProperty('lightest')
+
+      // Should have only 1 variable
+      const varCount = Object.keys(atomized.vars).length
+      expect(varCount).toBe(1)
+    })
+
+    it('generates correct metadata for expanded colors', () => {
+      const atomized = atomizer({
+        colors: {
+          primary: 'oklch(50% 0.15 180)',
+        },
+      })
+
+      // All expanded color variables should have <color> syntax
+      Object.values(atomized.metadata).forEach((meta) => {
+        expect(meta.syntax).toBe('<color>')
+        expect(meta.inherits).toBe(false)
+      })
+    })
+  })
+
+  describe('unit expansion', () => {
+    it('expands units config with px values', () => {
+      const atomized = atomizer({
+        units: {
+          px: [0, 4, 64],
+        },
+      })
+
+      // Should have nested structure
+      expect(atomized.ref.units).toHaveProperty('px')
+      expect(atomized.ref.units.px).toHaveProperty('0')
+      expect(atomized.ref.units.px).toHaveProperty('4')
+      expect(atomized.ref.units.px).toHaveProperty('8')
+      expect(atomized.ref.units.px).toHaveProperty('16')
+      expect(atomized.ref.units.px).toHaveProperty('32')
+      expect(atomized.ref.units.px).toHaveProperty('64')
+
+      // Should have 17 variables (0, 4, 8, ..., 64)
+      const varCount = Object.keys(atomized.vars).length
+      expect(varCount).toBe(17)
+    })
+
+    it('expands units config with rem values', () => {
+      const atomized = atomizer({
+        units: {
+          rem: [0, 0.5, 2],
+        },
+      })
+
+      expect(atomized.ref.units).toHaveProperty('rem')
+      expect(atomized.ref.units.rem).toHaveProperty('0')
+      expect(atomized.ref.units.rem).toHaveProperty('0.5')
+      expect(atomized.ref.units.rem).toHaveProperty('1')
+      expect(atomized.ref.units.rem).toHaveProperty('1.5')
+      expect(atomized.ref.units.rem).toHaveProperty('2')
+
+      // Should have 5 variables
+      const varCount = Object.keys(atomized.vars).length
+      expect(varCount).toBe(5)
+    })
+
+    it('expands multiple unit types', () => {
+      const atomized = atomizer({
+        units: {
+          px: [0, 4, 16],
+          rem: [0, 0.5, 2],
+          percentage: [0, 50, 100],
+        },
+      })
+
+      // Should have all unit types
+      expect(atomized.ref.units).toHaveProperty('px')
+      expect(atomized.ref.units).toHaveProperty('rem')
+      expect(atomized.ref.units).toHaveProperty('percentage')
+
+      // Check specific values
+      expect(atomized.ref.units.px).toHaveProperty('0')
+      expect(atomized.ref.units.px).toHaveProperty('16')
+      expect(atomized.ref.units.rem).toHaveProperty('0')
+      expect(atomized.ref.units.rem).toHaveProperty('2')
+      expect(atomized.ref.units.percentage).toHaveProperty('0')
+      expect(atomized.ref.units.percentage).toHaveProperty('100')
+
+      // Should have 5 px + 5 rem + 3 percentage = 13 variables
+      const varCount = Object.keys(atomized.vars).length
+      expect(varCount).toBe(13)
+    })
+
+    it('generates correct metadata for expanded units', () => {
+      const atomized = atomizer({
+        units: {
+          px: [0, 8, 32],
+          percentage: [0, 50, 100],
+        },
+      })
+
+      // Check metadata for different unit types
+      const metadataValues = Object.values(atomized.metadata)
+
+      // Some should have <length> syntax (px)
+      const lengthMeta = metadataValues.filter((meta) => meta.syntax === '<length>')
+      expect(lengthMeta.length).toBeGreaterThan(0)
+
+      // Some should have <percentage> syntax
+      const percentageMeta = metadataValues.filter((meta) => meta.syntax === '<percentage>')
+      expect(percentageMeta.length).toBeGreaterThan(0)
+
+      // All should have inherits: false
+      metadataValues.forEach((meta) => {
+        expect(meta.inherits).toBe(false)
+      })
+    })
+  })
+
+  describe('combined expansion', () => {
+    it('handles both color and unit expansion in same atomizer call', () => {
+      const atomized = atomizer({
+        colors: {
+          primary: 'oklch(50% 0.15 180)',
+          secondary: {
+            500: '#3b82f6',
+          },
+        },
+        units: {
+          px: [0, 4, 16],
+        },
+        alphas: {
+          subtle: '0.5',
+        },
+      })
+
+      // Colors should be expanded
+      expect(atomized.ref.colors.primary).toHaveProperty('base')
+      expect(atomized.ref.colors.primary).toHaveProperty('lightest')
+
+      // Colors object should be kept as-is
+      expect(atomized.ref.colors.secondary).toHaveProperty('500')
+      expect(atomized.ref.colors.secondary).not.toHaveProperty('base')
+
+      // Units should be expanded
+      expect(atomized.ref.units).toHaveProperty('px')
+      expect(atomized.ref.units.px).toHaveProperty('0')
+      expect(atomized.ref.units.px).toHaveProperty('4')
+      expect(atomized.ref.units.px).toHaveProperty('16')
+
+      // Other properties should work normally
+      expect(atomized.ref.alphas.subtle).toContain('var(')
+
+      // Total: 7 (color shades) + 1 (secondary.500) + 5 (units: 0,4,8,12,16) + 1 (alpha) = 14
+      const varCount = Object.keys(atomized.vars).length
+      expect(varCount).toBe(14)
+    })
+  })
 })

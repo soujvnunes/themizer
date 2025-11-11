@@ -251,7 +251,7 @@ export function inferSyntax(value: Atom): string {
 /**
  * Checks if a value is a CSS color
  */
-function isColor(value: string): boolean {
+export function isColor(value: string): boolean {
   // oklch(), oklab()
   if (/^okl(ch|ab)\s*\([^)]+\)/.test(value)) return true
 

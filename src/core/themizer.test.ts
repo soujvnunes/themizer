@@ -111,4 +111,70 @@ describe('themizer', () => {
       },
     })
   })
+
+  describe('with color expansion', () => {
+    it('expands color strings to 7 shades and generates correct CSS', () => {
+      const theme = themizer(
+        {
+          prefix: 'app',
+          medias: {},
+          tokens: {
+            colors: {
+              amber: 'oklch(76.9% 0.188 70.08)',
+            },
+          },
+        },
+        () => ({}),
+      )
+
+      // Should have all 7 shades in tokens reference
+      expect(theme.tokens.colors.amber).toHaveProperty('lightest')
+      expect(theme.tokens.colors.amber).toHaveProperty('lighter')
+      expect(theme.tokens.colors.amber).toHaveProperty('light')
+      expect(theme.tokens.colors.amber).toHaveProperty('base')
+      expect(theme.tokens.colors.amber).toHaveProperty('dark')
+      expect(theme.tokens.colors.amber).toHaveProperty('darker')
+      expect(theme.tokens.colors.amber).toHaveProperty('darkest')
+
+      // CSS should include @property rules for all 7 shades
+      expect(theme.rules.css).toContain('@property --app0')
+      expect(theme.rules.css).toContain('syntax:"<color>"')
+
+      // JSS should have all 7 @property rules with <color> syntax
+      const propertyKeys = Object.keys(theme.rules.jss).filter((k) => k.startsWith('@property'))
+      expect(propertyKeys.length).toBe(7)
+    })
+  })
+
+  describe('with unit expansion', () => {
+    it('expands unit tuple to numeric sequence and generates correct CSS', () => {
+      const theme = themizer(
+        {
+          prefix: 'app',
+          medias: {},
+          tokens: {
+            units: {
+              px: [0, 4, 16],
+            },
+          },
+        },
+        () => ({}),
+      )
+
+      // Should have nested structure
+      expect(theme.tokens.units).toHaveProperty('px')
+      expect(theme.tokens.units.px).toHaveProperty('0')
+      expect(theme.tokens.units.px).toHaveProperty('4')
+      expect(theme.tokens.units.px).toHaveProperty('8')
+      expect(theme.tokens.units.px).toHaveProperty('12')
+      expect(theme.tokens.units.px).toHaveProperty('16')
+
+      // CSS should include @property rules with <length> syntax
+      expect(theme.rules.css).toContain('syntax:"<length>"')
+
+      // Should have 5 variables (0, 4, 8, 12, 16)
+      const propertyKeys = Object.keys(theme.rules.jss).filter((k) => k.startsWith('@property'))
+      expect(propertyKeys.length).toBe(5)
+    })
+  })
 })

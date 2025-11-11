@@ -4,6 +4,11 @@ import isAtom, { type Atom } from './isAtom'
 import getVar from './getVar'
 import { createPropertyMetadata, type PropertyMetadataMap } from './inferSyntax'
 import { minifyVariableName } from './minifyVariableName'
+import { expandColor, type ColorShades } from './expandColor'
+import { expandUnits } from './expandUnits'
+import { shouldExpandColor } from './shouldExpandColor'
+import { shouldExpandUnits } from './shouldExpandUnits'
+import type { UnitsConfig, ExpandedUnits } from './unitTypes'
 
 /**
  * Represents a flat object mapping CSS variable names to atomic values.
@@ -36,20 +41,54 @@ export type R8eAtoms<M extends string> = [{ [Media in M]: Atom }, Atom?]
 /**
  * Represents a recursive structure of atomic values and nested atom objects.
  * @template M - Media query name type (defaults to never for non-responsive atoms)
+ *
+ * Special behaviors for specific properties:
+ * - `colors.*`: String values are auto-expanded to 7 shades (lightest to darkest)
+ * - `units`: Object with unit types as keys, tuples as values
  */
 export interface Atoms<M extends string = never> {
-  [key: string | number]: (Atom | Atoms<M>) | (M extends string ? R8eAtoms<M> : never)
+  [key: string | number]: (Atom | Atoms<M>) | (M extends string ? R8eAtoms<M> : never) | UnitsConfig // Units configuration object: { rem: [0, 0.25, 4], px: [0, 4, 64] }
+}
+
+/**
+ * Helper type for resolving atoms within the 'colors' context.
+ * Transforms OKLCH color strings to ColorShades objects.
+ */
+type ResolveColors<M extends Medias, A extends Atoms<Extract<keyof M, string>>> = {
+  [Key in keyof A]: A[Key] extends Atoms<Extract<keyof M, string>>
+    ? ResolveAtoms<M, A[Key]>
+    : A[Key] extends [unknown, infer D]
+    ? D
+    : A[Key] extends [infer V]
+    ? V extends Record<string, infer R>
+      ? R
+      : never
+    : A[Key] extends string
+    ? ResolveAtoms<M, ColorShades>
+    : A[Key]
 }
 
 /**
  * Resolves the atoms structure to return the resolved reference types.
  * Recursively processes nested atoms and responsive values to determine final types.
  *
+ * Special transformations:
+ * - Color strings in 'colors' context → ColorShades
+ * - Units config at 'units' key → ExpandedUnits
+ *
  * @template M - Medias configuration type
  * @template A - Atoms structure type
  */
 export type ResolveAtoms<M extends Medias, A extends Atoms<Extract<keyof M, string>>> = {
-  [Key in keyof A]: A[Key] extends [unknown, infer D]
+  [Key in keyof A]: Key extends 'colors'
+    ? A[Key] extends Atoms<Extract<keyof M, string>>
+      ? ResolveColors<M, A[Key]>
+      : A[Key]
+    : Key extends 'units'
+    ? A[Key] extends UnitsConfig
+      ? ExpandedUnits<A[Key]>
+      : A[Key]
+    : A[Key] extends [unknown, infer D]
     ? D
     : A[Key] extends [infer V]
     ? V extends Record<string, infer R>
@@ -227,6 +266,50 @@ export default function atomizer<
   for (const [key, atom] of Object.entries(atoms)) {
     const path = `${prefix}${unifiedPath}${key}`
     const originalVariable = `--${path}`
+
+    // Check for color expansion
+    if (shouldExpandColor(atom, unifiedPath)) {
+      const expanded = expandColor(atom)
+      const atomized = atomizer(
+        expanded,
+        { ...options, prefix: '' },
+        {
+          path,
+          r8eAtoms,
+          metadata,
+          minify: minifyMap,
+          minifyReverse: minifyReverseMap,
+          minifyPrefix,
+        },
+      )
+
+      Object.assign(vars, atomized.vars)
+      Object.assign(metadata, atomized.metadata)
+      ref[key] = atomized.ref
+      continue
+    }
+
+    // Check for unit expansion
+    if (shouldExpandUnits(atom, key)) {
+      const expanded = expandUnits(atom)
+      const atomized = atomizer(
+        expanded as Atoms<Extract<keyof M, string>>,
+        { ...options, prefix: '' },
+        {
+          path,
+          r8eAtoms,
+          metadata,
+          minify: minifyMap,
+          minifyReverse: minifyReverseMap,
+          minifyPrefix,
+        },
+      )
+
+      Object.assign(vars, atomized.vars)
+      Object.assign(metadata, atomized.metadata)
+      ref[key] = atomized.ref
+      continue
+    }
 
     if (isAtom(atom)) {
       const variable = getMinifiedVariable(

@@ -3,6 +3,7 @@
  */
 
 import PATH_UNIFIER from '../consts/PATH_UNIFIER'
+import { OKLCH_PATTERN } from './colorPatterns'
 
 /**
  * Determines if a value should be expanded to color shades
@@ -22,5 +23,5 @@ export function shouldExpandColor(value: unknown, contextPath: string): value is
     return false
   }
 
-  return /^oklch\s*\([^)]+\)/.test(value)
+  return OKLCH_PATTERN.test(value)
 }

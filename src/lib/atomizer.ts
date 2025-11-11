@@ -43,11 +43,12 @@ export type R8eAtoms<M extends string> = [{ [Media in M]: Atom }, Atom?]
  * @template M - Media query name type (defaults to never for non-responsive atoms)
  *
  * Special behaviors for specific properties:
- * - `colors.*`: String values are auto-expanded to 7 shades (lightest to darkest)
- * - `units`: Object with unit types as keys, tuples as values
+ * - `colors.*`: OKLCH strings auto-expand to 7 shades (lightest to darkest)
+ * - `units`: UnitsConfig object with unit types as keys and [from, step, to] tuples as values
+ *   Example: { rem: [0, 0.25, 4], px: [0, 4, 64] }
  */
 export interface Atoms<M extends string = never> {
-  [key: string | number]: (Atom | Atoms<M>) | (M extends string ? R8eAtoms<M> : never) | UnitsConfig // Units configuration object: { rem: [0, 0.25, 4], px: [0, 4, 64] }
+  [key: string | number]: (Atom | Atoms<M>) | (M extends string ? R8eAtoms<M> : never) | UnitsConfig
 }
 
 /**

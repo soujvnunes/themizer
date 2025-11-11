@@ -90,12 +90,12 @@ describe('expandColor', () => {
 
     // Light shade should be 25.9 (20 + 5.9)
     const lightMatch = result.light.match(/oklch\(([\d.]+)%/)
-    const lightL = parseFloat(lightMatch![1])
+    const lightL = parseFloat(lightMatch?.[1] ?? '0')
     expect(lightL).toBeCloseTo(25.9, 1)
 
     // Dark shade should be 9.7 (20 - 10.3)
     const darkMatch = result.dark.match(/oklch\(([\d.]+)%/)
-    const darkL = parseFloat(darkMatch![1])
+    const darkL = parseFloat(darkMatch?.[1] ?? '0')
     expect(darkL).toBeCloseTo(9.7, 1)
   })
 
@@ -104,11 +104,11 @@ describe('expandColor', () => {
 
     // Chroma should be reduced according to factors
     const lighterMatch = result.lighter.match(/oklch\([\d.]+%\s+([\d.]+)/)
-    const lighterC = parseFloat(lighterMatch![1])
+    const lighterC = parseFloat(lighterMatch?.[1] ?? '0')
     expect(lighterC).toBeCloseTo(0.05 * 0.314, 3)
 
     const darkerMatch = result.darker.match(/oklch\([\d.]+%\s+([\d.]+)/)
-    const darkerC = parseFloat(darkerMatch![1])
+    const darkerC = parseFloat(darkerMatch?.[1] ?? '0')
     expect(darkerC).toBeCloseTo(0.05 * 0.41, 2)
 
     // Extremes should have their fixed chroma values
@@ -123,8 +123,7 @@ describe('expandColor', () => {
     // Extract hue values
     const getHue = (color: string) => {
       const match = color.match(/oklch\([\d.]+%\s+[\d.]+\s+([\d.]+)/)
-      expect(match).not.toBeNull()
-      return parseFloat(match![1])
+      return parseFloat(match?.[1] ?? '0')
     }
 
     expect(getHue(result.lightest)).toBeCloseTo(baseHue + 11.72, 1)

@@ -76,12 +76,12 @@ describe('expandColor', () => {
 
     // Light shade should exceed 95.9 (90 + 5.9)
     const lightMatch = result.light.match(/oklch\(([\d.]+)%/)
-    const lightL = parseFloat(lightMatch![1])
+    const lightL = parseFloat(lightMatch?.[1] ?? '0')
     expect(lightL).toBeCloseTo(95.9, 1)
 
     // Dark shade should be 79.7 (90 - 10.3)
     const darkMatch = result.dark.match(/oklch\(([\d.]+)%/)
-    const darkL = parseFloat(darkMatch![1])
+    const darkL = parseFloat(darkMatch?.[1] ?? '0')
     expect(darkL).toBeCloseTo(79.7, 1)
   })
 
@@ -123,6 +123,7 @@ describe('expandColor', () => {
     // Extract hue values
     const getHue = (color: string) => {
       const match = color.match(/oklch\([\d.]+%\s+[\d.]+\s+([\d.]+)/)
+      expect(match).not.toBeNull()
       return parseFloat(match![1])
     }
 

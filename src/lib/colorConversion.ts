@@ -19,7 +19,7 @@ export interface RgbColor {
  * Examples: 'oklch(76.9% 0.188 70.08)' or 'oklch(0.769 0.188 70.08)'
  */
 export function parseOklch(color: string): OklchColor {
-  const match = color.match(/oklch\(([\d.]+)%?\s+([\d.]+)\s+([\d.]+)\)/)
+  const match = color.match(/oklch\((-?[\d.]+)%?\s+(-?[\d.]+)\s+(-?[\d.]+)\)/)
   if (!match) {
     throw new Error(`Invalid oklch color format: ${color}`)
   }

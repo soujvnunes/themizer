@@ -38,7 +38,7 @@ export function expandColor(baseColor: string): ColorShades {
   const LIGHTEST_CHROMA = 0.0102 // Very desaturated for clean backgrounds
   const DARKEST_CHROMA = 0.0268 // More saturated for richer depth
   const LIGHTER_C_FACTOR = 0.314 // lighter.c = base.c * 0.314
-  const LIGHT_C_FACTOR = 1.005 // light.c ≈ base.c
+  const LIGHT_C_FACTOR = 1.005 // light.c = base.c * 1.005 (slight increase)
   const DARK_C_FACTOR = 0.952 // dark.c = base.c * 0.952
   const DARKER_C_FACTOR = 0.41 // darker.c = base.c * 0.41
 

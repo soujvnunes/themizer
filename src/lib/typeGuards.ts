@@ -28,8 +28,8 @@ export function isUnitsConfig(value: unknown): value is UnitsConfig {
       return false
     }
 
-    // All elements must be numbers
-    if (!val.every((item) => typeof item === 'number')) {
+    // All elements must be finite numbers
+    if (!val.every((item) => typeof item === 'number' && Number.isFinite(item))) {
       return false
     }
   }

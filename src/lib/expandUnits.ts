@@ -26,12 +26,12 @@ function expandUnitTuple(tuple: [number, number, number], unit: string): Record<
 
   const result: Record<number, string> = {}
 
-  // Generate sequence
-  // Use a tolerance for floating point comparisons
-  const epsilon = 1e-10
-  for (let i = from; i <= to + epsilon; i += step) {
+  // Generate sequence using integer-based iteration to avoid floating-point accumulation
+  const numSteps = Math.round((to - from) / step)
+  for (let i = 0; i <= numSteps; i++) {
+    const value = from + (i * step)
     // Round to avoid floating point precision issues
-    const key = Math.round(i * 1e10) / 1e10
+    const key = Math.round(value * 1e10) / 1e10
     result[key] = `${key}${unit}`
   }
 

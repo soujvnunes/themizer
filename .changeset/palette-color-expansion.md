@@ -50,9 +50,9 @@ export default themizer(
 Each color in `palette` expands to:
 - `lightest` (L: 98.92%, low chroma, +3° hue)
 - `lighter` (L: 96.2%, reduced chroma)
-- `light` (L: 82.8%, half chroma)
+- `light` (L: base + 5.9, half chroma)
 - `base` (original color)
-- `dark` (L: 66.6%, 80% chroma)
+- `dark` (L: base - 10.3, 80% chroma)
 - `darker` (L: 35%, half chroma)
 - `darkest` (L: 14.92%, low chroma, +3° hue)
 

@@ -5,7 +5,7 @@ describe('resolveAtom', () => {
     describe('without default value parameter', () => {
       it('throws an error', () => {
         expect(() => resolveAtom('var(--test-a)')).toThrow(
-          "themizer/resolveAtom: Expected wrapped custom property 'var(--test-a)' to have a default value.",
+          "themizer: Expected wrapped custom property 'var(--test-a)' to have a default value.",
         )
       })
     })

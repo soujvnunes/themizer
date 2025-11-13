@@ -2,6 +2,8 @@
  * Color conversion utilities for OKLCH <-> RGB transformations
  */
 
+import { createContextError } from './createError'
+
 export interface OklchColor {
   l: number // Lightness: 0-100 (percentage)
   c: number // Chroma: 0-0.4 typical range
@@ -21,7 +23,7 @@ export interface RgbColor {
 export function parseOklch(color: string): OklchColor {
   const match = color.match(/oklch\((-?[\d.]+)%?\s+(-?[\d.]+)\s+(-?[\d.]+)\)/)
   if (!match) {
-    throw new Error(`Invalid oklch color format: ${color}`)
+    createContextError('color', `Invalid oklch color format: ${color}`)
   }
 
   const l = parseFloat(match[1])

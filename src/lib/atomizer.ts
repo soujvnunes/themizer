@@ -43,7 +43,7 @@ export type R8eAtoms<M extends string> = [{ [Media in M]: Atom }, Atom?]
  * @template M - Media query name type (defaults to never for non-responsive atoms)
  *
  * Special behaviors for specific properties:
- * - `colors.*`: OKLCH strings auto-expand to 7 shades (lightest to darkest)
+ * - `palette.*`: OKLCH strings auto-expand to 7 shades (lightest to darkest)
  * - `units`: UnitsConfig object with unit types as keys and [from, step, to] tuples as values
  *   Example: { rem: [0, 0.25, 4], px: [0, 4, 64] }
  */
@@ -52,10 +52,10 @@ export interface Atoms<M extends string = never> {
 }
 
 /**
- * Helper type for resolving atoms within the 'colors' context.
+ * Helper type for resolving atoms within the 'palette' context.
  * Transforms OKLCH color strings to ColorShades objects.
  */
-type ResolveColors<M extends Medias, A extends Atoms<Extract<keyof M, string>>> = {
+type ResolvePalette<M extends Medias, A extends Atoms<Extract<keyof M, string>>> = {
   [Key in keyof A]: A[Key] extends Atoms<Extract<keyof M, string>>
     ? ResolveAtoms<M, A[Key]>
     : A[Key] extends [unknown, infer D]
@@ -74,16 +74,16 @@ type ResolveColors<M extends Medias, A extends Atoms<Extract<keyof M, string>>> 
  * Recursively processes nested atoms and responsive values to determine final types.
  *
  * Special transformations:
- * - Color strings in 'colors' context → ColorShades
+ * - Color strings in 'palette' context → ColorShades
  * - Units config at 'units' key → ExpandedUnits
  *
  * @template M - Medias configuration type
  * @template A - Atoms structure type
  */
 export type ResolveAtoms<M extends Medias, A extends Atoms<Extract<keyof M, string>>> = {
-  [Key in keyof A]: Key extends 'colors'
+  [Key in keyof A]: Key extends 'palette'
     ? A[Key] extends Atoms<Extract<keyof M, string>>
-      ? ResolveColors<M, A[Key]>
+      ? ResolvePalette<M, A[Key]>
       : A[Key]
     : Key extends 'units'
     ? A[Key] extends UnitsConfig

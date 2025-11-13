@@ -9,12 +9,12 @@ import { OKLCH_PATTERN } from './colorPatterns'
  * Determines if a value should be expanded to color shades
  * @param value The value to check
  * @param contextPath The current path in the token structure
- * @returns true if the value is an oklch color string inside the colors property
+ * @returns true if the value is an oklch color string inside the palette property
  */
 export function shouldExpandColor(value: unknown, contextPath: string): value is string {
-  // Must be inside the 'colors' property
-  const isInColorsContext = contextPath.endsWith(`colors${PATH_UNIFIER}`)
-  if (!isInColorsContext) {
+  // Must be inside the 'palette' property
+  const isInPaletteContext = contextPath.endsWith(`palette${PATH_UNIFIER}`)
+  if (!isInPaletteContext) {
     return false
   }
 

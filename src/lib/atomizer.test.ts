@@ -286,30 +286,42 @@ describe('atomizer', () => {
   })
 
   describe('color expansion', () => {
-    it('expands color string inside colors property to 7 shades', () => {
+    it('expands color string inside palette property to 7 shades', () => {
+      const atomized = atomizer({
+        palette: {
+          amber: 'oklch(76.9% 0.188 70.08)',
+        },
+      })
+
+      expect(atomized.ref).toHaveProperty('palette')
+      expect(atomized.ref.palette).toHaveProperty('amber')
+      expect(atomized.ref.palette.amber).toHaveProperty('lightest')
+      expect(atomized.ref.palette.amber).toHaveProperty('lighter')
+      expect(atomized.ref.palette.amber).toHaveProperty('light')
+      expect(atomized.ref.palette.amber).toHaveProperty('base')
+      expect(atomized.ref.palette.amber).toHaveProperty('dark')
+      expect(atomized.ref.palette.amber).toHaveProperty('darker')
+      expect(atomized.ref.palette.amber).toHaveProperty('darkest')
+
+      const varCount = Object.keys(atomized.vars).length
+      expect(varCount).toBe(7)
+    })
+
+    it('does not expand OKLCH strings in colors property', () => {
       const atomized = atomizer({
         colors: {
           amber: 'oklch(76.9% 0.188 70.08)',
         },
       })
 
-      // Should have all 7 shades
-      expect(atomized.ref).toHaveProperty('colors')
-      expect(atomized.ref.colors).toHaveProperty('amber')
-      expect(atomized.ref.colors.amber).toHaveProperty('lightest')
-      expect(atomized.ref.colors.amber).toHaveProperty('lighter')
-      expect(atomized.ref.colors.amber).toHaveProperty('light')
-      expect(atomized.ref.colors.amber).toHaveProperty('base')
-      expect(atomized.ref.colors.amber).toHaveProperty('dark')
-      expect(atomized.ref.colors.amber).toHaveProperty('darker')
-      expect(atomized.ref.colors.amber).toHaveProperty('darkest')
+      expect(atomized.ref.colors.amber).toContain('var(')
+      expect(atomized.ref.colors).not.toHaveProperty('lightest')
 
-      // Should create variables for all shades
       const varCount = Object.keys(atomized.vars).length
-      expect(varCount).toBe(7) // 7 shades
+      expect(varCount).toBe(1)
     })
 
-    it('keeps color objects as-is (no expansion)', () => {
+    it('keeps color objects in colors property as-is', () => {
       const atomized = atomizer({
         colors: {
           blue: {
@@ -319,35 +331,31 @@ describe('atomizer', () => {
         },
       })
 
-      // Should keep the object structure
       expect(atomized.ref.colors.blue).toHaveProperty('500')
       expect(atomized.ref.colors.blue).toHaveProperty('700')
       expect(atomized.ref.colors.blue).not.toHaveProperty('lightest')
 
-      // Should have 2 variables
       const varCount = Object.keys(atomized.vars).length
       expect(varCount).toBe(2)
     })
 
-    it('does not expand color strings in non-colors properties', () => {
+    it('does not expand color strings in non-palette properties', () => {
       const atomized = atomizer({
         alphas: {
-          subtle: 'oklch(76.9% 0.188 70.08)', // Should NOT expand
+          subtle: 'oklch(76.9% 0.188 70.08)',
         },
       })
 
-      // Should keep as a single value
       expect(atomized.ref.alphas.subtle).toContain('var(')
       expect(atomized.ref.alphas).not.toHaveProperty('lightest')
 
-      // Should have only 1 variable
       const varCount = Object.keys(atomized.vars).length
       expect(varCount).toBe(1)
     })
 
     it('generates correct metadata for expanded colors', () => {
       const atomized = atomizer({
-        colors: {
+        palette: {
           primary: 'oklch(50% 0.15 180)',
         },
       })
@@ -455,10 +463,12 @@ describe('atomizer', () => {
   })
 
   describe('combined expansion', () => {
-    it('handles both color and unit expansion in same atomizer call', () => {
+    it('handles palette, colors, and unit expansion in same atomizer call', () => {
       const atomized = atomizer({
-        colors: {
+        palette: {
           primary: 'oklch(50% 0.15 180)',
+        },
+        colors: {
           secondary: {
             500: '#3b82f6',
           },
@@ -471,9 +481,9 @@ describe('atomizer', () => {
         },
       })
 
-      // Colors should be expanded
-      expect(atomized.ref.colors.primary).toHaveProperty('base')
-      expect(atomized.ref.colors.primary).toHaveProperty('lightest')
+      // Palette should be expanded
+      expect(atomized.ref.palette.primary).toHaveProperty('base')
+      expect(atomized.ref.palette.primary).toHaveProperty('lightest')
 
       // Colors object should be kept as-is
       expect(atomized.ref.colors.secondary).toHaveProperty('500')

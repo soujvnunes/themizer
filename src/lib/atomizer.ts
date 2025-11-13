@@ -52,21 +52,15 @@ export interface Atoms<M extends string = never> {
 }
 
 /**
- * Helper type for resolving atoms within the 'palette' context.
- * Transforms OKLCH color strings to ColorShades objects.
+ * Helper type for expanded palette structure.
+ * Transforms OKLCH color strings to ColorShades objects within palette context.
  */
-type ResolvePalette<M extends Medias, A extends Atoms<Extract<keyof M, string>>> = {
-  [Key in keyof A]: A[Key] extends Atoms<Extract<keyof M, string>>
-    ? ResolveAtoms<M, A[Key]>
-    : A[Key] extends [unknown, infer D]
-    ? D
-    : A[Key] extends [infer V]
-    ? V extends Record<string, infer R>
-      ? R
-      : never
-    : A[Key] extends string
-    ? ResolveAtoms<M, ColorShades>
-    : A[Key]
+type ExpandedPalette<M extends Medias, P extends Atoms<Extract<keyof M, string>>> = {
+  [Key in keyof P]: P[Key] extends string
+    ? ColorShades
+    : P[Key] extends Atoms<Extract<keyof M, string>>
+    ? ResolveAtoms<M, P[Key]>
+    : P[Key]
 }
 
 /**
@@ -83,7 +77,7 @@ type ResolvePalette<M extends Medias, A extends Atoms<Extract<keyof M, string>>>
 export type ResolveAtoms<M extends Medias, A extends Atoms<Extract<keyof M, string>>> = {
   [Key in keyof A]: Key extends 'palette'
     ? A[Key] extends Atoms<Extract<keyof M, string>>
-      ? ResolvePalette<M, A[Key]>
+      ? ExpandedPalette<M, A[Key]>
       : A[Key]
     : Key extends 'units'
     ? A[Key] extends UnitsConfig
@@ -272,7 +266,7 @@ export default function atomizer<
     if (shouldExpandColor(atom, unifiedPath)) {
       const expanded = expandColor(atom)
       const atomized = atomizer(
-        expanded,
+        expanded as unknown as Atoms<Extract<keyof M, string>>,
         { ...options, prefix: '' },
         {
           path,

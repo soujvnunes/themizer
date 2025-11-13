@@ -127,7 +127,6 @@ describe('themizer', () => {
         () => ({}),
       )
 
-      // Should have all 7 shades in tokens reference
       expect(theme.tokens.palette.amber).toHaveProperty('lightest')
       expect(theme.tokens.palette.amber).toHaveProperty('lighter')
       expect(theme.tokens.palette.amber).toHaveProperty('light')
@@ -135,14 +134,9 @@ describe('themizer', () => {
       expect(theme.tokens.palette.amber).toHaveProperty('dark')
       expect(theme.tokens.palette.amber).toHaveProperty('darker')
       expect(theme.tokens.palette.amber).toHaveProperty('darkest')
-
-      // CSS should include @property rules for all 7 shades
       expect(theme.rules.css).toContain('@property --app0')
       expect(theme.rules.css).toContain('syntax:"<color>"')
-
-      // JSS should have all 7 @property rules with <color> syntax
-      const propertyKeys = Object.keys(theme.rules.jss).filter((k) => k.startsWith('@property'))
-      expect(propertyKeys.length).toBe(7)
+      expect(Object.keys(theme.rules.jss).filter((k) => k.startsWith('@property')).length).toBe(7)
     })
 
     it('does not expand OKLCH strings in colors property', () => {
@@ -162,17 +156,11 @@ describe('themizer', () => {
         () => ({}),
       )
 
-      // Should NOT have expanded shades
       expect(theme.tokens.colors.amber).toContain('var(')
       expect(theme.tokens.colors).not.toHaveProperty('lightest')
-
-      // Should keep manual color definitions as-is
       expect(theme.tokens.colors.blue).toHaveProperty('500')
       expect(theme.tokens.colors.blue['500']).toContain('var(')
-
-      // Should only have 2 CSS variables (one for amber, one for blue.500)
-      const propertyKeys = Object.keys(theme.rules.jss).filter((k) => k.startsWith('@property'))
-      expect(propertyKeys.length).toBe(2)
+      expect(Object.keys(theme.rules.jss).filter((k) => k.startsWith('@property')).length).toBe(2)
     })
   })
 
@@ -191,20 +179,14 @@ describe('themizer', () => {
         () => ({}),
       )
 
-      // Should have nested structure
       expect(theme.tokens.units).toHaveProperty('px')
       expect(theme.tokens.units.px).toHaveProperty('0')
       expect(theme.tokens.units.px).toHaveProperty('4')
       expect(theme.tokens.units.px).toHaveProperty('8')
       expect(theme.tokens.units.px).toHaveProperty('12')
       expect(theme.tokens.units.px).toHaveProperty('16')
-
-      // CSS should include @property rules with <length> syntax
       expect(theme.rules.css).toContain('syntax:"<length>"')
-
-      // Should have 5 variables (0, 4, 8, 12, 16)
-      const propertyKeys = Object.keys(theme.rules.jss).filter((k) => k.startsWith('@property'))
-      expect(propertyKeys.length).toBe(5)
+      expect(Object.keys(theme.rules.jss).filter((k) => k.startsWith('@property')).length).toBe(5)
     })
   })
 })

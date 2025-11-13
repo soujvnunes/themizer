@@ -52,7 +52,6 @@ describe('executeConfig', () => {
 
     await executeConfig(mockConfigPath, mockImportModule)
 
-    // Verify pathToFileURL was used and timestamp was added
     const expectedUrl = pathToFileURL(mockConfigPath).href
     const callArg = (mockImportModule.mock.calls[0] as string[])[0]
 

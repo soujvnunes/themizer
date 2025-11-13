@@ -8,13 +8,13 @@ describe('themizer', () => {
         medias: { dark: '(prefers-color-scheme: dark)', desktop: '(min-width: 1024px)' },
         tokens: {
           colors: { amber: { light: 'rgb(251, 191, 36)', dark: 'rgb(217, 119, 6)' } },
-          units: { 24: '24px', 16: '16px' },
+          sizes: { 24: '24px', 16: '16px' },
         },
       },
       (tokens) => ({
         palette: { main: [{ dark: tokens.colors.amber.light }, tokens.colors.amber.dark] },
-        spacing: { md: tokens.units[24] },
-        sizing: { md: [{ desktop: tokens.units[24] }, tokens.units[16]] },
+        spacing: { md: tokens.sizes[24] },
+        sizing: { md: [{ desktop: tokens.sizes[24] }, tokens.sizes[16]] },
       }),
     )
 
@@ -25,7 +25,7 @@ describe('themizer', () => {
           dark: 'var(--ds1, rgb(217, 119, 6))',
         },
       },
-      units: { '16': 'var(--ds2, 16px)', '24': 'var(--ds3, 24px)' },
+      sizes: { '16': 'var(--ds2, 16px)', '24': 'var(--ds3, 24px)' },
     })
     expect(theme.aliases).toEqual({
       palette: {
@@ -41,8 +41,8 @@ describe('themizer', () => {
     expect(theme.variableMap).toEqual({
       '--ds0': '--ds-tokens-colors-amber-light',
       '--ds1': '--ds-tokens-colors-amber-dark',
-      '--ds2': '--ds-tokens-units-16',
-      '--ds3': '--ds-tokens-units-24',
+      '--ds2': '--ds-tokens-sizes-16',
+      '--ds3': '--ds-tokens-sizes-24',
       '--ds4': '--ds-aliases-palette-main',
       '--ds5': '--ds-aliases-spacing-md',
       '--ds6': '--ds-aliases-sizing-md',
@@ -113,13 +113,13 @@ describe('themizer', () => {
   })
 
   describe('with color expansion', () => {
-    it('expands color strings to 7 shades and generates correct CSS', () => {
+    it('expands color strings in palette to 7 shades and generates correct CSS', () => {
       const theme = themizer(
         {
           prefix: 'app',
           medias: {},
           tokens: {
-            colors: {
+            palette: {
               amber: 'oklch(76.9% 0.188 70.08)',
             },
           },
@@ -128,13 +128,13 @@ describe('themizer', () => {
       )
 
       // Should have all 7 shades in tokens reference
-      expect(theme.tokens.colors.amber).toHaveProperty('lightest')
-      expect(theme.tokens.colors.amber).toHaveProperty('lighter')
-      expect(theme.tokens.colors.amber).toHaveProperty('light')
-      expect(theme.tokens.colors.amber).toHaveProperty('base')
-      expect(theme.tokens.colors.amber).toHaveProperty('dark')
-      expect(theme.tokens.colors.amber).toHaveProperty('darker')
-      expect(theme.tokens.colors.amber).toHaveProperty('darkest')
+      expect(theme.tokens.palette.amber).toHaveProperty('lightest')
+      expect(theme.tokens.palette.amber).toHaveProperty('lighter')
+      expect(theme.tokens.palette.amber).toHaveProperty('light')
+      expect(theme.tokens.palette.amber).toHaveProperty('base')
+      expect(theme.tokens.palette.amber).toHaveProperty('dark')
+      expect(theme.tokens.palette.amber).toHaveProperty('darker')
+      expect(theme.tokens.palette.amber).toHaveProperty('darkest')
 
       // CSS should include @property rules for all 7 shades
       expect(theme.rules.css).toContain('@property --app0')
@@ -143,6 +143,36 @@ describe('themizer', () => {
       // JSS should have all 7 @property rules with <color> syntax
       const propertyKeys = Object.keys(theme.rules.jss).filter((k) => k.startsWith('@property'))
       expect(propertyKeys.length).toBe(7)
+    })
+
+    it('does not expand OKLCH strings in colors property', () => {
+      const theme = themizer(
+        {
+          prefix: 'app',
+          medias: {},
+          tokens: {
+            colors: {
+              amber: 'oklch(76.9% 0.188 70.08)',
+              blue: {
+                500: '#3b82f6',
+              },
+            },
+          },
+        },
+        () => ({}),
+      )
+
+      // Should NOT have expanded shades
+      expect(theme.tokens.colors.amber).toContain('var(')
+      expect(theme.tokens.colors).not.toHaveProperty('lightest')
+
+      // Should keep manual color definitions as-is
+      expect(theme.tokens.colors.blue).toHaveProperty('500')
+      expect(theme.tokens.colors.blue['500']).toContain('var(')
+
+      // Should only have 2 CSS variables (one for amber, one for blue.500)
+      const propertyKeys = Object.keys(theme.rules.jss).filter((k) => k.startsWith('@property'))
+      expect(propertyKeys.length).toBe(2)
     })
   })
 

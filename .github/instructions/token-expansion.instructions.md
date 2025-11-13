@@ -16,22 +16,22 @@ When a single OKLCH color string is provided in the `palette` property, it MUST 
 
 ```typescript
 const shades = {
-  lightest: { L: 98.92%, C: 0.0102, H: base + 3° },
-  lighter:  { L: 95%, C: base × 0.05, H: base + 1° },
-  light:    { L: 85%, C: base × 0.5, H: base },
+  lightest: { L: 98.92%, C: 0.0102, H: base + 11.72° },
+  lighter:  { L: 96.2%, C: base × 0.314, H: base + 25.537° },
+  light:    { L: base + 5.9%, C: base × 1.005, H: base + 14.349° },
   base:     { L: original, C: original, H: original },
-  dark:     { L: 65%, C: base × 0.8, H: base },
-  darker:   { L: 35%, C: base × 0.5, H: base - 1° },
-  darkest:  { L: 14.92%, C: 0.0268, H: base + 3° }
+  dark:     { L: base - 10.3%, C: base × 0.952, H: base - 11.762° },
+  darker:   { L: 35%, C: base × 0.41, H: base - 24.435° },
+  darkest:  { L: 14.92%, C: 0.0268, H: base + 15.67° }
 }
 ```
 
 ### Algorithm Characteristics
 
 1. **Variable Chroma**: Extremes (lightest/darkest) use fixed low chroma values for better contrast
-2. **Warm Hue Shifts**: +3° at extremes adds visual warmth and prevents cold grays
+2. **Sophisticated Hue Shifts**: Warm shifts for light tones (+11.72° to +25.537°), cool shifts for dark tones (-11.762° to -24.435°)
 3. **Precision**: Use `PRECISION_MULTIPLIER = 1e10` to avoid floating-point errors
-4. **Lightness Curve**: Non-linear progression for perceptual uniformity
+4. **Lightness Curve**: Non-linear progression for perceptual uniformity with relative offsets for light/dark
 
 ### Type Guards
 

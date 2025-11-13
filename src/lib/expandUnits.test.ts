@@ -245,4 +245,18 @@ describe('expandUnits', () => {
     expect(result.rem[0.7]).toBe('0.7rem')
     expect(result.rem[1]).toBe('1rem')
   })
+
+  it('should throw error for zero or negative step', () => {
+    expect(() =>
+      expandUnits({
+        rem: [0, 0, 4], // Zero step
+      }),
+    ).toThrow('Step must be positive')
+
+    expect(() =>
+      expandUnits({
+        px: [0, -1, 10], // Negative step
+      }),
+    ).toThrow('Step must be positive')
+  })
 })

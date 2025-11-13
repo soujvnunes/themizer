@@ -21,7 +21,7 @@ const shades = {
   light:    { L: base + 5.9%, C: base × 1.005, H: base + 14.349° },
   base:     { L: original, C: original, H: original },
   dark:     { L: base - 10.3%, C: base × 0.952, H: base - 11.762° },
-  darker:   { L: 35%, C: base × 0.41, H: base - 24.435° },
+  darker:   { L: 35%, C: base × 0.41, H: base - 24.445° },
   darkest:  { L: 14.92%, C: 0.0268, H: base + 15.67° }
 }
 ```

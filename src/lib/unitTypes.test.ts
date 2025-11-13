@@ -197,7 +197,6 @@ describe('isCSSUnitType', () => {
 
   describe('edge cases', () => {
     it('should only accept defined CSS unit types', () => {
-      // Only the explicitly defined CSS unit types should return true
       const invalidKeys = ['invalid', 'custom', 'spacing', 'size']
       invalidKeys.forEach((key) => {
         expect(isCSSUnitType(key)).toBe(false)
@@ -219,14 +218,13 @@ describe('isCSSUnitType', () => {
 
   describe('real-world usage', () => {
     it('should validate units from user configuration', () => {
-      const userConfig = {
-        rem: [0, 0.25, 4],
-        em: [0, 0.5, 2],
-        pixels: [0, 8, 64], // Invalid unit name
-      }
-
-      const validKeys = Object.keys(userConfig).filter(isCSSUnitType)
-      expect(validKeys).toEqual(['rem', 'em'])
+      expect(
+        Object.keys({
+          rem: [0, 0.25, 4],
+          em: [0, 0.5, 2],
+          pixels: [0, 8, 64],
+        }).filter(isCSSUnitType),
+      ).toEqual(['rem', 'em'])
     })
 
     it('should distinguish between units and custom properties', () => {
@@ -257,7 +255,6 @@ describe('isCSSUnitType', () => {
   })
 })
 
-// Type-level assertion helpers
 type Expect<T extends true> = T
 type Equal<X, Y> = (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2 ? true : false
 
@@ -267,10 +264,8 @@ describe('ExpandedUnits with literal types', () => {
     type Expanded = ExpandedUnits<TestConfig>
     type RemKeys = keyof Expanded['rem']
 
-    // Type-level test: RemKeys should be RemScale (literal union)
     type _Test = Expect<Equal<RemKeys, RemScale>>
 
-    // Runtime test to ensure the types match expectations
     const config: TestConfig = { rem: [0, 0.25, 4] }
     expect(config.rem).toEqual([0, 0.25, 4])
   })
@@ -280,7 +275,6 @@ describe('ExpandedUnits with literal types', () => {
     type Expanded = ExpandedUnits<TestConfig>
     type PxKeys = keyof Expanded['px']
 
-    // Type-level test: PxKeys should be PxScale (literal union)
     type _Test = Expect<Equal<PxKeys, PxScale>>
 
     const config: TestConfig = { px: [0, 4, 64] }
@@ -292,7 +286,6 @@ describe('ExpandedUnits with literal types', () => {
     type Expanded = ExpandedUnits<TestConfig>
     type PxKeys = keyof Expanded['px']
 
-    // Type-level test: PxKeys should be PxScaleSmall
     type _Test = Expect<Equal<PxKeys, PxScaleSmall>>
 
     const config: TestConfig = { px: [0, 4, 16] }
@@ -300,11 +293,10 @@ describe('ExpandedUnits with literal types', () => {
   })
 
   it('should fallback to number for non-standard config', () => {
-    type TestConfig = { rem: [0, 0.33, 5] } // Non-standard config
+    type TestConfig = { rem: [0, 0.33, 5] }
     type Expanded = ExpandedUnits<TestConfig>
     type RemKeys = keyof Expanded['rem']
 
-    // Type-level test: RemKeys should be number (generic)
     type _Test = Expect<Equal<RemKeys, number>>
 
     const config: TestConfig = { rem: [0, 0.33, 5] }
@@ -316,24 +308,19 @@ describe('ExpandedUnits with literal types', () => {
       units: ExpandedUnits<{ rem: [0, 0.25, 4]; px: [0, 4, 16] }>
     }
 
-    // Simulating accessing theme.units.rem[...]
     type RemRecord = Theme['units']['rem']
     type RemKeys = keyof RemRecord
 
-    // Should have literal keys, not just number
     type _Test1 = Expect<Equal<RemKeys, RemScale>>
 
-    // Simulating accessing theme.units.px[...]
     type PxRecord = Theme['units']['px']
     type PxKeys = keyof PxRecord
 
-    // Should have literal keys for small px scale
     type _Test2 = Expect<Equal<PxKeys, PxScaleSmall>>
 
-    // These should be valid accesses (would get IntelliSense)
     const validAccess = (theme: Theme) => {
-      const rem1 = theme.units.rem[0.5] // Valid: 0.5 is in RemScale
-      const px1 = theme.units.px[8] // Valid: 8 is in PxScaleSmall
+      const rem1 = theme.units.rem[0.5]
+      const px1 = theme.units.px[8]
       return { rem1, px1 }
     }
 
@@ -345,15 +332,11 @@ describe('ExpandedUnits with literal types', () => {
       units: ExpandedUnits<{ rem: [0, 0.25, 4] }>
     }
 
-    // This function simulates what would happen with invalid access
     const invalidAccess = (theme: Theme) => {
       // @ts-expect-error - 0.33 is not in RemScale
       const invalid1 = theme.units.rem[0.33]
-
       // @ts-expect-error - 5 is not in RemScale
       const invalid2 = theme.units.rem[5]
-
-      // Valid access
       const valid = theme.units.rem[0.5]
 
       return { invalid1, invalid2, valid }
@@ -368,7 +351,6 @@ describe('ConfigToScale type mapping', () => {
     type Scale = ConfigToScale<'rem', [0, 0.25, 4]>
     type _Test = Expect<Equal<Scale, RemScale>>
 
-    // Verify the scale contains expected values
     const validKeys: RemScale[] = [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]
     expect(validKeys).toContain(0.5)
   })
@@ -385,7 +367,6 @@ describe('ConfigToScale type mapping', () => {
     type Scale = ConfigToScale<'rem', [0, 0.1, 2]>
     type _Test = Expect<Equal<Scale, number>>
 
-    // Any number should be valid for custom configs
     const value: Scale = 0.7
     expect(value).toBe(0.7)
   })

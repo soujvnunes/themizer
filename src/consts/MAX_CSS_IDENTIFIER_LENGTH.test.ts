@@ -18,7 +18,6 @@ describe('MAX_CSS_IDENTIFIER_LENGTH', () => {
 
   describe('usage context', () => {
     it('should be reasonable for CSS custom property names', () => {
-      // Most CSS identifiers are much shorter than 255 characters
       expect(MAX_CSS_IDENTIFIER_LENGTH).toBeGreaterThan(50)
       expect(MAX_CSS_IDENTIFIER_LENGTH).toBeLessThan(1000)
     })
@@ -45,8 +44,6 @@ describe('MAX_CSS_IDENTIFIER_LENGTH', () => {
 
   describe('browser compatibility', () => {
     it('should align with common browser limits', () => {
-      // Most browsers support CSS custom property names up to at least 255 characters
-      // This is a reasonable limit that works across all major browsers
       expect(MAX_CSS_IDENTIFIER_LENGTH).toBe(255)
     })
   })

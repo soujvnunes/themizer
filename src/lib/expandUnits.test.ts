@@ -259,4 +259,29 @@ describe('expandUnits', () => {
       }),
     ).toThrow('Step must be positive')
   })
+
+  it('should handle single value generation when from equals to', () => {
+    const result = expandUnits({
+      px: [16, 1, 16], // Single value at 16
+      rem: [2, 0.5, 2], // Single value at 2
+    })
+
+    // Should generate only one value for each unit
+    expect(Object.keys(result.px)).toHaveLength(1)
+    expect(result.px[16]).toBe('16px')
+
+    expect(Object.keys(result.rem)).toHaveLength(1)
+    expect(result.rem[2]).toBe('2rem')
+  })
+
+  it('should generate inclusive range including both from and to values', () => {
+    const result = expandUnits({
+      px: [0, 10, 20], // Should include 0, 10, and 20
+    })
+
+    expect(result.px[0]).toBe('0px')
+    expect(result.px[10]).toBe('10px')
+    expect(result.px[20]).toBe('20px')
+    expect(Object.keys(result.px)).toHaveLength(3)
+  })
 })

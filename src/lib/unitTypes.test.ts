@@ -2,45 +2,46 @@
  * Tests for CSS unit type definitions and utilities
  */
 
-import { isCSSUnitType, unitSuffixes, type CSSUnitType } from './unitTypes'
+import { isCSSUnitType, type CSSUnitType } from './unitTypes'
+import UNIT_SUFFIXES from '../consts/UNIT_SUFFIXES'
 
 describe('unitSuffixes', () => {
   it('should contain all CSS unit types', () => {
-    expect(unitSuffixes).toHaveProperty('rem', 'rem')
-    expect(unitSuffixes).toHaveProperty('em', 'em')
-    expect(unitSuffixes).toHaveProperty('px', 'px')
-    expect(unitSuffixes).toHaveProperty('percentage', '%')
-    expect(unitSuffixes).toHaveProperty('vh', 'vh')
-    expect(unitSuffixes).toHaveProperty('vw', 'vw')
-    expect(unitSuffixes).toHaveProperty('vmin', 'vmin')
-    expect(unitSuffixes).toHaveProperty('vmax', 'vmax')
-    expect(unitSuffixes).toHaveProperty('ch', 'ch')
-    expect(unitSuffixes).toHaveProperty('ex', 'ex')
+    expect(UNIT_SUFFIXES).toHaveProperty('rem', 'rem')
+    expect(UNIT_SUFFIXES).toHaveProperty('em', 'em')
+    expect(UNIT_SUFFIXES).toHaveProperty('px', 'px')
+    expect(UNIT_SUFFIXES).toHaveProperty('percentage', '%')
+    expect(UNIT_SUFFIXES).toHaveProperty('vh', 'vh')
+    expect(UNIT_SUFFIXES).toHaveProperty('vw', 'vw')
+    expect(UNIT_SUFFIXES).toHaveProperty('vmin', 'vmin')
+    expect(UNIT_SUFFIXES).toHaveProperty('vmax', 'vmax')
+    expect(UNIT_SUFFIXES).toHaveProperty('ch', 'ch')
+    expect(UNIT_SUFFIXES).toHaveProperty('ex', 'ex')
   })
 
   it('should have exactly 10 unit types', () => {
-    expect(Object.keys(unitSuffixes)).toHaveLength(10)
+    expect(Object.keys(UNIT_SUFFIXES)).toHaveLength(10)
   })
 
   it('should map percentage to % symbol', () => {
-    expect(unitSuffixes.percentage).toBe('%')
+    expect(UNIT_SUFFIXES.percentage).toBe('%')
   })
 
   it('should map all other units to their literal names', () => {
-    expect(unitSuffixes.rem).toBe('rem')
-    expect(unitSuffixes.em).toBe('em')
-    expect(unitSuffixes.px).toBe('px')
-    expect(unitSuffixes.vh).toBe('vh')
-    expect(unitSuffixes.vw).toBe('vw')
-    expect(unitSuffixes.vmin).toBe('vmin')
-    expect(unitSuffixes.vmax).toBe('vmax')
-    expect(unitSuffixes.ch).toBe('ch')
-    expect(unitSuffixes.ex).toBe('ex')
+    expect(UNIT_SUFFIXES.rem).toBe('rem')
+    expect(UNIT_SUFFIXES.em).toBe('em')
+    expect(UNIT_SUFFIXES.px).toBe('px')
+    expect(UNIT_SUFFIXES.vh).toBe('vh')
+    expect(UNIT_SUFFIXES.vw).toBe('vw')
+    expect(UNIT_SUFFIXES.vmin).toBe('vmin')
+    expect(UNIT_SUFFIXES.vmax).toBe('vmax')
+    expect(UNIT_SUFFIXES.ch).toBe('ch')
+    expect(UNIT_SUFFIXES.ex).toBe('ex')
   })
 
   it('should be immutable (const assertion)', () => {
-    const suffixes = unitSuffixes
-    expect(suffixes).toBe(unitSuffixes)
+    const suffixes = UNIT_SUFFIXES
+    expect(suffixes).toBe(UNIT_SUFFIXES)
   })
 })
 
@@ -167,7 +168,7 @@ describe('isCSSUnitType', () => {
       const value = 'rem'
 
       if (isCSSUnitType(value)) {
-        const suffix: string = unitSuffixes[value]
+        const suffix: string = UNIT_SUFFIXES[value]
         expect(suffix).toBe('rem')
       }
     })
@@ -233,7 +234,7 @@ describe('isCSSUnitType', () => {
     it('should work with unit suffix mapping', () => {
       const generateValue = (value: number, unit: string): string | null => {
         if (isCSSUnitType(unit)) {
-          return `${value}${unitSuffixes[unit]}`
+          return `${value}${UNIT_SUFFIXES[unit]}`
         }
         return null
       }

@@ -3,20 +3,9 @@
  * These validators are included in the main bundle
  */
 
-import { OKLCH_PATTERN } from './colorPatterns'
-
-/**
- * Maximum length for CSS identifiers
- * Based on browser CSS custom property name limits
- */
-const MAX_CSS_IDENTIFIER_LENGTH = 255
-
-/**
- * CSS identifier regex for custom property names
- * Allows letters, digits, hyphens, and underscores
- * Can start with any of these characters (including digits for numeric keys like "16")
- */
-const CSS_IDENTIFIER_REGEX = /^[\w-]+$/
+import OKLCH_PATTERN from '../consts/OKLCH_PATTERN'
+import MAX_CSS_IDENTIFIER_LENGTH from '../consts/MAX_CSS_IDENTIFIER_LENGTH'
+import CSS_IDENTIFIER_REGEX from '../consts/CSS_IDENTIFIER_REGEX'
 
 /**
  * Validates if a string is a valid CSS identifier (for custom property names)

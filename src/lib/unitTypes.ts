@@ -2,6 +2,8 @@
  * Type-safe CSS unit definitions for themizer
  */
 
+import UNIT_SUFFIXES from '../consts/UNIT_SUFFIXES'
+
 /**
  * Allowed CSS unit types for the units configuration
  */
@@ -26,26 +28,10 @@ export type UnitsConfig = {
 }
 
 /**
- * Mapping of unit names to their CSS suffixes
- */
-export const unitSuffixes: Record<CSSUnitType, string> = {
-  rem: 'rem',
-  em: 'em',
-  px: 'px',
-  percentage: '%',
-  vh: 'vh',
-  vw: 'vw',
-  vmin: 'vmin',
-  vmax: 'vmax',
-  ch: 'ch',
-  ex: 'ex',
-} as const
-
-/**
  * Type guard to check if a string is a valid CSS unit type
  */
 export function isCSSUnitType(value: string): value is CSSUnitType {
-  return value in unitSuffixes
+  return value in UNIT_SUFFIXES
 }
 
 /**

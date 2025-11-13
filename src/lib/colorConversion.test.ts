@@ -424,7 +424,7 @@ describe('integration with color expansion', () => {
       expect(rgb.b).toBeLessThanOrEqual(255)
     })
     expect(rgbShades[0].r + rgbShades[0].g + rgbShades[0].b).toBeGreaterThan(
-      rgbShades[2].r + rgbShades[2].g + rgbShades[2].b
+      rgbShades[2].r + rgbShades[2].g + rgbShades[2].b,
     )
   })
 })

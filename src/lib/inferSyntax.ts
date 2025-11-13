@@ -1,5 +1,5 @@
 import type { Atom } from './isAtom'
-import { OKLAB_PATTERN } from './colorPatterns'
+import OKLAB_PATTERN from '../consts/OKLAB_PATTERN'
 
 /**
  * Metadata for CSS @property registration

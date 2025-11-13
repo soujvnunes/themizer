@@ -3,7 +3,7 @@
  */
 
 import { type UnitsConfig, isCSSUnitType } from './unitTypes'
-import { OKLCH_PATTERN } from './colorPatterns'
+import OKLCH_PATTERN from '../consts/OKLCH_PATTERN'
 
 /**
  * Check if a value is a valid units configuration object

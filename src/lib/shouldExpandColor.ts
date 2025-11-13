@@ -3,7 +3,7 @@
  */
 
 import PATH_UNIFIER from '../consts/PATH_UNIFIER'
-import { OKLCH_PATTERN } from './colorPatterns'
+import OKLCH_PATTERN from '../consts/OKLCH_PATTERN'
 
 /**
  * Determines if a value should be expanded to color shades

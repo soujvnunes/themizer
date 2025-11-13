@@ -3,7 +3,8 @@
  * Expands units configuration into sequences of numeric values
  */
 
-import { type UnitsConfig, type ExpandedUnits, unitSuffixes } from './unitTypes'
+import { type UnitsConfig, type ExpandedUnits } from './unitTypes'
+import UNIT_SUFFIXES from '../consts/UNIT_SUFFIXES'
 
 // Multiplier for rounding to 10 decimal places to avoid floating-point accumulation errors
 const PRECISION_MULTIPLIER = 1e10
@@ -32,7 +33,7 @@ function expandUnitTuple(tuple: [number, number, number], unit: string): Record<
   // Generate sequence using integer-based iteration to avoid floating-point accumulation
   const numSteps = Math.round((to - from) / step)
   for (let i = 0; i <= numSteps; i++) {
-    const value = from + (i * step)
+    const value = from + i * step
     // Round to avoid floating point precision issues
     const key = Math.round(value * PRECISION_MULTIPLIER) / PRECISION_MULTIPLIER
     result[key] = `${key}${unit}`
@@ -67,7 +68,7 @@ export function expandUnits<T extends UnitsConfig>(config: T): ExpandedUnits<T> 
     [keyof T, [number, number, number]]
   >) {
     // Get the CSS suffix for this unit type
-    const suffix = unitSuffixes[unitType as keyof typeof unitSuffixes]
+    const suffix = UNIT_SUFFIXES[unitType as keyof typeof UNIT_SUFFIXES]
     if (!suffix) {
       throw new Error(`Unknown unit type: ${String(unitType)}`)
     }

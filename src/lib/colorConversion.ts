@@ -57,21 +57,21 @@ export function formatOklch(l: number, c: number, h: number): string {
   if (c === 0) {
     cStr = '0'
   } else if (c < 0.1) {
-    // For small chroma values, preserve more precision
+    // For very small chroma values (< 0.1), use up to 4 decimals to avoid rounding to zero
     cStr = c.toFixed(4).replace(/0+$/, '').replace(/\.$/, '')
-    // Ensure at least 2 significant digits after decimal
+    // Ensure at least 2 significant digits after decimal for small chroma values
     const parts = cStr.split('.')
     if (parts[1] && parts[1].length < 2) {
+      // If less than 2 digits after decimal, increase precision to avoid loss of detail
       cStr = c.toFixed(Math.max(2, 4 - parts[0].length))
     }
   } else {
-    // For larger chroma values, use 3 decimals
+    // For larger chroma values (>= 0.1), use up to 3 decimals for a balance of precision and brevity
     cStr = c.toFixed(3).replace(/0+$/, '').replace(/\.$/, '')
-    // Ensure at least 2 decimals
+    // Ensure at least 2 decimals for consistency in output
     if (cStr.split('.')[1]?.length === 1) {
       cStr += '0'
     }
-  }
 
   // Format hue: no decimals if whole number, otherwise as many as needed
   let hStr: string

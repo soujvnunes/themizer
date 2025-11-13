@@ -1,4 +1,5 @@
 import { pathToFileURL } from 'node:url'
+import { createError } from '../lib/createError'
 
 /**
  * Wrapper for dynamic import to enable mocking in tests
@@ -43,7 +44,7 @@ export default async function executeConfig(
 
     // Validate that the config exports a theme with rules.css
     if (!module.default?.rules?.css) {
-      throw new Error(
+      createError(
         'Config file must export a theme object with rules.css property. ' +
           'Ensure your config uses: export default themizer(...)',
       )
@@ -56,7 +57,12 @@ export default async function executeConfig(
     }
   } catch (error) {
     if (error instanceof Error) {
-      throw new Error(`Failed to execute config file: ${error.message}`)
+      // If it's already a themizer error, re-throw it as is
+      if (error.message.startsWith('themizer:')) {
+        throw error
+      }
+      // Otherwise wrap it
+      createError(`Failed to execute config file: ${error.message}`)
     }
     throw error
   }

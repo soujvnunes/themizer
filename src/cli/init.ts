@@ -5,6 +5,7 @@ import prompts from 'prompts'
 import { getFrameworkInfo, getFrameworkDisplayName } from './detectFramework'
 import { validateFilePath, validatePlainObject } from './validators'
 import { escapeSingleQuotes } from '../lib/shellEscape'
+import { createError } from '../lib/createError'
 
 const CONFIG_TEMPLATE = `import themizer from 'themizer'
 
@@ -185,9 +186,9 @@ export async function initAction(options: { watch?: boolean; outDir?: string }) 
         validatePlainObject(packageJson)
       } catch (parseError) {
         if (parseError instanceof Error && parseError.message.includes('must be a plain object')) {
-          throw new Error('package.json must be a valid JSON object')
+          createError('package.json must be a valid JSON object')
         }
-        throw new Error(`Invalid package.json: ${(parseError as Error).message}`)
+        createError(`Invalid package.json: ${(parseError as Error).message}`)
       }
 
       // Initialize scripts object if it doesn't exist or is not an object

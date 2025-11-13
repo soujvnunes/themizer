@@ -3,6 +3,8 @@
  * These validators are included in the main bundle
  */
 
+import { OKLCH_PATTERN } from './colorPatterns'
+
 /**
  * Maximum length for CSS identifiers
  * Based on browser CSS custom property name limits
@@ -82,6 +84,81 @@ export function validateTokens(tokens: Record<string, unknown>, path = ''): void
         }
       })
     }
-    // Primitive values are generally safe but could be sanitized if needed
+  }
+}
+
+/**
+ * Validates units configuration contains only valid CSS unit types
+ * @param value - The value to validate
+ * @param path - Path for error reporting
+ * @throws Error if configuration contains invalid keys
+ */
+export function validateUnitsConfig(value: unknown, path = 'units'): void {
+  if (value === undefined) {
+    return
+  }
+
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    throw new Error(
+      `Invalid units configuration at "${path}": must be an object with CSS unit types as keys`,
+    )
+  }
+
+  const validUnits = ['rem', 'em', 'px', 'percentage', 'vh', 'vw', 'vmin', 'vmax', 'ch', 'ex']
+
+  for (const key of Object.keys(value)) {
+    if (!validUnits.includes(key)) {
+      throw new Error(
+        `Invalid units key "${key}" at "${path}". ` +
+          `Units can only contain CSS unit types: ${validUnits.join(', ')}. ` +
+          `Custom named values like "spacing" should be defined as separate token properties, not nested in units.`,
+      )
+    }
+
+    const val = (value as Record<string, unknown>)[key]
+    if (!Array.isArray(val) || val.length !== 3) {
+      throw new Error(`Invalid value for units.${key}: expected [from, step, to] tuple with 3 numbers`)
+    }
+
+    if (!val.every((item) => typeof item === 'number' && Number.isFinite(item))) {
+      throw new Error(`Invalid value for units.${key}: all elements must be finite numbers`)
+    }
+  }
+}
+
+/**
+ * Validates palette configuration contains only valid OKLCH color strings
+ * @param value - The value to validate
+ * @param path - Path for error reporting
+ * @throws Error if configuration contains non-OKLCH strings or nested objects
+ */
+export function validatePaletteConfig(value: unknown, path = 'palette'): void {
+  if (value === undefined) {
+    return
+  }
+
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    throw new Error(
+      `Invalid palette configuration at "${path}": must be an object with color names as keys and OKLCH strings as values`,
+    )
+  }
+
+  for (const [key, val] of Object.entries(value)) {
+    const currentPath = `${path}.${key}`
+
+    // Check that value is a string
+    if (typeof val !== 'string') {
+      throw new Error(
+        `Invalid palette value at "${currentPath}": expected OKLCH color string, got ${typeof val}`,
+      )
+    }
+
+    // Check that value matches OKLCH pattern
+    if (!OKLCH_PATTERN.test(val)) {
+      throw new Error(
+        `Invalid palette value at "${currentPath}": "${val}" is not a valid OKLCH color. ` +
+          `Expected format: "oklch(L% C H)" where L is lightness (0-100%), C is chroma (0+), and H is hue (0-360)`,
+      )
+    }
   }
 }

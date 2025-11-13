@@ -1,4 +1,9 @@
-import { isValidCSSIdentifier, validatePrefix, validateTokens } from './validators'
+import {
+  isValidCSSIdentifier,
+  validatePrefix,
+  validateTokens,
+  validatePaletteConfig,
+} from './validators'
 
 describe('validators', () => {
   describe('isValidCSSIdentifier', () => {
@@ -145,6 +150,95 @@ describe('validators', () => {
         fail('Should have thrown')
       } catch (error) {
         expect((error as Error).message).toContain('theme.colors.invalid key')
+      }
+    })
+  })
+
+  describe('validatePaletteConfig', () => {
+    it('should accept valid palette configurations with OKLCH colors', () => {
+      expect(() =>
+        validatePaletteConfig({
+          amber: 'oklch(76.9% 0.188 70.08)',
+          blue: 'oklch(50% 0.15 180)',
+        }),
+      ).not.toThrow()
+
+      expect(() =>
+        validatePaletteConfig({
+          primary: 'oklch(50% 0.15 180)',
+        }),
+      ).not.toThrow()
+    })
+
+    it('should accept undefined (optional palette)', () => {
+      expect(() => validatePaletteConfig(undefined)).not.toThrow()
+    })
+
+    it('should reject non-OKLCH color strings', () => {
+      expect(() =>
+        validatePaletteConfig({
+          amber: '#ff0000',
+        }),
+      ).toThrow('is not a valid OKLCH color')
+
+      expect(() =>
+        validatePaletteConfig({
+          blue: 'rgb(0, 0, 255)',
+        }),
+      ).toThrow('is not a valid OKLCH color')
+
+      expect(() =>
+        validatePaletteConfig({
+          green: 'hsl(120, 100%, 50%)',
+        }),
+      ).toThrow('is not a valid OKLCH color')
+    })
+
+    it('should reject nested objects', () => {
+      expect(() =>
+        validatePaletteConfig({
+          amber: {
+            500: 'oklch(76.9% 0.188 70.08)',
+          },
+        }),
+      ).toThrow('expected OKLCH color string, got object')
+    })
+
+    it('should reject non-string values', () => {
+      expect(() =>
+        validatePaletteConfig({
+          amber: 123,
+        }),
+      ).toThrow('expected OKLCH color string, got number')
+
+      expect(() =>
+        validatePaletteConfig({
+          blue: ['oklch(50% 0.15 180)'],
+        }),
+      ).toThrow('expected OKLCH color string, got object')
+    })
+
+    it('should reject non-object inputs', () => {
+      expect(() => validatePaletteConfig('oklch(50% 0.15 180)')).toThrow(
+        'must be an object with color names as keys',
+      )
+
+      expect(() => validatePaletteConfig(['oklch(50% 0.15 180)'])).toThrow(
+        'must be an object with color names as keys',
+      )
+
+      expect(() => validatePaletteConfig(123)).toThrow('must be an object with color names as keys')
+    })
+
+    it('should provide helpful error paths', () => {
+      try {
+        validatePaletteConfig({
+          amber: '#ff0000',
+        })
+        fail('Should have thrown')
+      } catch (error) {
+        expect((error as Error).message).toContain('palette.amber')
+        expect((error as Error).message).toContain('Expected format: "oklch(L% C H)"')
       }
     })
   })

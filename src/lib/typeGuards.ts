@@ -3,6 +3,7 @@
  */
 
 import { type UnitsConfig, isCSSUnitType } from './unitTypes'
+import { OKLCH_PATTERN } from './colorPatterns'
 
 /**
  * Check if a value is a valid units configuration object
@@ -30,6 +31,34 @@ export function isUnitsConfig(value: unknown): value is UnitsConfig {
 
     // All elements must be finite numbers
     if (!val.every((item) => typeof item === 'number' && Number.isFinite(item))) {
+      return false
+    }
+  }
+
+  return true
+}
+
+/**
+ * Check if a value is a valid palette configuration object
+ * Palette config: { amber: 'oklch(76.9% 0.188 70.08)' }
+ *
+ * @param value The value to check
+ * @returns true if the value is a valid palette configuration
+ */
+export function isPaletteConfig(value: unknown): value is Record<string, string> {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return false
+  }
+
+  // Check each entry
+  for (const val of Object.values(value)) {
+    // Value must be a string
+    if (typeof val !== 'string') {
+      return false
+    }
+
+    // Value must match OKLCH pattern
+    if (!OKLCH_PATTERN.test(val)) {
       return false
     }
   }

@@ -71,15 +71,15 @@ export default themizer(
       motion: '(prefers-reduced-motion: no-preference)',
     },
     tokens: {
-      colors: {
-        /* Generates 7 shades:
-         * amber.lightest // oklch(98.92% 0.0102 81.8)
-         * amber.lighter  // oklch(96.2% 0.059 95.617)
-         * amber.light    // oklch(82.8% 0.189 84.429)
-         * amber.base     // oklch(76.9% 0.188 70.08)
-         * amber.dark     // oklch(66.6% 0.179 58.318)
-         * amber.darker   // oklch(35% 0.0771 45.635)
-         * amber.darkest  // oklch(14.92% 0.0268 85.77)
+      // `palette` expands OKLCH colors into 7 shades
+      palette: {
+        /* palette.amber.lightest // oklch(98.92% 0.0102 81.8)
+         * palette.amber.lighter  // oklch(96.2% 0.059 95.617)
+         * palette.amber.light    // oklch(82.8% 0.189 84.429)
+         * palette.amber.base     // oklch(76.9% 0.188 70.08)
+         * palette.amber.dark     // oklch(66.6% 0.179 58.318)
+         * palette.amber.darker   // oklch(35% 0.0771 45.635)
+         * palette.amber.darkest  // oklch(14.92% 0.0268 85.77)
          */
         amber: 'oklch(76.9% 0.188 70.08)',
       },
@@ -88,9 +88,9 @@ export default themizer(
         80: '80%',
         60: '60%',
       },
+      // `units` generates numeric scales from [start, step, end]
       units: {
-        /* Generates values from 0 to 4 in 0.25 steps:
-         * units.rem[0]    // '0rem'
+        /* units.rem[0]    // '0rem'
          * units.rem[0.25] // '0.25rem'
          * units.rem[0.5]  // '0.5rem'
          * units.rem[0.75] // '0.75rem'
@@ -116,13 +116,13 @@ export default themizer(
       },
     },
   },
-  ({ colors, alphas, units, transitions }) => ({
+  ({ palette, alphas, units, transitions }) => ({
     // Semantic aliases composed from tokens
-    palette: {
-      main: colors.amber.base,
+    colors: {
+      main: palette.amber.base,
       ground: {
-        fore: [{ dark: colors.amber.lightest }, alpha(colors.amber.darkest, alphas[80])],
-        back: [{ dark: colors.amber.darkest }, colors.amber.lightest],
+        fore: [{ dark: palette.amber.lightest }, alpha(palette.amber.darkest, alphas[80])],
+        back: [{ dark: palette.amber.darkest }, palette.amber.lightest],
       },
     },
     typography: {
@@ -155,14 +155,14 @@ export default themizer(
 import theme from './themizer.config'
 
 const Hero = styled.section`
-  background: ${theme.aliases.palette.main};
+  background: ${theme.aliases.colors.main};
   padding: ${theme.aliases.spacing.section}; /* Responsive: 2.5rem mobile, 4rem desktop portrait */
   transition: ${theme.aliases.animations.bounce}; /* Only applies when motion is preferred */
 `
 
 const Button = styled.button`
-  background: ${theme.aliases.palette.ground.back};
-  color: ${theme.aliases.palette.ground.fore}; /* Color with 80% alpha */
+  background: ${theme.aliases.colors.ground.back};
+  color: ${theme.aliases.colors.ground.fore}; /* Color with 80% alpha */
   padding: ${theme.aliases.spacing.block};
   font-size: ${theme.aliases.typography.title}; /* Responsive: 1.5rem mobile, 2.5rem desktop */
   transition: ${theme.aliases.animations.ease};
@@ -182,33 +182,40 @@ Single source of truth. Responsive by default. Type-safe tokens.
 **themizer** supports both automatic expansion and manual definition:
 
 #### Automatic Expansion
-- **Colors**: Single OKLCH color → 7 harmonious shades
-- **Units**: `[from, step, to]` tuples → complete numeric scales
+- **`palette`**: Single OKLCH color → 7 harmonious shades
+- **`units`**: `[from, step, to]` tuples → complete numeric scales
 
 #### Manual Definition
 Define exact values when you need precise control:
 
 ```ts
 tokens: {
+  // Auto-expand properties
+  palette: {
+    amber: 'oklch(76.9% 0.188 70.08)',  // → 7 shades
+    // blue: '#3b82f6',                 // ❌ Error: must be OKLCH
+  },
+  units: {
+    rem: [0, 0.25, 4],                   // → 17 values (0, 0.25, 0.5... 4rem)
+    px: [0, 4, 64],                      // → 17 values (0, 4, 8... 64px)
+  },
+
+  // Full control properties
   colors: {
-    // Manual: exact shades
     blue: {
       50: '#eff6ff',
       500: '#3b82f6',
       950: '#172554',
     },
-    // Automatic: generates 7 shades
-    amber: 'oklch(76.9% 0.188 70.08)',
+    brand: '#ff0000',
   },
-  units: {
-    // Manual: named values
-    spacing: {
-      small: '0.5rem',
-      medium: '1rem',
-      large: '2rem',
-    },
-    // Automatic: numeric scale
-    rem: [0, 0.25, 4],
+  spacing: {
+    small: '0.5rem',
+    medium: '1rem',
+    large: '2rem',
+  },
+  anyPropertyName: {
+    // Your custom tokens
   }
 }
 ```
@@ -219,12 +226,12 @@ Build from atoms (tokens) → molecules (aliases) → organisms (components):
 
 ```ts
 // Atoms (tokens)
-colors.amber.base          // Raw color value
-units.rem[1.5]            // Raw spacing value
+palette.amber.base        // Raw expanded color value
+units.rem[1.5]           // Raw spacing value (1.5rem)
 
 // Molecules (aliases)
-palette.ground.fore        // Semantic color
-spacing.block             // Semantic spacing
+colors.ground.fore       // Semantic color
+spacing.block            // Semantic spacing
 
 // Organisms (components)
 <Card className="bg-ground-back p-spacing-block" />
@@ -235,8 +242,8 @@ spacing.block             // Semantic spacing
 Full TypeScript support with autocomplete:
 
 ```ts
-theme.aliases.palette.main  // ✓ Autocomplete
-theme.aliases.palete.main   // ✗ Type error
+theme.aliases.colors.main  // ✓ Autocomplete
+theme.aliases.colors.mian  // ✗ Type error
 ```
 
 ### Responsive by Default
@@ -372,16 +379,16 @@ export default {
       colors: {
         transparent: 'transparent',
         current: 'currentColor',
-        main: theme.aliases.palette.main,
+        main: theme.aliases.colors.main,
         ground: {
-          fore: theme.aliases.palette.ground.fore,
-          back: theme.aliases.palette.ground.back,
+          fore: theme.aliases.colors.ground.fore,
+          back: theme.aliases.colors.ground.back,
         },
         // Create color variants with alpha
         primary: {
-          DEFAULT: theme.aliases.palette.main,
-          light: alpha(theme.aliases.palette.main, theme.tokens.alphas[60]),
-          dark: alpha(theme.aliases.palette.main, theme.tokens.alphas[80]),
+          DEFAULT: theme.aliases.colors.main,
+          light: alpha(theme.aliases.colors.main, theme.tokens.alphas[60]),
+          dark: alpha(theme.aliases.colors.main, theme.tokens.alphas[80]),
         },
       },
       fontSize: {
@@ -429,8 +436,8 @@ import styled from 'styled-components' // or @emotion/styled or @linaria/react
 import theme from './themizer.config'
 
 const Button = styled.button`
-  background: ${theme.aliases.palette.ground.back};
-  color: ${theme.aliases.palette.ground.fore};
+  background: ${theme.aliases.colors.ground.back};
+  color: ${theme.aliases.colors.ground.fore};
   padding: ${theme.aliases.spacing.block};
   font-size: ${theme.aliases.typography.body};
   transition: ${theme.aliases.animations.ease};
@@ -452,7 +459,7 @@ export function Component() {
       {children}
       <style jsx>{`
         .title {
-          color: ${theme.aliases.palette.ground.fore};
+          color: ${theme.aliases.colors.ground.fore};
           font-size: ${theme.aliases.typography.title};
         }
       `}</style>
@@ -495,9 +502,9 @@ Main function to generate design tokens and aliases.
 - `options.prefix` - Prefix for CSS custom properties (e.g., `'theme'` → `--theme-*`)
 - `options.medias` - Media query definitions for responsive design
 - `options.tokens` - Design tokens object with special expansions:
-  - `colors.*`: OKLCH strings auto-expand to 7 shades (lightest, lighter, light, base, dark, darker, darkest)
+  - `palette.*`: OKLCH strings auto-expand to 7 shades (lightest, lighter, light, base, dark, darker, darkest)
   - `units.*`: Object where each key is a unit type (rem, px, percentage, vh, vw, etc.) with `[from, step, to]` tuple values
-  - Other properties: Used as-is
+  - Other properties: Used as-is (no expansion)
 - `aliases` - Function that receives resolved tokens and returns semantic aliases
 
 #### Returns
@@ -513,13 +520,13 @@ Main function to generate design tokens and aliases.
 import theme from './themizer.config'
 
 // Using aliases (semantic names)
-theme.aliases.palette.main        // → "var(--themea0, oklch(76.9% 0.188 70.08))"
+theme.aliases.colors.main        // → "var(--themea0, oklch(76.9% 0.188 70.08))"
 theme.aliases.typography.title    // → "var(--themea5, 2.5rem)"
 
 // Using tokens (raw values)
-// Expanded OKLCH color:
-theme.tokens.colors.amber.base    // → "var(--theme3, oklch(76.9% 0.188 70.08))"
-theme.tokens.colors.amber.lightest // → "var(--theme0, oklch(98.92% 0.0102 81.8))"
+// Expanded OKLCH color from palette:
+theme.tokens.palette.amber.base    // → "var(--theme3, oklch(76.9% 0.188 70.08))"
+theme.tokens.palette.amber.lightest // → "var(--theme0, oklch(98.92% 0.0102 81.8))"
 // Manual color definition:
 theme.tokens.colors.blue[500]     // → "var(--theme7, #3b82f6)"
 // Expanded units:
@@ -550,10 +557,10 @@ The unwrapped custom property name (string)
 import { unwrapAtom } from 'themizer'
 import theme from './themizer.config'
 
-unwrapAtom(theme.aliases.palette.main)  // → "--themea0"
+unwrapAtom(theme.aliases.colors.main)  // → "--themea0"
 
 // Useful for scoped overrides:
-<div style={{ [unwrapAtom(theme.aliases.palette.main)]: 'oklch(50% 0.2 180)' }}>
+<div style={{ [unwrapAtom(theme.aliases.colors.main)]: 'oklch(50% 0.2 180)' }}>
   This div has a custom main color
 </div>
 ```
@@ -576,13 +583,13 @@ The resolved default value (string or number)
 import { resolveAtom } from 'themizer'
 import theme from './themizer.config'
 
-resolveAtom(theme.tokens.colors.amber.base)  // → "oklch(76.9% 0.188 70.08)"
-resolveAtom(theme.aliases.palette.main)      // → "oklch(76.9% 0.188 70.08)"
+resolveAtom(theme.tokens.palette.amber.base)  // → "oklch(76.9% 0.188 70.08)"
+resolveAtom(theme.aliases.colors.main)      // → "oklch(76.9% 0.188 70.08)"
 resolveAtom(theme.tokens.units.rem[1])       // → "1rem"
 
 // Useful for non-CSS contexts:
 export const viewport = {
-  themeColor: resolveAtom(theme.aliases.palette.main),
+  themeColor: resolveAtom(theme.aliases.colors.main),
 }
 ```
 

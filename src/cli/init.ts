@@ -24,22 +24,17 @@ export default themizer(
       motion: '(prefers-reduced-motion: no-preference)',
     },
     tokens: {
-      colors: {
-        /* Generates 7 shades:
-         * amber.lightest // oklch(98.92% 0.0102 81.8)
-         * amber.lighter  // oklch(96.2% 0.059 95.617)
-         * amber.light    // oklch(82.8% 0.189 84.429)
-         * amber.base     // oklch(76.9% 0.188 70.08)
-         * amber.dark     // oklch(66.6% 0.179 58.318)
-         * amber.darker   // oklch(35% 0.0771 45.635)
-         * amber.darkest  // oklch(14.92% 0.0268 85.77)
+      // Auto-expand properties
+      palette: {
+        /* palette.amber.lightest // oklch(98.92% 0.0102 81.8)
+         * palette.amber.lighter  // oklch(96.2% 0.059 95.617)
+         * palette.amber.light    // oklch(82.8% 0.189 84.429)
+         * palette.amber.base     // oklch(76.9% 0.188 70.08)
+         * palette.amber.dark     // oklch(66.6% 0.179 58.318)
+         * palette.amber.darker   // oklch(35% 0.0771 45.635)
+         * palette.amber.darkest  // oklch(14.92% 0.0268 85.77)
          */
         amber: 'oklch(76.9% 0.188 70.08)',
-      },
-      alphas: {
-        100: '100%',
-        80: '80%',
-        60: '60%',
       },
       units: {
         /* Generates values from 0 to 4 in 0.25 steps:
@@ -58,20 +53,27 @@ export default themizer(
          */
         px: [0, 4, 64],
       },
+
+      // Full control properties
+      alphas: {
+        100: '100%',
+        80: '80%',
+        60: '60%',
+      },
       transitions: {
         bounce: '200ms cubic-bezier(0.5, -0.5, 0.25, 1.5)',
         ease: '200ms cubic-bezier(0.25, 0.1, 0.25, 1)',
       },
     },
   },
-  ({ colors, alphas, units, transitions }) => ({
+  ({ palette, alphas, units, transitions }) => ({
     // Semantic aliases composed from tokens
 
-    palette: {
-      main: colors.amber.base,
+    colors: {
+      main: palette.amber.base,
       ground: {
-        fore: [{ dark: colors.amber.lightest }, alpha(colors.amber.darkest, alphas[80])],
-        back: [{ dark: colors.amber.darkest }, colors.amber.lightest],
+        fore: [{ dark: palette.amber.lightest }, alpha(palette.amber.darkest, alphas[80])],
+        back: [{ dark: palette.amber.darkest }, palette.amber.lightest],
       },
     },
 

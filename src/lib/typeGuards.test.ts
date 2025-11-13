@@ -87,7 +87,11 @@ describe('isUnitsConfig', () => {
     })
 
     it('should return false for functions', () => {
-      expect(isUnitsConfig(() => {})).toBe(false)
+      expect(
+        isUnitsConfig(() => {
+          // Empty function for testing
+        }),
+      ).toBe(false)
     })
   })
 

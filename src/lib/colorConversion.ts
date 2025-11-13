@@ -72,6 +72,7 @@ export function formatOklch(l: number, c: number, h: number): string {
     if (cStr.split('.')[1]?.length === 1) {
       cStr += '0'
     }
+  }
 
   // Format hue: no decimals if whole number, otherwise as many as needed
   let hStr: string

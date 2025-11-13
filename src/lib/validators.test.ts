@@ -18,12 +18,10 @@ describe('validators', () => {
     })
 
     it('should accept numeric identifiers and strings starting with numbers', () => {
-      // Numeric object keys like { 16: '16px' } become string "16"
       expect(isValidCSSIdentifier('16')).toBe(true)
       expect(isValidCSSIdentifier('123')).toBe(true)
       expect(isValidCSSIdentifier('123-px')).toBe(true)
       expect(isValidCSSIdentifier('0')).toBe(true)
-      // Also accept actual numbers (will be converted to strings)
       expect(isValidCSSIdentifier(16)).toBe(true)
       expect(isValidCSSIdentifier(123)).toBe(true)
       expect(isValidCSSIdentifier(0)).toBe(true)
@@ -106,7 +104,7 @@ describe('validators', () => {
         validateTokens({
           breakpoints: {
             sm: '640px',
-            768: '768px', // Numeric key
+            768: '768px',
             lg: '1024px',
           },
         }),
@@ -116,13 +114,13 @@ describe('validators', () => {
     it('should reject invalid token keys', () => {
       expect(() =>
         validateTokens({
-          'invalid key': 'value', // Has space
+          'invalid key': 'value',
         }),
       ).toThrow('Invalid token key')
 
       expect(() =>
         validateTokens({
-          'has@special': 'value', // Has special character
+          'has@special': 'value',
         }),
       ).toThrow('Invalid token key')
     })
@@ -131,8 +129,8 @@ describe('validators', () => {
       expect(() =>
         validateTokens({
           colors: {
-            'invalid-nested': 'value', // This is valid
-            'has space': 'value', // This is not
+            'invalid-nested': 'value',
+            'has space': 'value',
           },
         }),
       ).toThrow('Invalid token key')

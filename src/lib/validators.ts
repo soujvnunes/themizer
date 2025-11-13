@@ -6,6 +6,7 @@
 import OKLCH_PATTERN from '../consts/OKLCH_PATTERN'
 import MAX_CSS_IDENTIFIER_LENGTH from '../consts/MAX_CSS_IDENTIFIER_LENGTH'
 import CSS_IDENTIFIER_REGEX from '../consts/CSS_IDENTIFIER_REGEX'
+import { createContextError } from './createError'
 
 /**
  * Validates if a string is a valid CSS identifier (for custom property names)
@@ -37,11 +38,12 @@ export function isValidCSSIdentifier(identifier: string | number): boolean {
  */
 export function validatePrefix(prefix: string): void {
   if (!prefix) {
-    throw new Error('Prefix cannot be empty')
+    createContextError('validation', 'Prefix cannot be empty')
   }
 
   if (!isValidCSSIdentifier(prefix)) {
-    throw new Error(
+    createContextError(
+      'validation',
       `Invalid CSS identifier for prefix: "${prefix}". Can only contain letters, digits, hyphens, and underscores.`,
     )
   }
@@ -59,7 +61,7 @@ export function validateTokens(tokens: Record<string, unknown>, path = ''): void
 
     // Validate key is a valid CSS identifier
     if (!isValidCSSIdentifier(key)) {
-      throw new Error(`Invalid token key at "${currentPath}": must be a valid CSS identifier`)
+      createContextError('validation', `Invalid token key at "${currentPath}": must be a valid CSS identifier`)
     }
 
     // Recursively validate nested objects
@@ -88,7 +90,8 @@ export function validateUnitsConfig(value: unknown, path = 'units'): void {
   }
 
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new Error(
+    createContextError(
+      'validation',
       `Invalid units configuration at "${path}": must be an object with CSS unit types as keys`,
     )
   }
@@ -97,7 +100,8 @@ export function validateUnitsConfig(value: unknown, path = 'units'): void {
 
   for (const key of Object.keys(value)) {
     if (!validUnits.includes(key)) {
-      throw new Error(
+      createContextError(
+        'validation',
         `Invalid units key "${key}" at "${path}". ` +
           `Units can only contain CSS unit types: ${validUnits.join(', ')}. ` +
           `Custom named values like "spacing" should be defined as separate token properties, not nested in units.`,
@@ -106,11 +110,11 @@ export function validateUnitsConfig(value: unknown, path = 'units'): void {
 
     const val = (value as Record<string, unknown>)[key]
     if (!Array.isArray(val) || val.length !== 3) {
-      throw new Error(`Invalid value for units.${key}: expected [from, step, to] tuple with 3 numbers`)
+      createContextError('validation', `Invalid value for units.${key}: expected [from, step, to] tuple with 3 numbers`)
     }
 
     if (!val.every((item) => typeof item === 'number' && Number.isFinite(item))) {
-      throw new Error(`Invalid value for units.${key}: all elements must be finite numbers`)
+      createContextError('validation', `Invalid value for units.${key}: all elements must be finite numbers`)
     }
   }
 }
@@ -127,7 +131,8 @@ export function validatePaletteConfig(value: unknown, path = 'palette'): void {
   }
 
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new Error(
+    createContextError(
+      'validation',
       `Invalid palette configuration at "${path}": must be an object with color names as keys and OKLCH strings as values`,
     )
   }
@@ -137,14 +142,16 @@ export function validatePaletteConfig(value: unknown, path = 'palette'): void {
 
     // Check that value is a string
     if (typeof val !== 'string') {
-      throw new Error(
+      createContextError(
+        'validation',
         `Invalid palette value at "${currentPath}": expected OKLCH color string, got ${typeof val}`,
       )
     }
 
     // Check that value matches OKLCH pattern
     if (!OKLCH_PATTERN.test(val)) {
-      throw new Error(
+      createContextError(
+        'validation',
         `Invalid palette value at "${currentPath}": "${val}" is not a valid OKLCH color. ` +
           `Expected format: "oklch(L% C H)" where L is lightness (0-100%), C is chroma (0+), and H is hue (0-360)`,
       )

@@ -48,13 +48,13 @@ export default themizer(
 ## Generated Shades
 
 Each color in `palette` expands to:
-- `lightest` (L: 98.92%, low chroma, +3° hue)
+- `lightest` (L: 98.92%, low chroma, +11.72° hue)
 - `lighter` (L: 96.2%, reduced chroma)
 - `light` (L: base + 5.9, half chroma)
 - `base` (original color)
 - `dark` (L: base - 10.3, 80% chroma)
 - `darker` (L: 35%, half chroma)
-- `darkest` (L: 14.92%, low chroma, +3° hue)
+- `darkest` (L: 14.92%, low chroma, +15.69° hue)
 
 ## Error Handling
 

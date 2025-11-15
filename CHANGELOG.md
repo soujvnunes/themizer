@@ -1,5 +1,185 @@
 # @soujvnunes/themizer
 
+## 1.7.0
+
+### Minor Changes
+
+- c779070: Enhanced token expansion with improved color algorithm and new units format
+
+  ### Color Expansion Improvements
+
+  - More sophisticated color shade generation with harmonious palettes
+  - Variable chroma at extremes (0.0102 for lightest, 0.0268 for darkest)
+  - Warm hue shifts at both extremes for better visual harmony
+  - Updated lightness values: lightest 98.92%, darkest 14.92%, darker 35%
+
+  ### Units Expansion Enhancement
+
+  - New object-based format: `{ rem: [0, 0.25, 4], px: [0, 4, 64] }`
+  - Type-safe CSS unit types (rem, em, px, percentage, vh, vw, etc.)
+  - Support for multiple unit types in a single configuration
+  - Cleaner numeric input values with automatic suffix generation
+
+  ### Developer Experience
+
+  - Better TypeScript support with proper type inference
+  - Clearer separation between automatic expansion and manual definition
+  - Improved documentation with inline examples of generated values
+
+- 1b6dcb4: Improve type inference for units expansion with literal types
+
+  ## Enhanced Type Inference
+
+  Added literal type inference for standard unit configurations, providing IntelliSense autocomplete for common scales.
+
+  ### Features
+
+  - **Literal types for standard configs**: Common unit configurations now provide exact value autocomplete
+  - **Fallback for custom configs**: Non-standard configurations still work with generic number types
+  - **Better IntelliSense display**: Units now show actual object structure instead of `Record<>` notation
+
+  ### Standard Configurations
+
+  ```ts
+  // Standard rem scale [0, 0.25, 4] - shows available values in IntelliSense
+  theme.tokens.units.rem[0.5][ // ✅ Valid - IntelliSense shows: 0, 0.25, 0.5, 0.75, 1, ...
+    // Standard px scales
+    (0, 4, 16)
+  ][(0, 4, 64)][(0, 8, 128)] // Small scale: 0, 4, 8, 12, 16 // Default scale: 0, 4, 8, 12, 16, 20, 24, ... // Large scale: 0, 8, 16, 24, 32, ...
+  ```
+
+  ### Type Helpers
+
+  New helper types in `src/types/helpers.ts`:
+
+  ```ts
+  // Extract available unit keys
+  type Keys = ExtractUnitKeys<{ rem: [0, 0.25, 4] }>
+  // Keys['rem'] = 0 | 0.25 | 0.5 | ... | 4
+
+  // Type-safe unit values
+  type RemValue = UnitValue<Config, 'rem'>
+
+  // Infer complete theme structure
+  type Theme = InferTokens<ConfigType>
+  ```
+
+  ### TypeScript Support
+
+  - Added scale types: `RemScale`, `PxScale`, `PercentageScale`, etc.
+  - `ConfigToScale` type mapping for automatic inference
+  - `ExpandedUnits` type improved to show object structure
+
+- 806743d: Add automatic color palette expansion with new `palette` token property
+
+  ## New Feature: `palette` Property
+
+  Introduce a dedicated `palette` property for automatic OKLCH color expansion. This provides explicit control over which colors are expanded into 7 harmonious shades.
+
+  ### Usage
+
+  ```ts
+  export default themizer(
+    {
+      tokens: {
+        // Auto-expand OKLCH colors into 7 shades
+        palette: {
+          amber: 'oklch(76.9% 0.188 70.08)',
+          // Generates: lightest, lighter, light, base, dark, darker, darkest
+        },
+
+        // Manual color definitions (no expansion)
+        colors: {
+          blue: { 500: '#3b82f6', 700: '#1d4ed8' },
+          red: '#ff0000',
+        },
+      },
+    },
+    ({ palette, colors }) => ({
+      // Semantic aliases from tokens
+      brand: {
+        base: palette.amber.base,
+        light: palette.amber.light,
+        accent: colors.blue[500],
+      },
+    }),
+  )
+  ```
+
+  ## Features
+
+  - **Type-safe**: `palette` only accepts OKLCH format strings - invalid formats throw clear errors
+  - **Explicit expansion**: Clear distinction between auto-expanding colors (`palette`) and manual definitions (`colors`)
+  - **Harmonious shades**: Generates 7 perceptually-balanced shades with variable chroma and warm hue shifts
+  - **Runtime validation**: `validatePaletteConfig` ensures only valid OKLCH strings are provided
+
+  ## Generated Shades
+
+  Each color in `palette` expands to:
+
+  - `lightest` (L: 98.92%, low chroma, +11.72° hue)
+  - `lighter` (L: 96.2%, reduced chroma)
+  - `light` (L: base + 5.9, half chroma)
+  - `base` (original color)
+  - `dark` (L: base - 10.3, 80% chroma)
+  - `darker` (L: 35%, half chroma)
+  - `darkest` (L: 14.92%, low chroma, +15.69° hue)
+
+  ## Error Handling
+
+  ```ts
+  palette: {
+    // ✅ Valid
+    amber: 'oklch(76.9% 0.188 70.08)',
+
+    // ❌ Error: not OKLCH format
+    red: '#ff0000',
+
+    // ❌ Error: can't use object notation
+    blue: { 500: 'oklch(50% 0.15 240)' },
+  }
+  ```
+
+### Patch Changes
+
+- 2ad055a: Improve error handling with consistent themizer prefix
+
+  ## Improvements
+
+  - Added `createError` and `createContextError` helper functions for consistent error messaging
+  - All errors now include "themizer:" prefix for clear identification
+  - Context-aware errors show which module threw the error (e.g., "themizer [validation]:")
+  - Prevents double-prefixing when re-throwing errors
+
+  ## Changes
+
+  - Created `src/lib/createError.ts` with error helper functions
+  - Updated all `throw new Error()` calls to use the new helpers
+  - Fixed error handling in `executeConfig` to avoid duplicate prefixes
+  - Added comprehensive tests for error helpers
+
+  This ensures users always know when an error comes from themizer and provides better debugging context.
+
+- 806743d: Add runtime validation for units configuration and fix documentation
+
+  ### Validation Enhancements
+
+  - Added `validateUnitsConfig` function with clear error messages
+  - Runtime validation now provides helpful guidance when invalid keys are used
+  - Error messages explain that custom named values should be separate token properties
+
+  ### Documentation Corrections
+
+  - Fixed incorrect examples showing nested "spacing" within units configuration
+  - Clarified that `units` property accepts ONLY CSS unit types (rem, px, em, etc.)
+  - Updated all examples to show correct pattern: units for expansion, separate properties for named values
+
+  ### Developer Experience
+
+  - Runtime validation catches invalid units configuration with helpful error messages
+  - Clear documentation guides users toward the correct pattern
+  - No breaking changes - this enforces what was already the only working pattern
+
 ## 1.6.3
 
 ### Patch Changes

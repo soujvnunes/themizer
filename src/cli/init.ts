@@ -5,6 +5,7 @@ import prompts from 'prompts'
 import { getFrameworkInfo, getFrameworkDisplayName } from './detectFramework'
 import { validateFilePath, validatePlainObject } from './validators'
 import { escapeSingleQuotes } from '../lib/shellEscape'
+import { createError } from '../lib/createError'
 
 const CONFIG_TEMPLATE = `import themizer from 'themizer'
 
@@ -21,68 +22,81 @@ export default themizer(
     medias: {
       desktop: '(width >= 1024px)',
       dark: '(prefers-color-scheme: dark)',
+      motion: '(prefers-reduced-motion: no-preference)',
     },
     tokens: {
-      colors: {
-        amber: {
-          50: "oklch(98% 0.02 85)",
-          500: "oklch(76.9% 0.188 70.08)",
-          950: "oklch(6% 0.02 70)",
-        },
-      },
-      alphas: {
-        100: "100%",
-        80: "80%",
-        60: "60%",
-        40: "40%",
-        20: "20%",
-        10: "10%",
-        6: "6%",
-        4: "4%",
-        2: "2%",
-        0: "0%",
+      // Auto-expand properties
+      palette: {
+        /* palette.amber.lightest // oklch(98.92% 0.0102 81.8)
+         * palette.amber.lighter  // oklch(96.2% 0.059 95.617)
+         * palette.amber.light    // oklch(82.8% 0.189 84.429)
+         * palette.amber.base     // oklch(76.9% 0.188 70.08)
+         * palette.amber.dark     // oklch(66.6% 0.179 58.318)
+         * palette.amber.darker   // oklch(35% 0.0771 45.635)
+         * palette.amber.darkest  // oklch(14.92% 0.0268 85.77)
+         */
+        amber: 'oklch(76.9% 0.188 70.08)',
       },
       units: {
-        0: '0',
-        1: '0.0625rem',
-        2: '0.125rem',
-        4: '0.25rem',
-        8: '0.5rem',
-        12: '0.75rem',
-        16: '1rem',
-        24: '1.5rem',
-        40: '2.5rem',
-        64: '4rem',
-        104: '6.5rem',
+        /* Generates values from 0 to 4 in 0.25 steps:
+         * units.rem[0]           // '0rem'
+         * units.rem[0.25]        // '0.25rem'
+         * units.rem[0.5]         // '0.5rem'
+         * units.rem[0.75]        // '0.75rem'
+         * ...up to units.rem[4] // '4rem'
+         */
+        rem: [0, 0.25, 4],
+        /* Generates values from 0 to 64 in 4px steps:
+         * units.px[0]           // '0px'
+         * units.px[4]           // '4px'
+         * units.px[8]           // '8px'
+         * ...up to units.px[64] // '64px'
+         */
+        px: [0, 4, 64],
+      },
+
+      // Full control properties
+      alphas: {
+        100: '100%',
+        80: '80%',
+        60: '60%',
+      },
+      transitions: {
+        bounce: '200ms cubic-bezier(0.5, -0.5, 0.25, 1.5)',
+        ease: '200ms cubic-bezier(0.25, 0.1, 0.25, 1)',
       },
     },
   },
-  ({ colors, alphas, units }) => ({
-    // Define your semantic aliases grouped by context
+  ({ palette, alphas, units, transitions }) => ({
+    // Semantic aliases composed from tokens
 
-    palette: {
+    colors: {
+      main: palette.amber.base,
       ground: {
-        fore: [{ dark: colors.amber[50] }, alpha(colors.amber[950], alphas[80])],
-        back: [{ dark: colors.amber[950] }, colors.amber[50]],
+        fore: [{ dark: palette.amber.lightest }, alpha(palette.amber.darkest, alphas[80])],
+        back: [{ dark: palette.amber.darkest }, palette.amber.lightest],
       },
-      main: colors.amber[500],
     },
 
     typography: {
-      headline: [{ desktop: units[64] }, units[40]],
-      title: [{ desktop: units[40] }, units[24]],
-      subtitle: [{ desktop: units[24] }, units[16]],
-      body: units[16],
-      caption: units[12],
+      headline: [{ desktop: units.rem[4] }, units.rem[2.5]],
+      title: [{ desktop: units.rem[2.5] }, units.rem[1.5]],
+      subtitle: [{ desktop: units.rem[1.5] }, units.rem[1]],
+      body: units.rem[1],
+      caption: units.rem[0.75],
     },
 
     grid: {
-      margin: [{ desktop: units[40] }, units[16]],
-      gutter: [{ desktop: units[16] }, units[8]],
+      padding: [{ desktop: units.rem[2.5] }, units.rem[1.5]],
+      margin: [{ desktop: units.rem[4] }, units.rem[2.5]],
+    },
+
+    animations: {
+      bounce: [{ motion: transitions.bounce }],
+      ease: [{ motion: transitions.ease }],
     },
   }),
-)
-`
+)`
 
 export async function initAction(options: { watch?: boolean; outDir?: string }) {
   const configPath = join(process.cwd(), 'themizer.config.ts')
@@ -172,9 +186,9 @@ export async function initAction(options: { watch?: boolean; outDir?: string }) 
         validatePlainObject(packageJson)
       } catch (parseError) {
         if (parseError instanceof Error && parseError.message.includes('must be a plain object')) {
-          throw new Error('package.json must be a valid JSON object')
+          createError('package.json must be a valid JSON object')
         }
-        throw new Error(`Invalid package.json: ${(parseError as Error).message}`)
+        createError(`Invalid package.json: ${(parseError as Error).message}`)
       }
 
       // Initialize scripts object if it doesn't exist or is not an object

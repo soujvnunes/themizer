@@ -1,4 +1,9 @@
-import { isValidCSSIdentifier, validatePrefix, validateTokens } from './validators'
+import {
+  isValidCSSIdentifier,
+  validatePrefix,
+  validateTokens,
+  validatePaletteConfig,
+} from './validators'
 
 describe('validators', () => {
   describe('isValidCSSIdentifier', () => {
@@ -13,12 +18,10 @@ describe('validators', () => {
     })
 
     it('should accept numeric identifiers and strings starting with numbers', () => {
-      // Numeric object keys like { 16: '16px' } become string "16"
       expect(isValidCSSIdentifier('16')).toBe(true)
       expect(isValidCSSIdentifier('123')).toBe(true)
       expect(isValidCSSIdentifier('123-px')).toBe(true)
       expect(isValidCSSIdentifier('0')).toBe(true)
-      // Also accept actual numbers (will be converted to strings)
       expect(isValidCSSIdentifier(16)).toBe(true)
       expect(isValidCSSIdentifier(123)).toBe(true)
       expect(isValidCSSIdentifier(0)).toBe(true)
@@ -101,7 +104,7 @@ describe('validators', () => {
         validateTokens({
           breakpoints: {
             sm: '640px',
-            768: '768px', // Numeric key
+            768: '768px',
             lg: '1024px',
           },
         }),
@@ -111,13 +114,13 @@ describe('validators', () => {
     it('should reject invalid token keys', () => {
       expect(() =>
         validateTokens({
-          'invalid key': 'value', // Has space
+          'invalid key': 'value',
         }),
       ).toThrow('Invalid token key')
 
       expect(() =>
         validateTokens({
-          'has@special': 'value', // Has special character
+          'has@special': 'value',
         }),
       ).toThrow('Invalid token key')
     })
@@ -126,8 +129,8 @@ describe('validators', () => {
       expect(() =>
         validateTokens({
           colors: {
-            'invalid-nested': 'value', // This is valid
-            'has space': 'value', // This is not
+            'invalid-nested': 'value',
+            'has space': 'value',
           },
         }),
       ).toThrow('Invalid token key')
@@ -145,6 +148,95 @@ describe('validators', () => {
         fail('Should have thrown')
       } catch (error) {
         expect((error as Error).message).toContain('theme.colors.invalid key')
+      }
+    })
+  })
+
+  describe('validatePaletteConfig', () => {
+    it('should accept valid palette configurations with OKLCH colors', () => {
+      expect(() =>
+        validatePaletteConfig({
+          amber: 'oklch(76.9% 0.188 70.08)',
+          blue: 'oklch(50% 0.15 180)',
+        }),
+      ).not.toThrow()
+
+      expect(() =>
+        validatePaletteConfig({
+          primary: 'oklch(50% 0.15 180)',
+        }),
+      ).not.toThrow()
+    })
+
+    it('should accept undefined (optional palette)', () => {
+      expect(() => validatePaletteConfig(undefined)).not.toThrow()
+    })
+
+    it('should reject non-OKLCH color strings', () => {
+      expect(() =>
+        validatePaletteConfig({
+          amber: '#ff0000',
+        }),
+      ).toThrow('is not a valid OKLCH color')
+
+      expect(() =>
+        validatePaletteConfig({
+          blue: 'rgb(0, 0, 255)',
+        }),
+      ).toThrow('is not a valid OKLCH color')
+
+      expect(() =>
+        validatePaletteConfig({
+          green: 'hsl(120, 100%, 50%)',
+        }),
+      ).toThrow('is not a valid OKLCH color')
+    })
+
+    it('should reject nested objects', () => {
+      expect(() =>
+        validatePaletteConfig({
+          amber: {
+            500: 'oklch(76.9% 0.188 70.08)',
+          },
+        }),
+      ).toThrow('expected OKLCH color string, got object')
+    })
+
+    it('should reject non-string values', () => {
+      expect(() =>
+        validatePaletteConfig({
+          amber: 123,
+        }),
+      ).toThrow('expected OKLCH color string, got number')
+
+      expect(() =>
+        validatePaletteConfig({
+          blue: ['oklch(50% 0.15 180)'],
+        }),
+      ).toThrow('expected OKLCH color string, got object')
+    })
+
+    it('should reject non-object inputs', () => {
+      expect(() => validatePaletteConfig('oklch(50% 0.15 180)')).toThrow(
+        'must be an object with color names as keys',
+      )
+
+      expect(() => validatePaletteConfig(['oklch(50% 0.15 180)'])).toThrow(
+        'must be an object with color names as keys',
+      )
+
+      expect(() => validatePaletteConfig(123)).toThrow('must be an object with color names as keys')
+    })
+
+    it('should provide helpful error paths', () => {
+      try {
+        validatePaletteConfig({
+          amber: '#ff0000',
+        })
+        fail('Should have thrown')
+      } catch (error) {
+        expect((error as Error).message).toContain('palette.amber')
+        expect((error as Error).message).toContain('Expected format: "oklch(L% C H)"')
       }
     })
   })

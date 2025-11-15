@@ -1,4 +1,5 @@
 import type { Atom } from './isAtom'
+import OKLAB_PATTERN from '../consts/OKLAB_PATTERN'
 
 /**
  * Metadata for CSS @property registration
@@ -251,9 +252,9 @@ export function inferSyntax(value: Atom): string {
 /**
  * Checks if a value is a CSS color
  */
-function isColor(value: string): boolean {
+export function isColor(value: string): boolean {
   // oklch(), oklab()
-  if (/^okl(ch|ab)\s*\([^)]+\)/.test(value)) return true
+  if (OKLAB_PATTERN.test(value)) return true
 
   // lab(), lch()
   if (/^l(ab|ch)\s*\([^)]+\)/.test(value)) return true

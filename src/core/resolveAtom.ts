@@ -1,4 +1,5 @@
 import ATOM_REGEX from '../consts/ATOM_REGEX'
+import { createError } from '../lib/createError'
 
 // Extract regex source once at module level to avoid repeated property access
 const ATOM_REGEX_SOURCE = ATOM_REGEX.source
@@ -41,9 +42,7 @@ export default function resolveAtom(atom: string) {
   }
 
   if (!extractedValue) {
-    throw new Error(
-      `themizer/resolveAtom: Expected wrapped custom property '${atom}' to have a default value.`,
-    )
+    createError(`Expected wrapped custom property '${atom}' to have a default value.`)
   }
 
   const formattedValue = Number(extractedValue)

@@ -52,7 +52,6 @@ describe('executeConfig', () => {
 
     await executeConfig(mockConfigPath, mockImportModule)
 
-    // Verify pathToFileURL was used and timestamp was added
     const expectedUrl = pathToFileURL(mockConfigPath).href
     const callArg = (mockImportModule.mock.calls[0] as string[])[0]
 
@@ -67,7 +66,7 @@ describe('executeConfig', () => {
     mockImportModule.mockResolvedValue(mockModule)
 
     await expect(executeConfig(mockConfigPath, mockImportModule)).rejects.toThrow(
-      'Failed to execute config file: Config file must export a theme object with rules.css property',
+      'themizer: Config file must export a theme object with rules.css property',
     )
   })
 

@@ -284,4 +284,24 @@ describe('atomizer', () => {
       })
     })
   })
+
+  describe('automatic expansion', () => {
+    it('expands palette colors to 7 shades and units to scale', () => {
+      const atomized = atomizer({
+        palette: { amber: 'oklch(76.9% 0.188 70.08)' },
+        colors: { blue: '#3b82f6' },
+        units: { px: [0, 4, 16], rem: [0, 0.5, 2] },
+        alphas: { subtle: '0.5' },
+      })
+
+      ;['lightest', 'lighter', 'light', 'base', 'dark', 'darker', 'darkest'].forEach((shade) =>
+        expect(atomized.ref.palette.amber).toHaveProperty(shade),
+      )
+
+      expect(atomized.ref.colors.blue).toContain('var(')
+      expect(atomized.ref.units.px).toHaveProperty('8')
+      expect(atomized.ref.units.rem).toHaveProperty('1.5')
+      expect(Object.keys(atomized.vars).length).toBe(19)
+    })
+  })
 })

@@ -7,7 +7,12 @@ import atomizer, {
   type Atoms,
   type Medias,
 } from '../lib/atomizer'
-import { validatePrefix, validateTokens } from '../lib/validators'
+import {
+  validatePrefix,
+  validateTokens,
+  validateUnitsConfig,
+  validatePaletteConfig,
+} from '../lib/validators'
 
 interface ThemizerOptions<M extends Medias, T extends Atoms> extends Required<AtomizerOptions<M>> {
   tokens: T
@@ -29,10 +34,13 @@ interface ThemizerOptions<M extends Medias, T extends Atoms> extends Required<At
  *   {
  *     prefix: 'theme',
  *     medias: { md: '(min-width: 768px)' },
- *     tokens: { colors: { black: '#000' } }
+ *     tokens: {
+ *       palette: { amber: 'oklch(76.9% 0.188 70.08)' },
+ *       colors: { black: '#000' }
+ *     }
  *   },
- *   ({ colors }) => ({
- *     palette: { text: colors.black }
+ *   ({ palette, colors }) => ({
+ *     text: { primary: colors.black, accent: palette.amber.base }
  *   })
  * )
  * ```
@@ -45,6 +53,9 @@ export default function themizer<
   // Validate inputs
   validatePrefix(options.prefix)
   validateTokens(options.tokens as Record<string, unknown>)
+
+  if ('units' in options.tokens) validateUnitsConfig(options.tokens.units, 'tokens.units')
+  if ('palette' in options.tokens) validatePaletteConfig(options.tokens.palette, 'tokens.palette')
 
   const tokenized = atomizer<never, T>(options.tokens, {
     prefix: `${options.prefix}-tokens`,

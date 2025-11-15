@@ -26,8 +26,16 @@ describe('CLI validators', () => {
     })
 
     it('should return false for functions', () => {
-      expect(isPlainObject(() => {})).toBe(false)
-      expect(isPlainObject(function () {})).toBe(false)
+      expect(
+        isPlainObject(() => {
+          // Empty function for testing
+        }),
+      ).toBe(false)
+      expect(
+        isPlainObject(function () {
+          // Empty function for testing
+        }),
+      ).toBe(false)
     })
   })
 

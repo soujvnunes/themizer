@@ -66,7 +66,7 @@ describe('executeConfig', () => {
     mockImportModule.mockResolvedValue(mockModule)
 
     await expect(executeConfig(mockConfigPath, mockImportModule)).rejects.toThrow(
-      'themizer: Config file must export a theme object with rules.css property',
+      'themizer [config]: Config file must export a theme object with rules.css property',
     )
   })
 

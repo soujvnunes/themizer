@@ -20,7 +20,7 @@ describe('theme', () => {
     jest.spyOn(process, 'exit').mockImplementation(jest.fn as never)
 
     writeThemeFileSpy = writeThemeFile.default as jest.MockedFunction<typeof writeThemeFile.default>
-    writeThemeFileSpy.mockResolvedValue(undefined)
+    writeThemeFileSpy.mockResolvedValue(['theme'])
     existsSyncMock = existsSync as jest.MockedFunction<typeof existsSync>
     existsSyncMock.mockReturnValue(true)
   })
@@ -64,6 +64,17 @@ describe('theme', () => {
         `themizer: theme.css written to ${OPTS.outDir} directory`,
       )
     })
+
+    it('shows theme count when multiple themes are generated', async () => {
+      writeThemeFileSpy.mockResolvedValue(['cocaCola', 'nike'])
+
+      await themeAction(OPTS)
+
+      expect(console.log).toHaveBeenCalledWith(
+        `themizer: theme.css written to ${OPTS.outDir} directory (2 themes: cocaCola, nike)`,
+      )
+    })
+
     describe('encountering errors', () => {
       it('exits', async () => {
         writeThemeFileSpy.mockRejectedValue(new Error('Test error'))

@@ -61,7 +61,7 @@ import themizer from 'themizer'
 
 const alpha = (color: string, percentage: string) => `color-mix(in srgb, ${color} ${percentage}, transparent)`
 
-export default themizer(
+export const theme = themizer(
   {
     prefix: 'theme',
     medias: {
@@ -152,7 +152,7 @@ export default themizer(
 </div>
 
 // Hero section with animations
-import theme from './themizer.config'
+import { theme } from './themizer.config'
 
 const Hero = styled.section`
   background: ${theme.aliases.colors.main};
@@ -245,6 +245,30 @@ Full TypeScript support with autocomplete:
 theme.aliases.colors.main  // ✓ Autocomplete
 theme.aliases.colors.mian  // ✗ Type error
 ```
+
+### Multiple Themes
+
+Export multiple themes for complex design systems with multi-brand support. All themes are combined into a single `theme.css` file:
+
+```ts
+// themizer.config.ts
+import themizer from 'themizer'
+
+// Single theme (most common)
+export const theme = themizer({ prefix: 'theme', tokens, medias }, () => ({}))
+
+// Or multiple themes for multi-brand design systems
+export const cocaCola = themizer({ prefix: 'coke', tokens: cokeTokens, medias }, () => ({}))
+export const nike = themizer({ prefix: 'nike', tokens: nikeTokens, medias }, () => ({}))
+```
+
+When you run `pnpm run themizer:theme`, all exported themes are combined:
+
+```bash
+themizer: theme.css written to ./src/app (2 themes: cocaCola, nike)
+```
+
+Each theme uses its own prefix to avoid naming conflicts, and all CSS custom properties are combined into a single optimized file.
 
 ### Responsive by Default
 
@@ -362,7 +386,7 @@ Configure once, use everywhere. **themizer** integrates seamlessly with all majo
 ```js
 // tailwind.config.js
 import plugin from 'tailwindcss/plugin';
-import theme from './themizer.config';
+import { theme } from './themizer.config';
 
 // Helper for Tailwind's opacity system
 const rgb = (color) => `rgb(${color} / <alpha-value>)`;
@@ -433,7 +457,7 @@ For frameworks other than Tailwind, import the generated `theme.css` in your app
 
 ```tsx
 import styled from 'styled-components' // or @emotion/styled or @linaria/react
-import theme from './themizer.config'
+import { theme } from './themizer.config'
 
 const Button = styled.button`
   background: ${theme.aliases.colors.ground.back};
@@ -451,7 +475,7 @@ const Button = styled.button`
 **Next.js with styled-jsx:**
 
 ```tsx
-import theme from './themizer.config'
+import { theme } from './themizer.config'
 
 export function Component() {
   return (
@@ -517,7 +541,7 @@ Main function to generate design tokens and aliases.
 #### Example
 
 ```ts
-import theme from './themizer.config'
+import { theme } from './themizer.config'
 
 // Using aliases (semantic names)
 theme.aliases.colors.main        // → "var(--themea0, oklch(76.9% 0.188 70.08))"
@@ -555,7 +579,7 @@ The unwrapped custom property name (string)
 
 ```ts
 import { unwrapAtom } from 'themizer'
-import theme from './themizer.config'
+import { theme } from './themizer.config'
 
 unwrapAtom(theme.aliases.colors.main)  // → "--themea0"
 
@@ -581,7 +605,7 @@ The resolved default value (string or number)
 
 ```ts
 import { resolveAtom } from 'themizer'
-import theme from './themizer.config'
+import { theme } from './themizer.config'
 
 resolveAtom(theme.tokens.palette.amber.base)  // → "oklch(76.9% 0.188 70.08)"
 resolveAtom(theme.aliases.colors.main)      // → "oklch(76.9% 0.188 70.08)"

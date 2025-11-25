@@ -162,7 +162,8 @@ import themizer from 'themizer'
 const alpha = (color: string, percentage: string) =>
   `color-mix(in srgb, ${color} ${percentage}, transparent)`
 
-export default themizer(
+// Single theme (most common)
+export const theme = themizer(
   {
     prefix: 'theme',
     medias: {
@@ -213,6 +214,11 @@ export default themizer(
     },
   })
 )
+
+// For multi-brand design systems, export multiple themes:
+// export const cocaCola = themizer({ prefix: 'coke', ... }, () => ({}))
+// export const nike = themizer({ prefix: 'nike', ... }, () => ({}))
+// All themes are combined into a single theme.css file
 ```
 
 ## Performance Optimizations

@@ -45,6 +45,7 @@ export default async function executeConfig(
     // Validate that the config exports a theme with rules.css
     if (!module.default?.rules?.css) {
       createError(
+        'config',
         'Config file must export a theme object with rules.css property. ' +
           'Ensure your config uses: export default themizer(...)',
       )
@@ -57,12 +58,9 @@ export default async function executeConfig(
     }
   } catch (error) {
     if (error instanceof Error) {
-      // If it's already a themizer error, re-throw it as is
-      if (error.message.startsWith('themizer:')) {
-        throw error
-      }
-      // Otherwise wrap it
-      createError(`Failed to execute config file: ${error.message}`)
+      if (error.message.startsWith('themizer [')) throw error
+
+      createError('config', `Failed to execute config file: ${error.message}`)
     }
     throw error
   }

@@ -3,7 +3,7 @@
  * These are only used by CLI commands and not included in the library bundle
  */
 
-import { createContextError } from '../lib/createError'
+import { createError } from '../lib/createError'
 
 /**
  * Validates that a value is a plain object (not null, array, or primitive).
@@ -42,7 +42,7 @@ export function validatePlainObject<O extends Record<string, unknown>>(
   value: unknown,
 ): asserts value is O {
   if (!isPlainObject(value)) {
-    createContextError('cli', 'Value must be a plain object (not null, array, or primitive)')
+    createError('cli', 'Value must be a plain object (not null, array, or primitive)')
   }
 }
 
@@ -57,12 +57,12 @@ export function validatePlainObject<O extends Record<string, unknown>>(
  */
 export function validateFilePath(filePath: string): void {
   if (!filePath || typeof filePath !== 'string') {
-    createContextError('cli', 'File path must be a non-empty string')
+    createError('cli', 'File path must be a non-empty string')
   }
 
   // Check for null bytes (always invalid in paths)
   if (filePath.includes('\0')) {
-    createContextError('cli', 'File path cannot contain null bytes')
+    createError('cli', 'File path cannot contain null bytes')
   }
 
   // For relative paths with "..", check if they're trying to escape too far up
@@ -83,7 +83,7 @@ export function validateFilePath(filePath: string): void {
 
     // If we go more than 3 levels up from start, it's likely a mistake
     if (minDepth < -3) {
-      createContextError(
+      createError(
         'cli',
         'File path cannot traverse more than 3 parent directories (possible directory traversal)',
       )

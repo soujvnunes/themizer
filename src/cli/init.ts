@@ -186,9 +186,9 @@ export async function initAction(options: { watch?: boolean; outDir?: string }) 
         validatePlainObject(packageJson)
       } catch (parseError) {
         if (parseError instanceof Error && parseError.message.includes('must be a plain object')) {
-          createError('package.json must be a valid JSON object')
+          createError('config', 'package.json must be a valid JSON object')
         }
-        createError(`Invalid package.json: ${(parseError as Error).message}`)
+        createError('config', `Invalid package.json: ${(parseError as Error).message}`)
       }
 
       // Initialize scripts object if it doesn't exist or is not an object

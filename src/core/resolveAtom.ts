@@ -42,7 +42,7 @@ export default function resolveAtom(atom: string) {
   }
 
   if (!extractedValue) {
-    createError(`Expected wrapped custom property '${atom}' to have a default value.`)
+    createError('core', `Expected wrapped custom property '${atom}' to have a default value.`)
   }
 
   const formattedValue = Number(extractedValue)

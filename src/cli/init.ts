@@ -21,11 +21,15 @@ const CONFIG_TEMPLATE = `import themizer from 'themizer'
 /**
  * Example configuration for Themizer
  * Customize your design tokens below
+ *
+ * For complex Design Systems with multiple themes, you can export multiple themes:
+ * export const brand1 = themizer({ prefix: 'brand1', ... }, () => ({}))
+ * export const brand2 = themizer({ prefix: 'brand2', ... }, () => ({}))
  */
 
 const alpha = (color: string, percentage: string) => \`color-mix(in srgb, \${color} \${percentage}, transparent)\`
 
-export default themizer(
+export const theme = themizer(
   {
     prefix: 'theme',
     medias: {

@@ -1,25 +1,15 @@
 /**
- * Creates and throws an error with the themizer prefix
- * Provides consistent error messaging across the library
- */
-
-/**
- * Creates and throws an error with the themizer prefix
+ * Creates an error with context information
+ * Environment-aware: logs in development (server keeps running), throws in production (build fails)
+ *
+ * @param context - The context where the error occurred (e.g., 'validation', 'expansion', 'config')
  * @param message - The error message to display
- * @throws Error with prefixed message
- * @returns Never returns as it always throws
+ * @throws Error in production mode
  */
-export function createError(message: string): never {
-  throw new Error(`themizer: ${message}`)
-}
+export function createError(context: string, message: string): never {
+  const fullMessage = `themizer [${context}]: ${message}`
 
-/**
- * Creates and throws an error with context information
- * @param context - The context where the error occurred (e.g., 'validation', 'expansion')
- * @param message - The error message to display
- * @throws Error with prefixed and contextualized message
- * @returns Never returns as it always throws
- */
-export function createContextError(context: string, message: string): never {
-  throw new Error(`themizer [${context}]: ${message}`)
+  if (process.env.NODE_ENV === 'development') return console.error(fullMessage) as unknown as never
+
+  throw new Error(fullMessage)
 }

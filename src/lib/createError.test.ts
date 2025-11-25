@@ -2,42 +2,63 @@
  * Tests for error helper functions
  */
 
-import { createError, createContextError } from './createError'
+import { createError } from './createError'
 
 describe('createError', () => {
-  it('throws error with themizer prefix', () => {
-    expect(() => createError('Something went wrong')).toThrow('themizer: Something went wrong')
+  const originalEnv = process.env.NODE_ENV
+
+  afterEach(() => {
+    process.env.NODE_ENV = originalEnv
+    jest.restoreAllMocks()
   })
 
-  it('preserves original message', () => {
-    const message = 'Invalid configuration provided'
-    expect(() => createError(message)).toThrow(`themizer: ${message}`)
+  describe('in production mode', () => {
+    beforeEach(() => {
+      process.env.NODE_ENV = 'production'
+    })
+
+    it('throws error with context and prefix', () => {
+      expect(() => createError('validation', 'Invalid prefix')).toThrow(
+        'themizer [validation]: Invalid prefix',
+      )
+    })
+
+    it('handles different contexts', () => {
+      expect(() => createError('expansion', 'Step must be positive')).toThrow(
+        'themizer [expansion]: Step must be positive',
+      )
+
+      expect(() => createError('color', 'Invalid oklch format')).toThrow(
+        'themizer [color]: Invalid oklch format',
+      )
+    })
+
+    it('handles empty context and message', () => {
+      expect(() => createError('', 'Error')).toThrow('themizer []: Error')
+      expect(() => createError('context', '')).toThrow('themizer [context]: ')
+    })
   })
 
-  it('handles empty message', () => {
-    expect(() => createError('')).toThrow('themizer: ')
-  })
-})
+  describe('in development mode', () => {
+    beforeEach(() => {
+      process.env.NODE_ENV = 'development'
+    })
 
-describe('createContextError', () => {
-  it('throws error with context and prefix', () => {
-    expect(() => createContextError('validation', 'Invalid prefix')).toThrow(
-      'themizer [validation]: Invalid prefix',
-    )
-  })
+    it('logs error to console instead of throwing', () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
 
-  it('handles different contexts', () => {
-    expect(() => createContextError('expansion', 'Step must be positive')).toThrow(
-      'themizer [expansion]: Step must be positive',
-    )
+      expect(() => createError('validation', 'Invalid prefix')).not.toThrow()
+      expect(consoleSpy).toHaveBeenCalledWith('themizer [validation]: Invalid prefix')
+    })
 
-    expect(() => createContextError('color', 'Invalid oklch format')).toThrow(
-      'themizer [color]: Invalid oklch format',
-    )
-  })
+    it('logs different contexts', () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation()
 
-  it('handles empty context and message', () => {
-    expect(() => createContextError('', 'Error')).toThrow('themizer []: Error')
-    expect(() => createContextError('context', '')).toThrow('themizer [context]: ')
+      createError('expansion', 'Step must be positive')
+      expect(consoleSpy).toHaveBeenCalledWith('themizer [expansion]: Step must be positive')
+
+      createError('color', 'Invalid oklch format')
+      expect(consoleSpy).toHaveBeenCalledWith('themizer [color]: Invalid oklch format')
+    })
   })
 })

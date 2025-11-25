@@ -11,6 +11,58 @@ export interface FrameworkDetectionResult {
 }
 
 /**
+ * Extracts and merges all dependencies from package.json
+ */
+function extractDependencies(packageJson: Record<string, unknown>): Record<string, unknown> {
+  const dependencies = isPlainObject(packageJson.dependencies) ? packageJson.dependencies : {}
+  const devDependencies = isPlainObject(packageJson.devDependencies) ? packageJson.devDependencies : {}
+
+  return { ...dependencies, ...devDependencies }
+}
+
+/**
+ * Detects which Next.js router type is being used (App Router vs Pages Router)
+ */
+function detectNextJsRouterType(nextVersionValue: unknown): Framework {
+  const nextVersionRaw =
+    typeof nextVersionValue === 'string' ? nextVersionValue : String(nextVersionValue)
+  const nextVersion = nextVersionRaw.replace(/[^0-9.]/g, '')
+  const versionParts = nextVersion.split('.')
+  const majorVersion = versionParts.length > 0 && versionParts[0] ? parseInt(versionParts[0], 10) : NaN
+
+  if (!isNaN(majorVersion) && majorVersion >= 13) {
+    const hasAppDir =
+      existsSync(join(process.cwd(), 'app')) || existsSync(join(process.cwd(), 'src/app'))
+    return hasAppDir ? 'next-app' : 'next-pages'
+  }
+
+  return 'next-pages'
+}
+
+/**
+ * Detects the framework from the merged dependencies object
+ */
+function detectFrameworkFromDeps(allDeps: Record<string, unknown>): Framework {
+  if (allDeps.next) {
+    return detectNextJsRouterType(allDeps.next)
+  }
+
+  if (allDeps['@remix-run/react'] || allDeps['@remix-run/node']) {
+    return 'remix'
+  }
+
+  if (allDeps.vite) {
+    return 'vite'
+  }
+
+  if (allDeps['react-scripts']) {
+    return 'create-react-app'
+  }
+
+  return 'other'
+}
+
+/**
  * Detects the framework being used in the project by analyzing package.json dependencies
  */
 export function detectFramework(): Framework {
@@ -23,60 +75,13 @@ export function detectFramework(): Framework {
   try {
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
 
-    // Validate structure (must be plain object, not array or null)
     if (!isPlainObject(packageJson)) {
       return 'other'
     }
 
-    // Extract dependencies with proper type checking
-    const dependencies = isPlainObject(packageJson.dependencies) ? packageJson.dependencies : {}
-    const devDependencies = isPlainObject(packageJson.devDependencies)
-      ? packageJson.devDependencies
-      : {}
-
-    const allDeps = {
-      ...dependencies,
-      ...devDependencies,
-    }
-
-    // Check for Next.js
-    if (allDeps.next) {
-      // Try to detect if it's App Router or Pages Router
-      // App Router is the default in Next.js 13+
-      // Handle case where allDeps.next might be an object (e.g., resolved dependency)
-      const nextVersionRaw = typeof allDeps.next === 'string' ? allDeps.next : String(allDeps.next)
-      const nextVersion = nextVersionRaw.replace(/[^0-9.]/g, '')
-      const versionParts = nextVersion.split('.')
-      const majorVersion =
-        versionParts.length > 0 && versionParts[0] ? parseInt(versionParts[0], 10) : NaN
-
-      if (!isNaN(majorVersion) && majorVersion >= 13) {
-        // Check if app directory exists
-        const hasAppDir =
-          existsSync(join(process.cwd(), 'app')) || existsSync(join(process.cwd(), 'src/app'))
-        return hasAppDir ? 'next-app' : 'next-pages'
-      }
-
-      return 'next-pages'
-    }
-
-    // Check for Remix
-    if (allDeps['@remix-run/react'] || allDeps['@remix-run/node']) {
-      return 'remix'
-    }
-
-    // Check for Vite
-    if (allDeps.vite) {
-      return 'vite'
-    }
-
-    // Check for Create React App
-    if (allDeps['react-scripts']) {
-      return 'create-react-app'
-    }
-
-    return 'other'
-  } catch (error) {
+    const allDeps = extractDependencies(packageJson)
+    return detectFrameworkFromDeps(allDeps)
+  } catch {
     return 'other'
   }
 }

@@ -371,27 +371,23 @@ Executes your `themizer.config.ts` and generates minified CSS with:
 
 ## Framework Integration
 
-Configure once, use everywhere. **themizer** integrates seamlessly with all major frameworks.
+Import the generated `theme.css` in your app's entry file:
 
-### Tailwind CSS (Recommended)
-
-**Tailwind CSS v4** with JavaScript config:
-
-```css
-/* app/globals.css */
-@import 'tailwindcss';
-@config './tailwind.config.js';
+```tsx
+// app/layout.tsx, main.tsx, or _app.tsx
+import './theme.css';
 ```
+
+Now integrate with your styling solution.
+
+### Tailwind CSS
+
+Extend Tailwind's config with themizer aliases:
 
 ```js
 // tailwind.config.js
-import plugin from 'tailwindcss/plugin';
 import { theme } from './themizer.config';
 
-// Helper for Tailwind's opacity system
-const rgb = (color) => `rgb(${color} / <alpha-value>)`;
-
-// Use alpha helper from config for color variants
 const alpha = (color, percentage) =>
   `color-mix(in srgb, ${color} ${percentage}, transparent)`;
 
@@ -401,18 +397,14 @@ export default {
       spacing: theme.aliases.spacing,
       opacity: theme.tokens.alphas,
       colors: {
-        transparent: 'transparent',
-        current: 'currentColor',
         main: theme.aliases.colors.main,
         ground: {
           fore: theme.aliases.colors.ground.fore,
           back: theme.aliases.colors.ground.back,
         },
-        // Create color variants with alpha
         primary: {
           DEFAULT: theme.aliases.colors.main,
           light: alpha(theme.aliases.colors.main, theme.tokens.alphas[60]),
-          dark: alpha(theme.aliases.colors.main, theme.tokens.alphas[80]),
         },
       },
       fontSize: {
@@ -420,44 +412,27 @@ export default {
         title: theme.aliases.typography.title,
         body: theme.aliases.typography.body,
       },
-      animation: {
-        bounce: theme.aliases.animations.bounce,
-        ease: theme.aliases.animations.ease,
-      },
     },
   },
-  plugins: [
-    plugin((api) => {
-      // Inject themizer's CSS custom properties
-      api.addBase(theme.rules.jss);
-    }),
-  ],
 };
 ```
 
-Now use semantic classes:
+Use semantic classes in your components:
 
 ```tsx
-<button className="bg-ground-back text-ground-fore p-spacing-block animate-ease">
+<button className="bg-ground-back text-ground-fore p-spacing-block">
   <h1 className="text-headline">Welcome</h1>
-  <p className="text-body opacity-80">Get started with themizer</p>
+  <p className="text-body opacity-60">Get started with themizer</p>
 </button>
 ```
 
-### Other Frameworks
+### Linaria (Zero-Runtime CSS-in-JS)
 
-For frameworks other than Tailwind, import the generated `theme.css` in your app's entry file:
-
-```css
-/* app/globals.css or main.css */
-@import './theme.css';
-```
-
-**CSS-in-JS (styled-components, emotion, Linaria):**
+Use theme values directly in your styled components:
 
 ```tsx
-import styled from 'styled-components' // or @emotion/styled or @linaria/react
-import { theme } from './themizer.config'
+import { styled } from '@linaria/react';
+import { theme } from './themizer.config';
 
 const Button = styled.button`
   background: ${theme.aliases.colors.ground.back};
@@ -469,27 +444,7 @@ const Button = styled.button`
   &:hover {
     opacity: ${theme.tokens.alphas[60]};
   }
-`
-```
-
-**Next.js with styled-jsx:**
-
-```tsx
-import { theme } from './themizer.config'
-
-export function Component() {
-  return (
-    <h1 className="title">
-      {children}
-      <style jsx>{`
-        .title {
-          color: ${theme.aliases.colors.ground.fore};
-          font-size: ${theme.aliases.typography.title};
-        }
-      `}</style>
-    </h1>
-  )
-}
+`;
 ```
 
 ## CLI Commands

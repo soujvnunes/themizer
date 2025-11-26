@@ -57,7 +57,11 @@ export default async function executeConfig(
     const themes: ThemeExport[] = []
 
     // Sort entries alphabetically for deterministic output order.
-    // This means themes are combined in alphabetical order, not declaration order.
+    // This ensures the same config always produces identical theme.css regardless of:
+    // - JavaScript engine differences in Object.entries() ordering
+    // - Config file refactoring that changes declaration order
+    // - Different Node.js versions or CI environments
+    // Trade-off: themes combine alphabetically, not by declaration order.
     const sortedEntries = Object.entries(module).sort(([a], [b]) => a.localeCompare(b))
 
     for (const [exportName, exportValue] of sortedEntries) {

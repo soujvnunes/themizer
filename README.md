@@ -270,6 +270,8 @@ themizer: theme.css written to ./src/app (2 themes: cocaCola, nike)
 
 Each theme uses its own prefix to avoid naming conflicts, and all CSS custom properties are combined into a single optimized file.
 
+**Note:** Themes are combined in alphabetical order (by export name) to ensure deterministic output. This means `theme.css` will always be identical for the same config, regardless of declaration order in the file.
+
 ### Responsive by Default
 
 Media queries configured once, applied everywhere:

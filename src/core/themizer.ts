@@ -90,10 +90,14 @@ export default function themizer<
 >(options: ThemizerOptions<M, T>, aliases: (tokens: ResolveAtoms<never, T>) => A) {
   const state: ValidationState = { hasErrors: false }
 
+  // Use local variables instead of mutating input options
+  let effectivePrefix = options.prefix
+  let effectiveTokens = options.tokens
+
   // Validate prefix with fallback
   handleValidation(() => validatePrefix(options.prefix), state)
   if (state.hasErrors && isDev) {
-    ;(options as { prefix: string }).prefix = FALLBACK_PREFIX
+    effectivePrefix = FALLBACK_PREFIX
   }
 
   // Validate tokens structure
@@ -109,7 +113,10 @@ export default function themizer<
     const prevHasErrors = state.hasErrors
     handleValidation(() => validatePaletteConfig(options.tokens.palette, 'tokens.palette'), state)
     if (state.hasErrors && !prevHasErrors && isDev) {
-      fixInvalidPaletteEntries(options.tokens.palette as Record<string, unknown>)
+      // Create a shallow copy to avoid mutating input
+      const paletteCopy = { ...(options.tokens.palette as Record<string, unknown>) }
+      fixInvalidPaletteEntries(paletteCopy)
+      effectiveTokens = { ...options.tokens, palette: paletteCopy } as T
     }
   }
 
@@ -123,8 +130,8 @@ export default function themizer<
     }
   }
 
-  const tokenized = atomizer<never, T>(options.tokens, {
-    prefix: `${options.prefix}-tokens`,
+  const tokenized = atomizer<never, T>(effectiveTokens, {
+    prefix: `${effectivePrefix}-tokens`,
   })
 
   // Pass the minification map from tokens to aliases to avoid variable name collisions
@@ -140,7 +147,7 @@ export default function themizer<
   const aliased = atomizer(
     aliases(tokenized.ref),
     {
-      prefix: `${options.prefix}-aliases`,
+      prefix: `${effectivePrefix}-aliases`,
       medias: options.medias,
     },
     {

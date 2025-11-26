@@ -2,6 +2,13 @@ import themizer from './themizer'
 import INTERNAL from '../consts/INTERNAL'
 
 describe('themizer', () => {
+  const originalEnv = process.env.NODE_ENV
+
+  afterEach(() => {
+    process.env.NODE_ENV = originalEnv
+    jest.restoreAllMocks()
+  })
+
   it('returns aliases, tokens, and medias in public API', () => {
     const theme = themizer(
       {
@@ -126,6 +133,81 @@ describe('themizer', () => {
       expect(
         Object.keys(theme[INTERNAL].rules.jss).filter((k) => k.startsWith('@property')).length,
       ).toBe(5)
+    })
+  })
+
+  describe('dev-friendly error handling', () => {
+    describe('in production mode', () => {
+      beforeEach(() => {
+        process.env.NODE_ENV = 'production'
+      })
+
+      it('throws on invalid prefix', () => {
+        expect(() => themizer({ prefix: '', medias: {}, tokens: {} }, () => ({}))).toThrow()
+      })
+
+      it('throws on invalid palette color', () => {
+        expect(() =>
+          themizer(
+            { prefix: 'app', medias: {}, tokens: { palette: { primary: 'invalid-color' } } },
+            () => ({}),
+          ),
+        ).toThrow()
+      })
+    })
+
+    describe('in development mode', () => {
+      beforeEach(() => {
+        process.env.NODE_ENV = 'development'
+      })
+
+      it('logs error and applies fallback prefix for invalid prefix', () => {
+        // Need to re-import to pick up new NODE_ENV
+        jest.resetModules()
+        const errorSpy = jest.spyOn(console, 'error').mockImplementation()
+        const logSpy = jest.spyOn(console, 'log').mockImplementation()
+
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { default: devThemizer } = require('./themizer')
+        const theme = devThemizer({ prefix: '', medias: {}, tokens: {} }, () => ({}))
+
+        expect(errorSpy).toHaveBeenCalled()
+        expect(logSpy).toHaveBeenCalledWith('themizer: Theme built with errors (see above)')
+        // Theme should still be built with fallback prefix
+        expect(theme[INTERNAL].rules.css).toBeDefined()
+      })
+
+      it('logs error and applies fallback color for invalid palette', () => {
+        jest.resetModules()
+        const errorSpy = jest.spyOn(console, 'error').mockImplementation()
+        const logSpy = jest.spyOn(console, 'log').mockImplementation()
+
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { default: devThemizer } = require('./themizer')
+        const theme = devThemizer(
+          { prefix: 'app', medias: {}, tokens: { palette: { primary: 'not-oklch' } } },
+          () => ({}),
+        )
+
+        expect(errorSpy).toHaveBeenCalled()
+        expect(logSpy).toHaveBeenCalledWith('themizer: Theme built with errors (see above)')
+        // Theme should still be built with fallback color
+        expect(theme.tokens.palette.primary).toBeDefined()
+      })
+
+      it('logs success message when theme builds without errors', () => {
+        jest.resetModules()
+        const logSpy = jest.spyOn(console, 'log').mockImplementation()
+
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { default: devThemizer } = require('./themizer')
+        devThemizer(
+          { prefix: 'app', medias: {}, tokens: { palette: { amber: 'oklch(76.9% 0.188 70.08)' } } },
+          () => ({}),
+        )
+
+        expect(logSpy).toHaveBeenCalledWith('themizer: Theme built successfully')
+      })
     })
   })
 })

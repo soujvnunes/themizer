@@ -270,4 +270,38 @@ describe('executeConfig', () => {
 
     await expect(executeConfig(mockConfigPath, mockImportModule)).rejects.toBe('string error')
   })
+
+  it('combines themes in alphabetical order, not declaration order', async () => {
+    const mockModule = {
+      zulu: {
+        [INTERNAL]: {
+          rules: { css: ':root{--z:1;}' },
+          variableMap: { '--z0': '--zulu-var' },
+        },
+      },
+      alpha: {
+        [INTERNAL]: {
+          rules: { css: ':root{--a:1;}' },
+          variableMap: { '--a0': '--alpha-var' },
+        },
+      },
+      mike: {
+        [INTERNAL]: {
+          rules: { css: ':root{--m:1;}' },
+          variableMap: { '--m0': '--mike-var' },
+        },
+      },
+    }
+
+    mockImportModule.mockResolvedValue(mockModule)
+
+    const result = await executeConfig(mockConfigPath, mockImportModule)
+
+    // Should be alpha, mike, zulu (alphabetical), not zulu, alpha, mike (declaration order)
+    expect(result.themes).toHaveLength(3)
+    expect(result.themes[0].name).toBe('alpha')
+    expect(result.themes[1].name).toBe('mike')
+    expect(result.themes[2].name).toBe('zulu')
+    expect(result.css).toBe(':root{--a:1;}\n:root{--m:1;}\n:root{--z:1;}')
+  })
 })

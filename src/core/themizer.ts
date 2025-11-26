@@ -91,10 +91,20 @@ export default function themizer<
     aliases: aliased.ref,
     tokens: tokenized.ref,
     medias: addAtMedia(options.medias),
+
+    /**
+     * Generated CSS and JSS rules for the theme.
+     * @internal For internal/advanced usage. Use `theme.css` file instead.
+     */
     rules: {
       css: getCSS(flattenVars, flattenMetadata),
       jss: getJSS(flattenVars, flattenMetadata),
     },
+
+    /**
+     * Map of minified variable names to their original names.
+     * @internal For internal/advanced usage. Use `theme.css.map.json` instead.
+     */
     variableMap: Object.keys(flattenVariableMap).length > 0 ? flattenVariableMap : undefined,
   }
 }

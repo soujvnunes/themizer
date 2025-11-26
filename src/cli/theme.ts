@@ -98,13 +98,14 @@ Description:
   into a single theme.css file.
 
 Example:
-  $ themizer theme --out-dir ./src/app
-  $ themizer theme --out-dir ./app/styles
-  $ themizer theme --out-dir ./src/app --watch
+  $ themizer theme --out-dir ./src/app --watch  # Recommended for development
+  $ themizer theme --out-dir ./src/app          # One-time generation
 
 Watch Mode:
   Use the --watch flag to automatically regenerate theme.css whenever
-  themizer.config.ts changes. This is useful during development.
+  themizer.config.ts changes. This is recommended during development.
+
+  For production builds, run without --watch to generate once.
 
 Note:
   This command automatically executes your themizer.config.ts file.

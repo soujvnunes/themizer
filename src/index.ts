@@ -14,6 +14,7 @@ export type { Atom } from './lib/isAtom'
 /**
  * Represents the JavaScript Style Sheet (JSS) object structure.
  * Contains CSS custom properties organized by media queries and root-level variables.
+ * @internal For internal/advanced usage.
  */
 export type { RJSS } from './lib/getJSS'
 

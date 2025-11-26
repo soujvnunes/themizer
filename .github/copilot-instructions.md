@@ -233,6 +233,31 @@ export const theme = themizer(
 - Floating-point precision handling (multiplier: 1e10)
 - Efficient file watching with debouncing
 
+## Versioning and Changelog
+
+### Changesets Workflow
+This project uses [@changesets/cli](https://github.com/changesets/changesets) for versioning and changelog generation.
+
+**How it works:**
+1. Changes are documented in `.changeset/*.md` files (not directly in CHANGELOG.md)
+2. Each changeset file specifies the version bump type (major/minor/patch) and description
+3. During release, `pnpm changeset version` consumes these files and auto-generates CHANGELOG.md
+4. The "Unreleased" section in CHANGELOG.md is a placeholder that gets replaced during release
+
+**When reviewing:**
+- If CHANGELOG.md seems incomplete, check `.changeset/*.md` files for the actual change descriptions
+- Don't flag CHANGELOG.md as missing changes if corresponding changesets exist
+- Changesets are the source of truth for upcoming version changes
+
+**Changeset file format:**
+```markdown
+---
+"themizer": major | minor | patch
+---
+
+Description of the change that will appear in CHANGELOG.md
+```
+
 ## Error Handling Guidelines
 
 ### User-Friendly Messages

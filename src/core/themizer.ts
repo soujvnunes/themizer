@@ -20,9 +20,41 @@ interface ThemizerOptions<M extends Medias, T extends Atoms> extends Required<At
   tokens: T
 }
 
+interface ValidationState {
+  hasErrors: boolean
+}
+
 const isDev = process.env.NODE_ENV === 'development'
 const FALLBACK_PREFIX = 'theme'
 const FALLBACK_COLOR = 'oklch(50% 0 0)'
+
+/**
+ * Handles validation with dev/prod mode behavior.
+ * In dev mode, logs error and continues. In prod mode, throws.
+ */
+function handleValidation(validateFn: () => void, state: ValidationState): void {
+  try {
+    validateFn()
+  } catch (error) {
+    if (isDev) {
+      console.error(error instanceof Error ? error.message : error)
+      state.hasErrors = true
+    } else {
+      throw error
+    }
+  }
+}
+
+/**
+ * Replaces invalid palette entries with fallback color.
+ */
+function fixInvalidPaletteEntries(palette: Record<string, unknown>): void {
+  for (const [key, value] of Object.entries(palette)) {
+    if (typeof value !== 'string' || !OKLCH_PATTERN.test(value)) {
+      palette[key] = FALLBACK_COLOR
+    }
+  }
+}
 
 /**
  * Main themizer function that generates CSS custom properties from design tokens and aliases.
@@ -56,75 +88,38 @@ export default function themizer<
   const T extends Atoms,
   const A extends Atoms<Extract<keyof M, string>>,
 >(options: ThemizerOptions<M, T>, aliases: (tokens: ResolveAtoms<never, T>) => A) {
-  let hasErrors = false
+  const state: ValidationState = { hasErrors: false }
 
   // Validate prefix with fallback
-  try {
-    validatePrefix(options.prefix)
-  } catch (error) {
-    if (isDev) {
-      console.error(error instanceof Error ? error.message : error)
-      ;(options as { prefix: string }).prefix = FALLBACK_PREFIX
-      hasErrors = true
-    } else {
-      throw error
-    }
+  handleValidation(() => validatePrefix(options.prefix), state)
+  if (state.hasErrors && isDev) {
+    ;(options as { prefix: string }).prefix = FALLBACK_PREFIX
   }
 
   // Validate tokens structure
-  try {
-    validateTokens(options.tokens as Record<string, unknown>)
-  } catch (error) {
-    if (isDev) {
-      console.error(error instanceof Error ? error.message : error)
-      hasErrors = true
-    } else {
-      throw error
-    }
-  }
+  handleValidation(() => validateTokens(options.tokens as Record<string, unknown>), state)
 
   // Validate units config
   if ('units' in options.tokens) {
-    try {
-      validateUnitsConfig(options.tokens.units, 'tokens.units')
-    } catch (error) {
-      if (isDev) {
-        console.error(error instanceof Error ? error.message : error)
-        hasErrors = true
-      } else {
-        throw error
-      }
-    }
+    handleValidation(() => validateUnitsConfig(options.tokens.units, 'tokens.units'), state)
   }
 
   // Validate palette config with fallback colors
   if ('palette' in options.tokens) {
-    try {
-      validatePaletteConfig(options.tokens.palette, 'tokens.palette')
-    } catch (error) {
-      if (isDev) {
-        console.error(error instanceof Error ? error.message : error)
-        // Replace invalid palette entries with fallback color
-        const palette = options.tokens.palette as Record<string, unknown>
-        for (const [key, value] of Object.entries(palette)) {
-          if (typeof value !== 'string' || !OKLCH_PATTERN.test(value)) {
-            palette[key] = FALLBACK_COLOR
-          }
-        }
-        hasErrors = true
-      } else {
-        throw error
-      }
+    const prevHasErrors = state.hasErrors
+    handleValidation(() => validatePaletteConfig(options.tokens.palette, 'tokens.palette'), state)
+    if (state.hasErrors && !prevHasErrors && isDev) {
+      fixInvalidPaletteEntries(options.tokens.palette as Record<string, unknown>)
     }
   }
 
   // Log build status in dev mode
   if (isDev) {
-    if (hasErrors) {
-      console.log('themizer: Theme built with errors (see above)')
-    } else {
-      console.log('themizer: Theme built successfully')
-    }
+    console.log(
+      state.hasErrors
+        ? 'themizer: Theme built with errors (see above)'
+        : 'themizer: Theme built successfully',
+    )
   }
 
   const tokenized = atomizer<never, T>(options.tokens, {

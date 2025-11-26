@@ -165,14 +165,14 @@ describe('themizer', () => {
         // Need to re-import to pick up new NODE_ENV
         jest.resetModules()
         const errorSpy = jest.spyOn(console, 'error').mockImplementation()
-        const logSpy = jest.spyOn(console, 'log').mockImplementation()
+        const warnSpy = jest.spyOn(console, 'warn').mockImplementation()
 
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const { default: devThemizer } = require('./themizer')
         const theme = devThemizer({ prefix: '', medias: {}, tokens: {} }, () => ({}))
 
         expect(errorSpy).toHaveBeenCalled()
-        expect(logSpy).toHaveBeenCalledWith('themizer: Theme built with errors (see above)')
+        expect(warnSpy).toHaveBeenCalledWith('themizer: Theme built with errors (see above)')
         // Theme should still be built with fallback prefix
         expect(theme[INTERNAL].rules.css).toBeDefined()
       })
@@ -180,7 +180,7 @@ describe('themizer', () => {
       it('logs error and applies fallback color for invalid palette', () => {
         jest.resetModules()
         const errorSpy = jest.spyOn(console, 'error').mockImplementation()
-        const logSpy = jest.spyOn(console, 'log').mockImplementation()
+        const warnSpy = jest.spyOn(console, 'warn').mockImplementation()
 
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const { default: devThemizer } = require('./themizer')
@@ -190,14 +190,14 @@ describe('themizer', () => {
         )
 
         expect(errorSpy).toHaveBeenCalled()
-        expect(logSpy).toHaveBeenCalledWith('themizer: Theme built with errors (see above)')
+        expect(warnSpy).toHaveBeenCalledWith('themizer: Theme built with errors (see above)')
         // Theme should still be built with fallback color
         expect(theme.tokens.palette.primary).toBeDefined()
       })
 
       it('logs success message when theme builds without errors', () => {
         jest.resetModules()
-        const logSpy = jest.spyOn(console, 'log').mockImplementation()
+        const infoSpy = jest.spyOn(console, 'info').mockImplementation()
 
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const { default: devThemizer } = require('./themizer')
@@ -206,7 +206,7 @@ describe('themizer', () => {
           () => ({}),
         )
 
-        expect(logSpy).toHaveBeenCalledWith('themizer: Theme built successfully')
+        expect(infoSpy).toHaveBeenCalledWith('themizer: Theme built successfully')
       })
     })
   })

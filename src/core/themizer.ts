@@ -115,11 +115,12 @@ export default function themizer<
 
   // Log build status in dev mode
   if (isDev) {
-    console.log(
-      state.hasErrors
-        ? 'themizer: Theme built with errors (see above)'
-        : 'themizer: Theme built successfully',
-    )
+    if (state.hasErrors) {
+      console.warn('themizer: Theme built with errors (see above)')
+    } else {
+      // eslint-disable-next-line no-console -- Intentional dev-mode feedback
+      console.info('themizer: Theme built successfully')
+    }
   }
 
   const tokenized = atomizer<never, T>(options.tokens, {

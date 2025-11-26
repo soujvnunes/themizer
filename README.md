@@ -293,18 +293,17 @@ typography: {
 
 Base-52 encoding reduces CSS size by ~88%:
 
-```css
-/* Before: */ --theme-aliases-palette-ground-fore
-/* After:  */ --themea2
+```ts
+theme.aliases.colors.ground.fore  // generates → --themea2
 ```
 
 #### Source Maps
 
-Debug with `theme.css.map.json`:
+Debug with `theme.css.map.json` which maps minified names to their object paths:
 
 ```json
 {
-  "--themea2": "--theme-aliases-palette-ground-fore"
+  "--themea2": "--theme-aliases-colors-ground-fore"
 }
 ```
 

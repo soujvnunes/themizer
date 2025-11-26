@@ -82,26 +82,20 @@ export default async function executeConfig(
     const css = themes.map((t) => t.css).join('\n')
 
     // Merge all variable maps
-    const mergedVariableMap = themes.reduce<Record<string, string>>(
-      (acc, t) => {
-        if (t.variableMap) {
-          for (const [minified, source] of Object.entries(t.variableMap)) {
-            if (minified in acc) {
-              // Warn about collision
-              console.warn(
-                `Variable map collision detected for minified variable "${minified}" between themes. ` +
-                `Previous value: "${acc[minified]}", new value: "${source}" from theme "${t.name}".`
-              )
-              // Alternatively, you could throw an error:
-              // createError('config', `Variable map collision for "${minified}" between themes.`)
-            }
-            acc[minified] = source
+    const mergedVariableMap = themes.reduce<Record<string, string>>((acc, t) => {
+      if (t.variableMap) {
+        for (const [minified, source] of Object.entries(t.variableMap)) {
+          if (minified in acc) {
+            console.warn(
+              `Variable map collision detected for minified variable "${minified}" between themes. ` +
+                `Previous value: "${acc[minified]}", new value: "${source}" from theme "${t.name}".`,
+            )
           }
+          acc[minified] = source
         }
-        return acc
-      },
-      {},
-    )
+      }
+      return acc
+    }, {})
 
     return {
       themes,

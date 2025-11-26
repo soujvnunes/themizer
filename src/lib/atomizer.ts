@@ -185,7 +185,10 @@ function processResponsiveAtoms<M extends Medias>(
 
   if (isAtom(defaultValue)) {
     context.vars[variable] = defaultValue
-    context.metadata[variable] = createPropertyMetadata(defaultValue)
+    const propertyMeta = createPropertyMetadata(defaultValue)
+    if (propertyMeta) {
+      context.metadata[variable] = propertyMeta
+    }
   }
 
   return getVar(variable, defaultValue)
@@ -317,7 +320,10 @@ export default function atomizer<
 
       vars[variable] = atom
       ref[key] = getVar(variable, atom)
-      metadata[variable] = createPropertyMetadata(atom)
+      const propertyMeta = createPropertyMetadata(atom)
+      if (propertyMeta) {
+        metadata[variable] = propertyMeta
+      }
     } else if (Array.isArray(atom)) {
       const variable = getMinifiedVariable(
         originalVariable,

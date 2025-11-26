@@ -105,6 +105,27 @@ describe('executeConfig', () => {
     })
   })
 
+  it('warns when variable maps have colliding minified names', async () => {
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation()
+
+    const mockModule = {
+      theme1: {
+        rules: { css: mockCSS1 },
+        variableMap: { '--a0': '--theme1-color' },
+      },
+      theme2: {
+        rules: { css: mockCSS2 },
+        variableMap: { '--a0': '--theme2-color' },
+      },
+    }
+
+    mockImportModule.mockResolvedValue(mockModule)
+    await executeConfig(mockConfigPath, mockImportModule)
+
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Variable map collision'))
+    consoleSpy.mockRestore()
+  })
+
   it('returns undefined variableMap when no themes have variable maps', async () => {
     const mockModule = {
       theme: {

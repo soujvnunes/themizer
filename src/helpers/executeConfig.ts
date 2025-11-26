@@ -55,7 +55,10 @@ export default async function executeConfig(
     // Collect all valid theme exports (named exports only, skip 'default')
     const themes: ThemeExport[] = []
 
-    for (const [exportName, exportValue] of Object.entries(module)) {
+    // Sort entries alphabetically for deterministic output order
+    const sortedEntries = Object.entries(module).sort(([a], [b]) => a.localeCompare(b))
+
+    for (const [exportName, exportValue] of sortedEntries) {
       // Skip default export - only named exports are supported
       if (exportName === 'default') continue
 

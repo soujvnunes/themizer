@@ -92,17 +92,19 @@ export default async function executeConfig(
     // Combine all CSS from themes
     const css = themes.map((t) => t.css).join('\n')
 
-    // Merge all variable maps
+    // Merge all variable maps, tracking source themes for collision warnings
+    const variableThemeMap: Record<string, string> = {}
     const mergedVariableMap = themes.reduce<Record<string, string>>((acc, t) => {
       if (t.variableMap) {
         for (const [minified, source] of Object.entries(t.variableMap)) {
           if (minified in acc) {
             console.warn(
-              `Variable map collision detected for minified variable "${minified}" between themes. ` +
-                `Previous value: "${acc[minified]}", new value: "${source}" from theme "${t.name}".`,
+              `Variable map collision: "${minified}" set by theme "${variableThemeMap[minified]}" ` +
+                `to "${acc[minified]}", overridden by theme "${t.name}" with "${source}".`,
             )
           }
           acc[minified] = source
+          variableThemeMap[minified] = t.name
         }
       }
       return acc

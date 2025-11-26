@@ -14,10 +14,15 @@ import {
   validatePaletteConfig,
 } from '../lib/validators'
 import INTERNAL from '../consts/INTERNAL'
+import OKLCH_PATTERN from '../consts/OKLCH_PATTERN'
 
 interface ThemizerOptions<M extends Medias, T extends Atoms> extends Required<AtomizerOptions<M>> {
   tokens: T
 }
+
+const isDev = process.env.NODE_ENV === 'development'
+const FALLBACK_PREFIX = 'theme'
+const FALLBACK_COLOR = 'oklch(50% 0 0)'
 
 /**
  * Main themizer function that generates CSS custom properties from design tokens and aliases.
@@ -51,12 +56,76 @@ export default function themizer<
   const T extends Atoms,
   const A extends Atoms<Extract<keyof M, string>>,
 >(options: ThemizerOptions<M, T>, aliases: (tokens: ResolveAtoms<never, T>) => A) {
-  // Validate inputs
-  validatePrefix(options.prefix)
-  validateTokens(options.tokens as Record<string, unknown>)
+  let hasErrors = false
 
-  if ('units' in options.tokens) validateUnitsConfig(options.tokens.units, 'tokens.units')
-  if ('palette' in options.tokens) validatePaletteConfig(options.tokens.palette, 'tokens.palette')
+  // Validate prefix with fallback
+  try {
+    validatePrefix(options.prefix)
+  } catch (error) {
+    if (isDev) {
+      console.error(error instanceof Error ? error.message : error)
+      ;(options as { prefix: string }).prefix = FALLBACK_PREFIX
+      hasErrors = true
+    } else {
+      throw error
+    }
+  }
+
+  // Validate tokens structure
+  try {
+    validateTokens(options.tokens as Record<string, unknown>)
+  } catch (error) {
+    if (isDev) {
+      console.error(error instanceof Error ? error.message : error)
+      hasErrors = true
+    } else {
+      throw error
+    }
+  }
+
+  // Validate units config
+  if ('units' in options.tokens) {
+    try {
+      validateUnitsConfig(options.tokens.units, 'tokens.units')
+    } catch (error) {
+      if (isDev) {
+        console.error(error instanceof Error ? error.message : error)
+        hasErrors = true
+      } else {
+        throw error
+      }
+    }
+  }
+
+  // Validate palette config with fallback colors
+  if ('palette' in options.tokens) {
+    try {
+      validatePaletteConfig(options.tokens.palette, 'tokens.palette')
+    } catch (error) {
+      if (isDev) {
+        console.error(error instanceof Error ? error.message : error)
+        // Replace invalid palette entries with fallback color
+        const palette = options.tokens.palette as Record<string, unknown>
+        for (const [key, value] of Object.entries(palette)) {
+          if (typeof value !== 'string' || !OKLCH_PATTERN.test(value)) {
+            palette[key] = FALLBACK_COLOR
+          }
+        }
+        hasErrors = true
+      } else {
+        throw error
+      }
+    }
+  }
+
+  // Log build status in dev mode
+  if (isDev) {
+    if (hasErrors) {
+      console.log('themizer: Theme built with errors (see above)')
+    } else {
+      console.log('themizer: Theme built successfully')
+    }
+  }
 
   const tokenized = atomizer<never, T>(options.tokens, {
     prefix: `${options.prefix}-tokens`,

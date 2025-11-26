@@ -38,11 +38,11 @@ export function isValidCSSIdentifier(identifier: string | number): boolean {
  */
 export function validatePrefix(prefix: string): void {
   if (!prefix) {
-    return createError('validation', 'Prefix cannot be empty')
+    createError('validation', 'Prefix cannot be empty')
   }
 
   if (!isValidCSSIdentifier(prefix)) {
-    return createError(
+    createError(
       'validation',
       `Invalid CSS identifier for prefix: "${prefix}". Can only contain letters, digits, hyphens, and underscores.`,
     )
@@ -90,7 +90,7 @@ export function validateUnitsConfig(value: unknown, path = 'units'): void {
   }
 
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    return createError(
+    createError(
       'validation',
       `Invalid units configuration at "${path}": must be an object with CSS unit types as keys`,
     )
@@ -106,7 +106,6 @@ export function validateUnitsConfig(value: unknown, path = 'units'): void {
           `Units can only contain CSS unit types: ${validUnits.join(', ')}. ` +
           `Custom named values like "spacing" should be defined as separate token properties, not nested in units.`,
       )
-      continue
     }
 
     const val = (value as Record<string, unknown>)[key]
@@ -115,7 +114,6 @@ export function validateUnitsConfig(value: unknown, path = 'units'): void {
         'validation',
         `Invalid value for units.${key}: expected [from, step, to] tuple with 3 numbers`,
       )
-      continue
     }
 
     if (!val.every((item) => typeof item === 'number' && Number.isFinite(item))) {
@@ -136,7 +134,7 @@ export function validatePaletteConfig(value: unknown, path = 'palette'): void {
   }
 
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    return createError(
+    createError(
       'validation',
       `Invalid palette configuration at "${path}": must be an object with color names as keys and OKLCH strings as values`,
     )
@@ -151,7 +149,6 @@ export function validatePaletteConfig(value: unknown, path = 'palette'): void {
         'validation',
         `Invalid palette value at "${currentPath}": expected OKLCH color string, got ${typeof val}`,
       )
-      continue
     }
 
     // Check that value matches OKLCH pattern

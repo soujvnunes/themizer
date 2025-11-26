@@ -57,12 +57,12 @@ export function validatePlainObject<O extends Record<string, unknown>>(
  */
 export function validateFilePath(filePath: string): void {
   if (!filePath || typeof filePath !== 'string') {
-    return createError('cli', 'File path must be a non-empty string')
+    createError('cli', 'File path must be a non-empty string')
   }
 
   // Check for null bytes (always invalid in paths)
   if (filePath.includes('\0')) {
-    return createError('cli', 'File path cannot contain null bytes')
+    createError('cli', 'File path cannot contain null bytes')
   }
 
   // For relative paths with "..", check if they're trying to escape too far up
@@ -83,7 +83,7 @@ export function validateFilePath(filePath: string): void {
 
     // If we go more than 3 levels up from start, it's likely a mistake
     if (minDepth < -3) {
-      return createError(
+      createError(
         'cli',
         'File path cannot traverse more than 3 parent directories (possible directory traversal)',
       )

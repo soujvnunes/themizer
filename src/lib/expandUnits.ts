@@ -22,13 +22,11 @@ function expandUnitTuple(tuple: [number, number, number], unit: string): Record<
   // Validate step is positive
   if (step <= 0) {
     createError('expansion', `Step must be positive, got ${step}`)
-    return {}
   }
 
   // Validate from <= to
   if (from > to) {
     createError('expansion', `From (${from}) must be less than or equal to To (${to})`)
-    return {}
   }
 
   const result: Record<number, string> = {}
@@ -74,7 +72,6 @@ export function expandUnits<T extends UnitsConfig>(config: T): ExpandedUnits<T> 
     const suffix = UNIT_SUFFIXES[unitType as keyof typeof UNIT_SUFFIXES]
     if (!suffix) {
       createError('expansion', `Unknown unit type: ${String(unitType)}`)
-      continue // In dev mode, skip this unit type
     }
 
     // Expand the tuple for this unit type

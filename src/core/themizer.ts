@@ -13,6 +13,7 @@ import {
   validateUnitsConfig,
   validatePaletteConfig,
 } from '../lib/validators'
+import INTERNAL from '../consts/INTERNAL'
 
 interface ThemizerOptions<M extends Medias, T extends Atoms> extends Required<AtomizerOptions<M>> {
   tokens: T
@@ -92,19 +93,13 @@ export default function themizer<
     tokens: tokenized.ref,
     medias: addAtMedia(options.medias),
 
-    /**
-     * Generated CSS and JSS rules for the theme.
-     * @internal For internal/advanced usage. Use `theme.css` file instead.
-     */
-    rules: {
-      css: getCSS(flattenVars, flattenMetadata),
-      jss: getJSS(flattenVars, flattenMetadata),
+    /** @internal CLI access only */
+    [INTERNAL]: {
+      rules: {
+        css: getCSS(flattenVars, flattenMetadata),
+        jss: getJSS(flattenVars, flattenMetadata),
+      },
+      variableMap: Object.keys(flattenVariableMap).length > 0 ? flattenVariableMap : undefined,
     },
-
-    /**
-     * Map of minified variable names to their original names.
-     * @internal For internal/advanced usage. Use `theme.css.map.json` instead.
-     */
-    variableMap: Object.keys(flattenVariableMap).length > 0 ? flattenVariableMap : undefined,
   }
 }

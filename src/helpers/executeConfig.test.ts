@@ -1,5 +1,6 @@
 import { pathToFileURL } from 'node:url'
 import executeConfig from './executeConfig'
+import INTERNAL from '../consts/INTERNAL'
 
 const mockImportModule = jest.fn()
 
@@ -20,14 +21,16 @@ describe('executeConfig', () => {
   it('imports config file with single named export and returns themes, css, and variableMap', async () => {
     const mockModule = {
       theme: {
-        rules: {
-          css: mockCSS1,
-          jss: mockJSS,
+        [INTERNAL]: {
+          rules: {
+            css: mockCSS1,
+            jss: mockJSS,
+          },
+          variableMap: { '--a0': '--theme-tokens-color-primary' },
         },
         aliases: {},
         tokens: {},
         medias: {},
-        variableMap: { '--a0': '--theme-tokens-color-primary' },
       },
     }
 
@@ -52,12 +55,16 @@ describe('executeConfig', () => {
   it('imports config file with multiple named exports and combines CSS', async () => {
     const mockModule = {
       cocaCola: {
-        rules: { css: mockCSS1, jss: mockJSS },
-        variableMap: { '--a0': '--coke-color-primary' },
+        [INTERNAL]: {
+          rules: { css: mockCSS1, jss: mockJSS },
+          variableMap: { '--a0': '--coke-color-primary' },
+        },
       },
       nike: {
-        rules: { css: mockCSS2, jss: mockJSS },
-        variableMap: { '--b0': '--nike-color-secondary' },
+        [INTERNAL]: {
+          rules: { css: mockCSS2, jss: mockJSS },
+          variableMap: { '--b0': '--nike-color-secondary' },
+        },
       },
     }
 
@@ -86,12 +93,16 @@ describe('executeConfig', () => {
   it('merges variable maps from multiple themes', async () => {
     const mockModule = {
       theme1: {
-        rules: { css: mockCSS1 },
-        variableMap: { '--a0': '--theme1-var' },
+        [INTERNAL]: {
+          rules: { css: mockCSS1 },
+          variableMap: { '--a0': '--theme1-var' },
+        },
       },
       theme2: {
-        rules: { css: mockCSS2 },
-        variableMap: { '--b0': '--theme2-var' },
+        [INTERNAL]: {
+          rules: { css: mockCSS2 },
+          variableMap: { '--b0': '--theme2-var' },
+        },
       },
     }
 
@@ -110,12 +121,16 @@ describe('executeConfig', () => {
 
     const mockModule = {
       theme1: {
-        rules: { css: mockCSS1 },
-        variableMap: { '--a0': '--theme1-color' },
+        [INTERNAL]: {
+          rules: { css: mockCSS1 },
+          variableMap: { '--a0': '--theme1-color' },
+        },
       },
       theme2: {
-        rules: { css: mockCSS2 },
-        variableMap: { '--a0': '--theme2-color' },
+        [INTERNAL]: {
+          rules: { css: mockCSS2 },
+          variableMap: { '--a0': '--theme2-color' },
+        },
       },
     }
 
@@ -129,7 +144,9 @@ describe('executeConfig', () => {
   it('returns undefined variableMap when no themes have variable maps', async () => {
     const mockModule = {
       theme: {
-        rules: { css: mockCSS1 },
+        [INTERNAL]: {
+          rules: { css: mockCSS1 },
+        },
       },
     }
 
@@ -143,7 +160,9 @@ describe('executeConfig', () => {
   it('converts file path to file:// URL with cache busting timestamp', async () => {
     const mockModule = {
       theme: {
-        rules: { css: mockCSS1, jss: mockJSS },
+        [INTERNAL]: {
+          rules: { css: mockCSS1, jss: mockJSS },
+        },
       },
     }
 
@@ -162,12 +181,16 @@ describe('executeConfig', () => {
   it('skips default export - only named exports are supported', async () => {
     const mockModule = {
       default: {
-        rules: { css: mockCSS1 },
-        variableMap: { '--a0': '--default-var' },
+        [INTERNAL]: {
+          rules: { css: mockCSS1 },
+          variableMap: { '--a0': '--default-var' },
+        },
       },
       theme: {
-        rules: { css: mockCSS2 },
-        variableMap: { '--b0': '--theme-var' },
+        [INTERNAL]: {
+          rules: { css: mockCSS2 },
+          variableMap: { '--b0': '--theme-var' },
+        },
       },
     }
 
@@ -183,10 +206,14 @@ describe('executeConfig', () => {
   it('skips invalid exports that do not have rules.css', async () => {
     const mockModule = {
       theme: {
-        rules: { css: mockCSS1 },
+        [INTERNAL]: {
+          rules: { css: mockCSS1 },
+        },
       },
       invalidExport1: {
-        rules: {},
+        [INTERNAL]: {
+          rules: {},
+        },
       },
       invalidExport2: {
         aliases: {},
@@ -205,7 +232,9 @@ describe('executeConfig', () => {
   it('throws error when config has no valid theme exports', async () => {
     const mockModule = {
       default: {
-        rules: { css: mockCSS1 },
+        [INTERNAL]: {
+          rules: { css: mockCSS1 },
+        },
       },
     }
 

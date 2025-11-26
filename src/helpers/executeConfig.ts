@@ -1,5 +1,6 @@
 import { pathToFileURL } from 'node:url'
 import { createError } from '../lib/createError'
+import INTERNAL from '../consts/INTERNAL'
 
 /**
  * Wrapper for dynamic import to enable mocking in tests
@@ -62,13 +63,16 @@ export default async function executeConfig(
       // Skip default export - only named exports are supported
       if (exportName === 'default') continue
 
-      // Check if this export is a valid theme (has rules.css property)
-      const value = exportValue as { rules?: { css?: string }; variableMap?: Record<string, string> }
-      if (value?.rules?.css) {
+      // Check if this export is a valid theme (has internal rules.css property)
+      const value = exportValue as {
+        [INTERNAL]?: { rules?: { css?: string }; variableMap?: Record<string, string> }
+      }
+      const internal = value?.[INTERNAL]
+      if (internal?.rules?.css) {
         themes.push({
           name: exportName,
-          css: value.rules.css,
-          variableMap: value.variableMap,
+          css: internal.rules.css,
+          variableMap: internal.variableMap,
         })
       }
     }

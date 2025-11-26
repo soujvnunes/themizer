@@ -2,8 +2,9 @@
 "themizer": patch
 ---
 
-docs: mark rules and variableMap as internal/advanced usage
+refactor: hide rules and variableMap from public API via Symbol
 
-- Added @internal JSDoc to `rules` and `variableMap` properties
-- Updated API documentation to clarify these are for internal/advanced usage
-- Updated CLI help to recommend watch mode for development
+- Internal properties (`rules`, `variableMap`) are now hidden behind a Symbol
+- CLI accesses these via the Symbol for theme.css generation
+- Public API only exposes `aliases`, `tokens`, and `medias`
+- Removed `RJSS` type from public exports

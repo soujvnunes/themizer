@@ -12,13 +12,6 @@ export { default as resolveAtom } from './core/resolveAtom'
 export type { Atom } from './lib/isAtom'
 
 /**
- * Represents the JavaScript Style Sheet (JSS) object structure.
- * Contains CSS custom properties organized by media queries and root-level variables.
- * @internal For internal/advanced usage.
- */
-export type { RJSS } from './lib/getJSS'
-
-/**
  * Core atomizer types for building and configuring theme systems.
  *
  * - `Atoms`: Recursive structure of atomic values and nested objects

@@ -56,18 +56,22 @@ export default async function executeConfig(
     // Collect all valid theme exports (named exports only, skip 'default')
     const themes: ThemeExport[] = []
 
-    // Sort entries alphabetically for deterministic output order
+    // Sort entries alphabetically for deterministic output order.
+    // This means themes are combined in alphabetical order, not declaration order.
     const sortedEntries = Object.entries(module).sort(([a], [b]) => a.localeCompare(b))
 
     for (const [exportName, exportValue] of sortedEntries) {
       // Skip default export - only named exports are supported
       if (exportName === 'default') continue
 
+      // Skip non-object exports
+      if (typeof exportValue !== 'object' || exportValue === null) continue
+
       // Check if this export is a valid theme (has internal rules.css property)
       const value = exportValue as {
         [INTERNAL]?: { rules?: { css?: string }; variableMap?: Record<string, string> }
       }
-      const internal = value?.[INTERNAL]
+      const internal = value[INTERNAL]
       if (internal?.rules?.css) {
         themes.push({
           name: exportName,

@@ -155,7 +155,12 @@ async function promptForOutputDir(frameworkInfo: FrameworkDetectionResult): Prom
     return null
   }
 
-  return response.useDetected ? frameworkInfo.suggestedPath : response.customPath
+  if (response.useDetected) {
+    return frameworkInfo.suggestedPath
+  }
+
+  // Ensure customPath is a valid string, treat as cancellation otherwise
+  return typeof response.customPath === 'string' ? response.customPath : null
 }
 
 /**

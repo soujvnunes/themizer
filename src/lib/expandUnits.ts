@@ -22,13 +22,13 @@ function expandUnitTuple(tuple: [number, number, number], unit: string): Record<
   // Validate step is positive
   if (step <= 0) {
     createError('expansion', `Step must be positive, got ${step}`)
-    return {} // In dev mode, return empty to avoid infinite loop
+    return {}
   }
 
   // Validate from <= to
   if (from > to) {
     createError('expansion', `From (${from}) must be less than or equal to To (${to})`)
-    return {} // In dev mode, return empty to avoid incorrect output
+    return {}
   }
 
   const result: Record<number, string> = {}

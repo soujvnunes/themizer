@@ -171,9 +171,9 @@ function updatePackageJson(packageJsonPath: string, outDir: string, watch: boole
   } catch (parseError) {
     if (parseError instanceof Error && parseError.message.includes('must be a plain object')) {
       createError('config', 'package.json must be a valid JSON object')
+    } else {
+      createError('config', `Invalid package.json: ${(parseError as Error).message}`)
     }
-    createError('config', `Invalid package.json: ${(parseError as Error).message}`)
-  }
 
   // Initialize scripts object if it doesn't exist or is not an object
   if (

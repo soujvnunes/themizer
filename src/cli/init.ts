@@ -174,6 +174,7 @@ function updatePackageJson(packageJsonPath: string, outDir: string, watch: boole
     } else {
       createError('config', `Invalid package.json: ${(parseError as Error).message}`)
     }
+  }
 
   // Initialize scripts object if it doesn't exist or is not an object
   if (

@@ -11,9 +11,10 @@ import executeConfig from './executeConfig'
  *
  * @param outDir - Output directory path
  * @param configPath - Path to the themizer config file
+ * @returns Array of theme names that were written to the file
  */
-export default async function writeThemeFile(outDir: string, configPath: string) {
-  const { css, variableMap } = await executeConfig(configPath)
+export default async function writeThemeFile(outDir: string, configPath: string): Promise<string[]> {
+  const { css, variableMap, themes } = await executeConfig(configPath)
   const outputDirectory = path.resolve(process.cwd(), outDir, THEME_FILE_NAME)
 
   await fs.promises.mkdir(path.dirname(outputDirectory), { recursive: true })
@@ -27,4 +28,7 @@ export default async function writeThemeFile(outDir: string, configPath: string)
     const sourceMapContent = JSON.stringify(variableMap, null, 2)
     await fs.promises.writeFile(sourceMapPath, sourceMapContent, FILE_ENCODING)
   }
+
+  // Return theme names for logging
+  return themes.map((t) => t.name)
 }

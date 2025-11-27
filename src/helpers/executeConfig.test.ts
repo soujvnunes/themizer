@@ -1,11 +1,13 @@
 import { pathToFileURL } from 'node:url'
 import executeConfig from './executeConfig'
+import INTERNAL from '../consts/INTERNAL'
 
 const mockImportModule = jest.fn()
 
 describe('executeConfig', () => {
   const mockConfigPath = '/path/to/themizer.config.ts'
-  const mockCSS = ':root{--color-primary:#000;}'
+  const mockCSS1 = ':root{--color-primary:#000;}'
+  const mockCSS2 = ':root{--color-secondary:#fff;}'
   const mockJSS = { ':root': { '--color-primary': '#000' } }
 
   beforeEach(() => {
@@ -16,17 +18,19 @@ describe('executeConfig', () => {
     jest.restoreAllMocks()
   })
 
-  it('imports config file and returns rules.css and variableMap', async () => {
+  it('imports config file with single named export and returns themes, css, and variableMap', async () => {
     const mockModule = {
-      default: {
-        rules: {
-          css: mockCSS,
-          jss: mockJSS,
+      theme: {
+        [INTERNAL]: {
+          rules: {
+            css: mockCSS1,
+            jss: mockJSS,
+          },
+          variableMap: { '--a0': '--theme-tokens-color-primary' },
         },
         aliases: {},
         tokens: {},
         medias: {},
-        variableMap: { '--a0': '--theme-tokens-color-primary' },
       },
     }
 
@@ -36,15 +40,129 @@ describe('executeConfig', () => {
     const result = await executeConfig(mockConfigPath, mockImportModule)
 
     expect(result).toEqual({
-      css: mockCSS,
+      themes: [
+        {
+          name: 'theme',
+          css: mockCSS1,
+          variableMap: { '--a0': '--theme-tokens-color-primary' },
+        },
+      ],
+      css: mockCSS1,
       variableMap: { '--a0': '--theme-tokens-color-primary' },
     })
   })
 
+  it('imports config file with multiple named exports and combines CSS', async () => {
+    const mockModule = {
+      cocaCola: {
+        [INTERNAL]: {
+          rules: { css: mockCSS1, jss: mockJSS },
+          variableMap: { '--a0': '--coke-color-primary' },
+        },
+      },
+      nike: {
+        [INTERNAL]: {
+          rules: { css: mockCSS2, jss: mockJSS },
+          variableMap: { '--b0': '--nike-color-secondary' },
+        },
+      },
+    }
+
+    mockImportModule.mockResolvedValue(mockModule)
+
+    const result = await executeConfig(mockConfigPath, mockImportModule)
+
+    expect(result.themes).toHaveLength(2)
+    expect(result.themes[0]).toEqual({
+      name: 'cocaCola',
+      css: mockCSS1,
+      variableMap: { '--a0': '--coke-color-primary' },
+    })
+    expect(result.themes[1]).toEqual({
+      name: 'nike',
+      css: mockCSS2,
+      variableMap: { '--b0': '--nike-color-secondary' },
+    })
+    expect(result.css).toBe(`${mockCSS1}\n${mockCSS2}`)
+    expect(result.variableMap).toEqual({
+      '--a0': '--coke-color-primary',
+      '--b0': '--nike-color-secondary',
+    })
+  })
+
+  it('merges variable maps from multiple themes', async () => {
+    const mockModule = {
+      theme1: {
+        [INTERNAL]: {
+          rules: { css: mockCSS1 },
+          variableMap: { '--a0': '--theme1-var' },
+        },
+      },
+      theme2: {
+        [INTERNAL]: {
+          rules: { css: mockCSS2 },
+          variableMap: { '--b0': '--theme2-var' },
+        },
+      },
+    }
+
+    mockImportModule.mockResolvedValue(mockModule)
+
+    const result = await executeConfig(mockConfigPath, mockImportModule)
+
+    expect(result.variableMap).toEqual({
+      '--a0': '--theme1-var',
+      '--b0': '--theme2-var',
+    })
+  })
+
+  it('warns when variable maps have colliding minified names', async () => {
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation()
+
+    const mockModule = {
+      theme1: {
+        [INTERNAL]: {
+          rules: { css: mockCSS1 },
+          variableMap: { '--a0': '--theme1-color' },
+        },
+      },
+      theme2: {
+        [INTERNAL]: {
+          rules: { css: mockCSS2 },
+          variableMap: { '--a0': '--theme2-color' },
+        },
+      },
+    }
+
+    mockImportModule.mockResolvedValue(mockModule)
+    await executeConfig(mockConfigPath, mockImportModule)
+
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Variable map collision'))
+    consoleSpy.mockRestore()
+  })
+
+  it('returns undefined variableMap when no themes have variable maps', async () => {
+    const mockModule = {
+      theme: {
+        [INTERNAL]: {
+          rules: { css: mockCSS1 },
+        },
+      },
+    }
+
+    mockImportModule.mockResolvedValue(mockModule)
+
+    const result = await executeConfig(mockConfigPath, mockImportModule)
+
+    expect(result.variableMap).toBeUndefined()
+  })
+
   it('converts file path to file:// URL with cache busting timestamp', async () => {
     const mockModule = {
-      default: {
-        rules: { css: mockCSS, jss: mockJSS },
+      theme: {
+        [INTERNAL]: {
+          rules: { css: mockCSS1, jss: mockJSS },
+        },
       },
     }
 
@@ -60,36 +178,62 @@ describe('executeConfig', () => {
     )
   })
 
-  it('throws error when config does not export default', async () => {
-    const mockModule = {}
-
-    mockImportModule.mockResolvedValue(mockModule)
-
-    await expect(executeConfig(mockConfigPath, mockImportModule)).rejects.toThrow(
-      'themizer: Config file must export a theme object with rules.css property',
-    )
-  })
-
-  it('throws error when config default does not have rules', async () => {
+  it('skips default export - only named exports are supported', async () => {
     const mockModule = {
       default: {
-        aliases: {},
-        tokens: {},
+        [INTERNAL]: {
+          rules: { css: mockCSS1 },
+          variableMap: { '--a0': '--default-var' },
+        },
+      },
+      theme: {
+        [INTERNAL]: {
+          rules: { css: mockCSS2 },
+          variableMap: { '--b0': '--theme-var' },
+        },
       },
     }
 
     mockImportModule.mockResolvedValue(mockModule)
 
-    await expect(executeConfig(mockConfigPath, mockImportModule)).rejects.toThrow(
-      'Config file must export a theme object with rules.css property',
-    )
+    const result = await executeConfig(mockConfigPath, mockImportModule)
+
+    expect(result.themes).toHaveLength(1)
+    expect(result.themes[0].name).toBe('theme')
+    expect(result.css).toBe(mockCSS2)
   })
 
-  it('throws error when config default.rules does not have css', async () => {
+  it('skips invalid exports that do not have rules.css', async () => {
+    const mockModule = {
+      theme: {
+        [INTERNAL]: {
+          rules: { css: mockCSS1 },
+        },
+      },
+      invalidExport1: {
+        [INTERNAL]: {
+          rules: {},
+        },
+      },
+      invalidExport2: {
+        aliases: {},
+      },
+      someOtherExport: 'not an object',
+    }
+
+    mockImportModule.mockResolvedValue(mockModule)
+
+    const result = await executeConfig(mockConfigPath, mockImportModule)
+
+    expect(result.themes).toHaveLength(1)
+    expect(result.themes[0].name).toBe('theme')
+  })
+
+  it('throws error when config has no valid theme exports', async () => {
     const mockModule = {
       default: {
-        rules: {
-          jss: mockJSS,
+        [INTERNAL]: {
+          rules: { css: mockCSS1 },
         },
       },
     }
@@ -97,7 +241,17 @@ describe('executeConfig', () => {
     mockImportModule.mockResolvedValue(mockModule)
 
     await expect(executeConfig(mockConfigPath, mockImportModule)).rejects.toThrow(
-      'Config file must export a theme object with rules.css property',
+      'themizer [config]: No valid theme exports found. Use named exports: export const theme = themizer(...)',
+    )
+  })
+
+  it('throws error when config has no exports at all', async () => {
+    const mockModule = {}
+
+    mockImportModule.mockResolvedValue(mockModule)
+
+    await expect(executeConfig(mockConfigPath, mockImportModule)).rejects.toThrow(
+      'No valid theme exports found',
     )
   })
 
@@ -115,5 +269,39 @@ describe('executeConfig', () => {
     mockImportModule.mockRejectedValue('string error')
 
     await expect(executeConfig(mockConfigPath, mockImportModule)).rejects.toBe('string error')
+  })
+
+  it('combines themes in alphabetical order, not declaration order', async () => {
+    const mockModule = {
+      zulu: {
+        [INTERNAL]: {
+          rules: { css: ':root{--z:1;}' },
+          variableMap: { '--z0': '--zulu-var' },
+        },
+      },
+      alpha: {
+        [INTERNAL]: {
+          rules: { css: ':root{--a:1;}' },
+          variableMap: { '--a0': '--alpha-var' },
+        },
+      },
+      mike: {
+        [INTERNAL]: {
+          rules: { css: ':root{--m:1;}' },
+          variableMap: { '--m0': '--mike-var' },
+        },
+      },
+    }
+
+    mockImportModule.mockResolvedValue(mockModule)
+
+    const result = await executeConfig(mockConfigPath, mockImportModule)
+
+    // Should be alpha, mike, zulu (alphabetical), not zulu, alpha, mike (declaration order)
+    expect(result.themes).toHaveLength(3)
+    expect(result.themes[0].name).toBe('alpha')
+    expect(result.themes[1].name).toBe('mike')
+    expect(result.themes[2].name).toBe('zulu')
+    expect(result.css).toBe(':root{--a:1;}\n:root{--m:1;}\n:root{--z:1;}')
   })
 })

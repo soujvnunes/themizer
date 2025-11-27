@@ -326,9 +326,30 @@ function isNumber(value: string): boolean {
 }
 
 /**
- * Creates property metadata for a CSS custom property
+ * Checks if a CSS value is computationally independent.
+ * CSS @property initial-value must be computationally independent,
+ * meaning it cannot contain var(), env(), or other dynamic references.
+ *
+ * @param value - The CSS value to check
+ * @returns true if the value can be used as @property initial-value
  */
-export function createPropertyMetadata(value: Atom): PropertyMetadata {
+export function isComputationallyIndependent(value: Atom): boolean {
+  const strValue = String(value)
+  // Values containing var(), env(), or attr() are not computationally independent
+  return !/\b(var|env|attr)\s*\(/.test(strValue)
+}
+
+/**
+ * Creates property metadata for a CSS custom property.
+ * Returns null for values that cannot have valid @property registration
+ * (e.g., values containing var() references).
+ */
+export function createPropertyMetadata(value: Atom): PropertyMetadata | null {
+  // Skip @property generation for values that aren't computationally independent
+  if (!isComputationallyIndependent(value)) {
+    return null
+  }
+
   return {
     syntax: inferSyntax(value),
     inherits: false,

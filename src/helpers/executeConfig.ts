@@ -1,5 +1,6 @@
 import { pathToFileURL } from 'node:url'
 import { createError } from '../lib/createError'
+import INTERNAL from '../consts/INTERNAL'
 
 /**
  * Wrapper for dynamic import to enable mocking in tests
@@ -10,21 +11,31 @@ export async function importModule(url: string) {
 }
 
 /**
+ * Individual theme export from the config
+ */
+export interface ThemeExport {
+  name: string
+  css: string
+  variableMap?: { [minified: string]: string }
+}
+
+/**
  * Result from executing the themizer config
  */
 export interface ExecuteConfigResult {
+  themes: ThemeExport[]
   css: string
   variableMap?: { [minified: string]: string }
 }
 
 /**
  * Dynamically imports and executes the themizer config file.
- * Returns the generated CSS and optional variable map from the config.
+ * Returns the generated CSS and optional variable map from all named exports.
  *
  * @param configPath - Absolute path to the config file
  * @param _importModule - Optional import function for testing
- * @returns Object containing CSS string and optional variableMap
- * @throws Error if the config file cannot be imported or doesn't export a valid theme
+ * @returns Object containing themes array, combined CSS string, and merged variableMap
+ * @throws Error if the config file cannot be imported or doesn't export valid themes
  */
 export default async function executeConfig(
   configPath: string,
@@ -42,27 +53,77 @@ export default async function executeConfig(
     // Dynamic import executes the config file
     const module = await _importModule(cacheBustedUrl)
 
-    // Validate that the config exports a theme with rules.css
-    if (!module.default?.rules?.css) {
+    // Collect all valid theme exports (named exports only, skip 'default')
+    const themes: ThemeExport[] = []
+
+    // Sort entries alphabetically for deterministic output order.
+    // This ensures the same config always produces identical theme.css regardless of:
+    // - JavaScript engine differences in Object.entries() ordering
+    // - Config file refactoring that changes declaration order
+    // - Different Node.js versions or CI environments
+    // Trade-off: themes combine alphabetically, not by declaration order.
+    const sortedEntries = Object.entries(module).sort(([a], [b]) => a.localeCompare(b))
+
+    for (const [exportName, exportValue] of sortedEntries) {
+      // Skip default export - only named exports are supported
+      if (exportName === 'default') continue
+
+      // Skip non-object exports
+      if (typeof exportValue !== 'object' || exportValue === null) continue
+
+      // Check if this export is a valid theme (has internal rules.css property)
+      const value = exportValue as {
+        [INTERNAL]?: { rules?: { css?: string }; variableMap?: Record<string, string> }
+      }
+      const internal = value[INTERNAL]
+      if (internal?.rules?.css) {
+        themes.push({
+          name: exportName,
+          css: internal.rules.css,
+          variableMap: internal.variableMap,
+        })
+      }
+    }
+
+    // Validate that at least one valid theme was found
+    if (themes.length === 0) {
       createError(
-        'Config file must export a theme object with rules.css property. ' +
-          'Ensure your config uses: export default themizer(...)',
+        'config',
+        'No valid theme exports found. Use named exports: export const theme = themizer(...)',
       )
     }
 
-    // Return CSS and optional variableMap
+    // Combine all CSS from themes
+    const css = themes.map((t) => t.css).join('\n')
+
+    // Merge all variable maps, tracking source themes for collision warnings
+    const variableThemeMap: Record<string, string> = {}
+    const mergedVariableMap = themes.reduce<Record<string, string>>((acc, t) => {
+      if (t.variableMap) {
+        for (const [minified, source] of Object.entries(t.variableMap)) {
+          if (minified in acc) {
+            console.warn(
+              `Variable map collision: "${minified}" set by theme "${variableThemeMap[minified]}" ` +
+                `to "${acc[minified]}", overridden by theme "${t.name}" with "${source}".`,
+            )
+          }
+          acc[minified] = source
+          variableThemeMap[minified] = t.name
+        }
+      }
+      return acc
+    }, {})
+
     return {
-      css: module.default.rules.css,
-      variableMap: module.default.variableMap,
+      themes,
+      css,
+      variableMap: Object.keys(mergedVariableMap).length > 0 ? mergedVariableMap : undefined,
     }
   } catch (error) {
     if (error instanceof Error) {
-      // If it's already a themizer error, re-throw it as is
-      if (error.message.startsWith('themizer:')) {
-        throw error
-      }
-      // Otherwise wrap it
-      createError(`Failed to execute config file: ${error.message}`)
+      if (error.message.startsWith('themizer [')) throw error
+
+      createError('config', `Failed to execute config file: ${error.message}`)
     }
     throw error
   }

@@ -23,8 +23,10 @@ export async function themeAction(options: { outDir?: string; watch?: boolean })
   try {
     validateFilePath(options.outDir)
 
-    await writeThemeFile(options.outDir, configPath)
-    console.log(`themizer: theme.css written to ${options.outDir} directory`)
+    const themeNames = await writeThemeFile(options.outDir, configPath)
+    const themeInfo =
+      themeNames.length > 1 ? ` (${themeNames.length} themes: ${themeNames.join(', ')})` : ''
+    console.log(`themizer: theme.css written to ${options.outDir} directory${themeInfo}`)
 
     if (options.watch) {
       const outDir = options.outDir // Capture for use in callbacks
@@ -45,8 +47,10 @@ export async function themeAction(options: { outDir?: string; watch?: boolean })
         console.log('')
         console.log('themizer: Config file changed, regenerating theme.css...')
         try {
-          await writeThemeFile(outDir, configPath)
-          console.log(`themizer: ✓ theme.css regenerated successfully`)
+          const themeNames = await writeThemeFile(outDir, configPath)
+          const themeInfo =
+            themeNames.length > 1 ? ` (${themeNames.length} themes: ${themeNames.join(', ')})` : ''
+          console.log(`themizer: ✓ theme.css regenerated successfully${themeInfo}`)
         } catch (error) {
           console.error(`themizer: Failed to regenerate theme.css - ${(error as Error).message}`)
         }
@@ -90,14 +94,18 @@ Description:
   a theme.css file in the specified directory. This file contains all your
   CSS custom properties with responsive media queries.
 
+  Supports multiple theme exports - all named exports will be combined
+  into a single theme.css file.
+
 Example:
-  $ themizer theme --out-dir ./src/app
-  $ themizer theme --out-dir ./app/styles
-  $ themizer theme --out-dir ./src/app --watch
+  $ themizer theme --out-dir ./src/app --watch  # Recommended for development
+  $ themizer theme --out-dir ./src/app          # One-time generation
 
 Watch Mode:
   Use the --watch flag to automatically regenerate theme.css whenever
-  themizer.config.ts changes. This is useful during development.
+  themizer.config.ts changes. This is recommended during development.
+
+  For production builds, run without --watch to generate once.
 
 Note:
   This command automatically executes your themizer.config.ts file.

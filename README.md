@@ -61,7 +61,7 @@ import themizer from 'themizer'
 
 const alpha = (color: string, percentage: string) => `color-mix(in srgb, ${color} ${percentage}, transparent)`
 
-export default themizer(
+export const theme = themizer(
   {
     prefix: 'theme',
     medias: {
@@ -152,7 +152,7 @@ export default themizer(
 </div>
 
 // Hero section with animations
-import theme from './themizer.config'
+import { theme } from './themizer.config'
 
 const Hero = styled.section`
   background: ${theme.aliases.colors.main};
@@ -246,6 +246,32 @@ theme.aliases.colors.main  // ✓ Autocomplete
 theme.aliases.colors.mian  // ✗ Type error
 ```
 
+### Multiple Themes
+
+Export multiple themes for complex design systems with multi-brand support. All themes are combined into a single `theme.css` file:
+
+```ts
+// themizer.config.ts
+import themizer from 'themizer'
+
+// Single theme (most common)
+export const theme = themizer({ prefix: 'theme', tokens, medias }, () => ({}))
+
+// Or multiple themes for multi-brand design systems
+export const cocaCola = themizer({ prefix: 'coke', tokens: cokeTokens, medias }, () => ({}))
+export const nike = themizer({ prefix: 'nike', tokens: nikeTokens, medias }, () => ({}))
+```
+
+When you run `pnpm run themizer:theme`, all exported themes are combined:
+
+```bash
+themizer: theme.css written to ./src/app (2 themes: cocaCola, nike)
+```
+
+Each theme uses its own prefix to avoid naming conflicts, and all CSS custom properties are combined into a single optimized file.
+
+**Note:** Themes are combined in alphabetical order (by export name) to ensure deterministic output. This means `theme.css` will always be identical for the same config, regardless of declaration order in the file.
+
 ### Responsive by Default
 
 Media queries configured once, applied everywhere:
@@ -269,18 +295,17 @@ typography: {
 
 Base-52 encoding reduces CSS size by ~88%:
 
-```css
-/* Before: */ --theme-aliases-palette-ground-fore
-/* After:  */ --themea2
+```ts
+theme.aliases.colors.ground.fore  // generates → --themea2
 ```
 
 #### Source Maps
 
-Debug with `theme.css.map.json`:
+Debug with `theme.css.map.json` which maps minified names to their object paths:
 
 ```json
 {
-  "--themea2": "--theme-aliases-palette-ground-fore"
+  "--themea2": "--theme-aliases-colors-ground-fore"
 }
 ```
 
@@ -347,27 +372,23 @@ Executes your `themizer.config.ts` and generates minified CSS with:
 
 ## Framework Integration
 
-Configure once, use everywhere. **themizer** integrates seamlessly with all major frameworks.
+Import the generated `theme.css` in your app's entry file:
 
-### Tailwind CSS (Recommended)
-
-**Tailwind CSS v4** with JavaScript config:
-
-```css
-/* app/globals.css */
-@import 'tailwindcss';
-@config './tailwind.config.js';
+```tsx
+// app/layout.tsx, main.tsx, or _app.tsx
+import './theme.css';
 ```
+
+Now integrate with your styling solution.
+
+### Tailwind CSS
+
+Extend Tailwind's config with themizer aliases:
 
 ```js
 // tailwind.config.js
-import plugin from 'tailwindcss/plugin';
-import theme from './themizer.config';
+import { theme } from './themizer.config';
 
-// Helper for Tailwind's opacity system
-const rgb = (color) => `rgb(${color} / <alpha-value>)`;
-
-// Use alpha helper from config for color variants
 const alpha = (color, percentage) =>
   `color-mix(in srgb, ${color} ${percentage}, transparent)`;
 
@@ -377,18 +398,14 @@ export default {
       spacing: theme.aliases.spacing,
       opacity: theme.tokens.alphas,
       colors: {
-        transparent: 'transparent',
-        current: 'currentColor',
         main: theme.aliases.colors.main,
         ground: {
           fore: theme.aliases.colors.ground.fore,
           back: theme.aliases.colors.ground.back,
         },
-        // Create color variants with alpha
         primary: {
           DEFAULT: theme.aliases.colors.main,
           light: alpha(theme.aliases.colors.main, theme.tokens.alphas[60]),
-          dark: alpha(theme.aliases.colors.main, theme.tokens.alphas[80]),
         },
       },
       fontSize: {
@@ -396,44 +413,27 @@ export default {
         title: theme.aliases.typography.title,
         body: theme.aliases.typography.body,
       },
-      animation: {
-        bounce: theme.aliases.animations.bounce,
-        ease: theme.aliases.animations.ease,
-      },
     },
   },
-  plugins: [
-    plugin((api) => {
-      // Inject themizer's CSS custom properties
-      api.addBase(theme.rules.jss);
-    }),
-  ],
 };
 ```
 
-Now use semantic classes:
+Use semantic classes in your components:
 
 ```tsx
-<button className="bg-ground-back text-ground-fore p-spacing-block animate-ease">
+<button className="bg-ground-back text-ground-fore p-spacing-block">
   <h1 className="text-headline">Welcome</h1>
-  <p className="text-body opacity-80">Get started with themizer</p>
+  <p className="text-body opacity-60">Get started with themizer</p>
 </button>
 ```
 
-### Other Frameworks
+### Linaria (Zero-Runtime CSS-in-JS)
 
-For frameworks other than Tailwind, import the generated `theme.css` in your app's entry file:
-
-```css
-/* app/globals.css or main.css */
-@import './theme.css';
-```
-
-**CSS-in-JS (styled-components, emotion, Linaria):**
+Use theme values directly in your styled components:
 
 ```tsx
-import styled from 'styled-components' // or @emotion/styled or @linaria/react
-import theme from './themizer.config'
+import { styled } from '@linaria/react';
+import { theme } from './themizer.config';
 
 const Button = styled.button`
   background: ${theme.aliases.colors.ground.back};
@@ -445,27 +445,7 @@ const Button = styled.button`
   &:hover {
     opacity: ${theme.tokens.alphas[60]};
   }
-`
-```
-
-**Next.js with styled-jsx:**
-
-```tsx
-import theme from './themizer.config'
-
-export function Component() {
-  return (
-    <h1 className="title">
-      {children}
-      <style jsx>{`
-        .title {
-          color: ${theme.aliases.colors.ground.fore};
-          font-size: ${theme.aliases.typography.title};
-        }
-      `}</style>
-    </h1>
-  )
-}
+`;
 ```
 
 ## CLI Commands
@@ -512,12 +492,13 @@ Main function to generate design tokens and aliases.
 - `aliases` - Semantic aliases wrapped in `var()` for use in CSS/JS
 - `tokens` - Design tokens wrapped in `var()` for use in CSS/JS (with expansions applied)
 - `medias` - Media queries prefixed with `@media`
-- `rules` - Generated CSS rules object (for framework integration)
+- `rules` - Internal/advanced: generated CSS rules (use `theme.css` file instead)
+- `variableMap` - Internal/advanced: minified variable names map (use `theme.css.map.json` instead)
 
 #### Example
 
 ```ts
-import theme from './themizer.config'
+import { theme } from './themizer.config'
 
 // Using aliases (semantic names)
 theme.aliases.colors.main        // → "var(--themea0, oklch(76.9% 0.188 70.08))"
@@ -555,7 +536,7 @@ The unwrapped custom property name (string)
 
 ```ts
 import { unwrapAtom } from 'themizer'
-import theme from './themizer.config'
+import { theme } from './themizer.config'
 
 unwrapAtom(theme.aliases.colors.main)  // → "--themea0"
 
@@ -581,7 +562,7 @@ The resolved default value (string or number)
 
 ```ts
 import { resolveAtom } from 'themizer'
-import theme from './themizer.config'
+import { theme } from './themizer.config'
 
 resolveAtom(theme.tokens.palette.amber.base)  // → "oklch(76.9% 0.188 70.08)"
 resolveAtom(theme.aliases.colors.main)      // → "oklch(76.9% 0.188 70.08)"

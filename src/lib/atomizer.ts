@@ -185,10 +185,63 @@ function processResponsiveAtoms<M extends Medias>(
 
   if (isAtom(defaultValue)) {
     context.vars[variable] = defaultValue
-    context.metadata[variable] = createPropertyMetadata(defaultValue)
+    const propertyMeta = createPropertyMetadata(defaultValue)
+    if (propertyMeta) {
+      context.metadata[variable] = propertyMeta
+    }
   }
 
   return getVar(variable, defaultValue)
+}
+
+/**
+ * Processes a simple atom (string, number, etc.) and adds it to vars.
+ */
+function processSimpleAtom<M extends Medias>(
+  atom: Atom,
+  variable: string,
+  context: AtomContext<M>,
+): string {
+  context.vars[variable] = atom
+  const propertyMeta = createPropertyMetadata(atom)
+  if (propertyMeta) {
+    context.metadata[variable] = propertyMeta
+  }
+  return getVar(variable, atom)
+}
+
+/**
+ * State needed for recursive atomizer calls.
+ */
+interface RecursiveState {
+  path: string
+  r8eAtoms: ResponsiveVars
+  metadata: PropertyMetadataMap
+  minifyMap: Map<string, string>
+  minifyReverseMap: Map<string, string>
+  minifyPrefix?: string
+}
+
+/**
+ * Recursively processes expanded atoms (colors, units, or nested objects).
+ */
+function processNestedAtoms<M extends Medias>(
+  expanded: Record<string, unknown>,
+  options: AtomizerOptions<M> | undefined,
+  state: RecursiveState,
+): { vars: FlattenVars; ref: unknown; metadata: PropertyMetadataMap } {
+  return atomizer(
+    expanded as Atoms<Extract<keyof M, string>>,
+    { ...options, prefix: '' },
+    {
+      path: state.path,
+      r8eAtoms: state.r8eAtoms,
+      metadata: state.metadata,
+      minify: state.minifyMap,
+      minifyReverse: state.minifyReverseMap,
+      minifyPrefix: state.minifyPrefix,
+    },
+  )
 }
 
 /**
@@ -262,22 +315,18 @@ export default function atomizer<
     const path = `${prefix}${unifiedPath}${key}`
     const originalVariable = `--${path}`
 
+    const state: RecursiveState = {
+      path,
+      r8eAtoms,
+      metadata,
+      minifyMap,
+      minifyReverseMap,
+      minifyPrefix,
+    }
+
     // Check for color expansion
     if (shouldExpandColor(atom, unifiedPath)) {
-      const expanded = expandColor(atom)
-      const atomized = atomizer(
-        expanded as unknown as Atoms<Extract<keyof M, string>>,
-        { ...options, prefix: '' },
-        {
-          path,
-          r8eAtoms,
-          metadata,
-          minify: minifyMap,
-          minifyReverse: minifyReverseMap,
-          minifyPrefix,
-        },
-      )
-
+      const atomized = processNestedAtoms(expandColor(atom), options, state)
       Object.assign(vars, atomized.vars)
       Object.assign(metadata, atomized.metadata)
       ref[key] = atomized.ref
@@ -286,20 +335,7 @@ export default function atomizer<
 
     // Check for unit expansion
     if (shouldExpandUnits(atom, key)) {
-      const expanded = expandUnits(atom)
-      const atomized = atomizer(
-        expanded as Atoms<Extract<keyof M, string>>,
-        { ...options, prefix: '' },
-        {
-          path,
-          r8eAtoms,
-          metadata,
-          minify: minifyMap,
-          minifyReverse: minifyReverseMap,
-          minifyPrefix,
-        },
-      )
-
+      const atomized = processNestedAtoms(expandUnits(atom), options, state)
       Object.assign(vars, atomized.vars)
       Object.assign(metadata, atomized.metadata)
       ref[key] = atomized.ref
@@ -315,9 +351,7 @@ export default function atomizer<
         minifyPrefix,
       )
 
-      vars[variable] = atom
-      ref[key] = getVar(variable, atom)
-      metadata[variable] = createPropertyMetadata(atom)
+      ref[key] = processSimpleAtom(atom, variable, context)
     } else if (Array.isArray(atom)) {
       const variable = getMinifiedVariable(
         originalVariable,
@@ -329,19 +363,7 @@ export default function atomizer<
 
       ref[key] = processResponsiveAtoms(atom as R8eAtoms<Extract<keyof M, string>>, variable, context)
     } else {
-      const atomized = atomizer(
-        atom,
-        { ...options, prefix: '' },
-        {
-          path,
-          r8eAtoms,
-          metadata,
-          minify: minifyMap,
-          minifyReverse: minifyReverseMap,
-          minifyPrefix,
-        },
-      )
-
+      const atomized = processNestedAtoms(atom, options, state)
       Object.assign(vars, atomized.vars)
       Object.assign(metadata, atomized.metadata)
       ref[key] = atomized.ref

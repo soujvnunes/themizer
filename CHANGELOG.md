@@ -1,5 +1,13 @@
 # @soujvnunes/themizer
 
+## Unreleased
+
+### Documentation
+
+- Marked `rules` and `variableMap` as internal/advanced usage in API docs
+- Simplified Framework Integration section to lead with `theme.css` import
+- Updated CLI help text to recommend watch mode for development
+
 ## 1.7.0
 
 ### Minor Changes

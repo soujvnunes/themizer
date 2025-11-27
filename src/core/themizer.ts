@@ -13,9 +13,47 @@ import {
   validateUnitsConfig,
   validatePaletteConfig,
 } from '../lib/validators'
+import INTERNAL from '../consts/INTERNAL'
+import OKLCH_PATTERN from '../consts/OKLCH_PATTERN'
 
 interface ThemizerOptions<M extends Medias, T extends Atoms> extends Required<AtomizerOptions<M>> {
   tokens: T
+}
+
+interface ValidationState {
+  hasErrors: boolean
+}
+
+const isDev = process.env.NODE_ENV === 'development'
+const FALLBACK_PREFIX = 'theme'
+const FALLBACK_COLOR = 'oklch(50% 0 0)'
+
+/**
+ * Handles validation with dev/prod mode behavior.
+ * In dev mode, logs error and continues. In prod mode, throws.
+ */
+function handleValidation(validateFn: () => void, state: ValidationState): void {
+  try {
+    validateFn()
+  } catch (error) {
+    if (isDev) {
+      console.error(error instanceof Error ? error.message : error)
+      state.hasErrors = true
+    } else {
+      throw error
+    }
+  }
+}
+
+/**
+ * Replaces invalid palette entries with fallback color.
+ */
+function fixInvalidPaletteEntries(palette: Record<string, unknown>): void {
+  for (const [key, value] of Object.entries(palette)) {
+    if (typeof value !== 'string' || !OKLCH_PATTERN.test(value)) {
+      palette[key] = FALLBACK_COLOR
+    }
+  }
 }
 
 /**
@@ -50,15 +88,50 @@ export default function themizer<
   const T extends Atoms,
   const A extends Atoms<Extract<keyof M, string>>,
 >(options: ThemizerOptions<M, T>, aliases: (tokens: ResolveAtoms<never, T>) => A) {
-  // Validate inputs
-  validatePrefix(options.prefix)
-  validateTokens(options.tokens as Record<string, unknown>)
+  const state: ValidationState = { hasErrors: false }
 
-  if ('units' in options.tokens) validateUnitsConfig(options.tokens.units, 'tokens.units')
-  if ('palette' in options.tokens) validatePaletteConfig(options.tokens.palette, 'tokens.palette')
+  // Use local variables instead of mutating input options
+  let effectivePrefix = options.prefix
+  let effectiveTokens = options.tokens
 
-  const tokenized = atomizer<never, T>(options.tokens, {
-    prefix: `${options.prefix}-tokens`,
+  // Validate prefix with fallback
+  handleValidation(() => validatePrefix(options.prefix), state)
+  if (state.hasErrors && isDev) {
+    effectivePrefix = FALLBACK_PREFIX
+  }
+
+  // Validate tokens structure
+  handleValidation(() => validateTokens(options.tokens as Record<string, unknown>), state)
+
+  // Validate units config
+  if ('units' in options.tokens) {
+    handleValidation(() => validateUnitsConfig(options.tokens.units, 'tokens.units'), state)
+  }
+
+  // Validate palette config with fallback colors
+  if ('palette' in options.tokens) {
+    const prevHasErrors = state.hasErrors
+    handleValidation(() => validatePaletteConfig(options.tokens.palette, 'tokens.palette'), state)
+    if (state.hasErrors && !prevHasErrors && isDev) {
+      // Create a shallow copy to avoid mutating input
+      const paletteCopy = { ...(options.tokens.palette as Record<string, unknown>) }
+      fixInvalidPaletteEntries(paletteCopy)
+      effectiveTokens = { ...options.tokens, palette: paletteCopy } as T
+    }
+  }
+
+  // Log build status in dev mode
+  if (isDev) {
+    if (state.hasErrors) {
+      console.warn('themizer: Theme built with errors (see above)')
+    } else {
+      // eslint-disable-next-line no-console -- Intentional dev-mode feedback
+      console.info('themizer: Theme built successfully')
+    }
+  }
+
+  const tokenized = atomizer<never, T>(effectiveTokens, {
+    prefix: `${effectivePrefix}-tokens`,
   })
 
   // Pass the minification map from tokens to aliases to avoid variable name collisions
@@ -74,7 +147,7 @@ export default function themizer<
   const aliased = atomizer(
     aliases(tokenized.ref),
     {
-      prefix: `${options.prefix}-aliases`,
+      prefix: `${effectivePrefix}-aliases`,
       medias: options.medias,
     },
     {
@@ -91,10 +164,14 @@ export default function themizer<
     aliases: aliased.ref,
     tokens: tokenized.ref,
     medias: addAtMedia(options.medias),
-    rules: {
-      css: getCSS(flattenVars, flattenMetadata),
-      jss: getJSS(flattenVars, flattenMetadata),
+
+    /** @internal CLI access only */
+    [INTERNAL]: {
+      rules: {
+        css: getCSS(flattenVars, flattenMetadata),
+        jss: getJSS(flattenVars, flattenMetadata),
+      },
+      variableMap: Object.keys(flattenVariableMap).length > 0 ? flattenVariableMap : undefined,
     },
-    variableMap: Object.keys(flattenVariableMap).length > 0 ? flattenVariableMap : undefined,
   }
 }

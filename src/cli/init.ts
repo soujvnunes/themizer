@@ -2,21 +2,34 @@ import { Command } from 'commander'
 import { writeFileSync, readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import prompts from 'prompts'
-import { getFrameworkInfo, getFrameworkDisplayName } from './detectFramework'
+import {
+  getFrameworkInfo,
+  getFrameworkDisplayName,
+  type FrameworkDetectionResult,
+} from './detectFramework'
 import { validateFilePath, validatePlainObject } from './validators'
 import { escapeSingleQuotes } from '../lib/shellEscape'
 import { createError } from '../lib/createError'
+
+interface InitOptions {
+  watch?: boolean
+  outDir?: string
+}
 
 const CONFIG_TEMPLATE = `import themizer from 'themizer'
 
 /**
  * Example configuration for Themizer
  * Customize your design tokens below
+ *
+ * For complex Design Systems with multiple themes, you can export multiple themes:
+ * export const brand1 = themizer({ prefix: 'brand1', ... }, () => ({}))
+ * export const brand2 = themizer({ prefix: 'brand2', ... }, () => ({}))
  */
 
 const alpha = (color: string, percentage: string) => \`color-mix(in srgb, \${color} \${percentage}, transparent)\`
 
-export default themizer(
+export const theme = themizer(
   {
     prefix: 'theme',
     medias: {
@@ -98,23 +111,140 @@ export default themizer(
   }),
 )`
 
-export async function initAction(options: { watch?: boolean; outDir?: string }) {
+/**
+ * Prompts the user interactively to select or customize the output directory
+ */
+async function promptForOutputDir(frameworkInfo: FrameworkDetectionResult): Promise<string | null> {
+  console.log('')
+  console.log('themizer: Setting up themizer in your project...')
+  console.log('')
+
+  const frameworkName = getFrameworkDisplayName(frameworkInfo.framework)
+  console.log(`Detected framework: ${frameworkName}`)
+  console.log(`Suggested output directory: ${frameworkInfo.suggestedPath}`)
+  console.log('')
+
+  const response = await prompts([
+    {
+      type: 'confirm',
+      name: 'useDetected',
+      message: `Use the suggested output directory (${frameworkInfo.suggestedPath})?`,
+      initial: true,
+    },
+    {
+      type: (prev) => (prev ? null : 'text'),
+      name: 'customPath',
+      message: 'Enter your custom output directory:',
+      initial: frameworkInfo.suggestedPath,
+      validate: (value) => {
+        if (!value.trim()) {
+          return 'Output directory is required'
+        }
+        try {
+          validateFilePath(value)
+          return true
+        } catch (error) {
+          return (error as Error).message
+        }
+      },
+    },
+  ])
+
+  // Handle user cancellation (Ctrl+C)
+  if (response.useDetected === undefined) {
+    return null
+  }
+
+  if (response.useDetected) {
+    return frameworkInfo.suggestedPath
+  }
+
+  // Ensure customPath is a valid string, treat as cancellation otherwise
+  return typeof response.customPath === 'string' ? response.customPath : null
+}
+
+/**
+ * Updates package.json with the themizer script
+ */
+function updatePackageJson(packageJsonPath: string, outDir: string, watch: boolean): void {
+  console.log('themizer: Updating package.json...')
+
+  let packageJson
+  try {
+    packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
+    validatePlainObject(packageJson)
+  } catch (parseError) {
+    if (parseError instanceof Error && parseError.message.includes('must be a plain object')) {
+      createError('config', 'package.json must be a valid JSON object')
+    } else {
+      createError('config', `Invalid package.json: ${(parseError as Error).message}`)
+    }
+  }
+
+  // Initialize scripts object if it doesn't exist or is not an object
+  if (
+    !packageJson.scripts ||
+    typeof packageJson.scripts !== 'object' ||
+    Array.isArray(packageJson.scripts)
+  ) {
+    packageJson.scripts = {}
+  }
+
+  const scripts = packageJson.scripts as Record<string, unknown>
+  const scriptName = watch ? 'themizer:theme:watch' : 'themizer:theme'
+  const escapedOutDir = escapeSingleQuotes(outDir)
+  const scriptCommand = watch
+    ? `themizer theme --out-dir ${escapedOutDir} --watch`
+    : `themizer theme --out-dir ${escapedOutDir}`
+
+  if (!scripts[scriptName]) {
+    scripts[scriptName] = scriptCommand
+    writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n', 'utf-8')
+    console.log(`themizer: ✓ Added "${scriptName}" script to package.json`)
+  } else {
+    console.log(`themizer: Script "${scriptName}" already exists in package.json`)
+  }
+}
+
+/**
+ * Prints the next steps after successful initialization
+ */
+function printNextSteps(outDir: string, hasPackageJson: boolean, watch: boolean): void {
+  console.log('')
+  console.log('themizer: Initialization complete! 🎉')
+  console.log('')
+  console.log('Next steps:')
+  console.log('  1. Customize your tokens in themizer.config.ts')
+  console.log('  2. Generate theme.css:')
+  console.log('')
+
+  if (hasPackageJson) {
+    const scriptName = watch ? 'themizer:theme:watch' : 'themizer:theme'
+    console.log(`     npm run ${scriptName}`)
+  } else {
+    console.log(`     themizer theme --out-dir ${outDir}`)
+  }
+
+  console.log('')
+  console.log(`  3. Import ${outDir}/theme.css in your application`)
+  console.log('')
+  console.log('For more information, visit: https://github.com/soujvnunes/themizer#readme')
+}
+
+export async function initAction(options: InitOptions): Promise<void> {
   const configPath = join(process.cwd(), 'themizer.config.ts')
   const packageJsonPath = join(process.cwd(), 'package.json')
 
   try {
-    // Check if config already exists
     if (existsSync(configPath)) {
       console.error('themizer: themizer.config.ts already exists')
       console.log('themizer: If you want to recreate it, please delete the existing file first')
       process.exit(1)
     }
 
-    // Detect framework and suggest path
     const frameworkInfo = getFrameworkInfo()
-    let outDir = options.outDir || frameworkInfo.suggestedPath
+    let outDir = options.outDir ?? frameworkInfo.suggestedPath
 
-    // Validate outDir if provided via CLI flag (non-interactive mode)
     if (options.outDir) {
       try {
         validateFilePath(outDir)
@@ -122,123 +252,27 @@ export async function initAction(options: { watch?: boolean; outDir?: string }) 
         console.error(`themizer: Invalid output directory - ${(error as Error).message}`)
         process.exit(1)
       }
-    }
-
-    // Interactive prompts if --out-dir is not provided
-    if (!options.outDir) {
-      console.log('')
-      console.log('themizer: Setting up themizer in your project...')
-      console.log('')
-
-      const frameworkName = getFrameworkDisplayName(frameworkInfo.framework)
-      console.log(`Detected framework: ${frameworkName}`)
-      console.log(`Suggested output directory: ${frameworkInfo.suggestedPath}`)
-      console.log('')
-
-      const response = await prompts([
-        {
-          type: 'confirm',
-          name: 'useDetected',
-          message: `Use the suggested output directory (${frameworkInfo.suggestedPath})?`,
-          initial: true,
-        },
-        {
-          type: (prev) => (prev ? null : 'text'),
-          name: 'customPath',
-          message: 'Enter your custom output directory:',
-          initial: frameworkInfo.suggestedPath,
-          validate: (value) => {
-            if (!value.trim()) {
-              return 'Output directory is required'
-            }
-            try {
-              validateFilePath(value)
-              return true
-            } catch (error) {
-              return (error as Error).message
-            }
-          },
-        },
-      ])
-
-      // Handle user cancellation (Ctrl+C)
-      if (response.useDetected === undefined) {
+    } else {
+      const selectedDir = await promptForOutputDir(frameworkInfo)
+      if (selectedDir === null) {
         console.log('')
         console.log('themizer: Initialization cancelled')
         process.exit(0)
       }
-
-      outDir = response.useDetected ? frameworkInfo.suggestedPath : response.customPath
+      outDir = selectedDir
       console.log('')
     }
 
-    // Create themizer.config.ts
     console.log('themizer: Creating themizer.config.ts...')
     writeFileSync(configPath, CONFIG_TEMPLATE, 'utf-8')
     console.log('themizer: ✓ Created themizer.config.ts')
 
-    // Update package.json if it exists
-    if (existsSync(packageJsonPath)) {
-      console.log('themizer: Updating package.json...')
-      let packageJson
-      try {
-        packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
-        validatePlainObject(packageJson)
-      } catch (parseError) {
-        if (parseError instanceof Error && parseError.message.includes('must be a plain object')) {
-          createError('package.json must be a valid JSON object')
-        }
-        createError(`Invalid package.json: ${(parseError as Error).message}`)
-      }
-
-      // Initialize scripts object if it doesn't exist or is not an object
-      if (
-        !packageJson.scripts ||
-        typeof packageJson.scripts !== 'object' ||
-        Array.isArray(packageJson.scripts)
-      ) {
-        packageJson.scripts = {}
-      }
-
-      const scripts = packageJson.scripts as Record<string, unknown>
-
-      // Add themizer script if it doesn't exist
-      const scriptName = options.watch ? 'themizer:theme:watch' : 'themizer:theme'
-      // Shell escaping IS necessary here because npm/pnpm/yarn execute scripts through a shell.
-      // Without quotes, paths with spaces (e.g., "./my folder/styles") would be split into
-      // multiple arguments by the shell. The quotes are stored literally in package.json and
-      // correctly interpreted by the shell at execution time.
-      const escapedOutDir = escapeSingleQuotes(outDir)
-      const scriptCommand = options.watch
-        ? `themizer theme --out-dir ${escapedOutDir} --watch`
-        : `themizer theme --out-dir ${escapedOutDir}`
-
-      if (!scripts[scriptName]) {
-        scripts[scriptName] = scriptCommand
-        writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n', 'utf-8')
-        console.log(`themizer: ✓ Added "${scriptName}" script to package.json`)
-      } else {
-        console.log(`themizer: Script "${scriptName}" already exists in package.json`)
-      }
+    const hasPackageJson = existsSync(packageJsonPath)
+    if (hasPackageJson) {
+      updatePackageJson(packageJsonPath, outDir, options.watch ?? false)
     }
 
-    console.log('')
-    console.log('themizer: Initialization complete! 🎉')
-    console.log('')
-    console.log('Next steps:')
-    console.log('  1. Customize your tokens in themizer.config.ts')
-    console.log('  2. Generate theme.css:')
-    console.log('')
-    if (existsSync(packageJsonPath)) {
-      const scriptName = options.watch ? 'themizer:theme:watch' : 'themizer:theme'
-      console.log(`     npm run ${scriptName}`)
-    } else {
-      console.log(`     themizer theme --out-dir ${outDir}`)
-    }
-    console.log('')
-    console.log(`  3. Import ${outDir}/theme.css in your application`)
-    console.log('')
-    console.log('For more information, visit: https://github.com/soujvnunes/themizer#readme')
+    printNextSteps(outDir, hasPackageJson, options.watch ?? false)
   } catch (error) {
     console.error(`themizer: Failed to initialize - ${(error as Error).message}`)
     process.exit(1)

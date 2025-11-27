@@ -1,4 +1,4 @@
-import { inferSyntax, createPropertyMetadata } from './inferSyntax'
+import { inferSyntax, createPropertyMetadata, isComputationallyIndependent } from './inferSyntax'
 
 describe('inferSyntax', () => {
   describe('color values', () => {
@@ -153,6 +153,35 @@ describe('inferSyntax', () => {
   })
 })
 
+describe('isComputationallyIndependent', () => {
+  it('returns true for plain values', () => {
+    expect(isComputationallyIndependent('16px')).toBe(true)
+    expect(isComputationallyIndependent('1rem')).toBe(true)
+    expect(isComputationallyIndependent('oklch(76.9% 0.188 70.08)')).toBe(true)
+    expect(isComputationallyIndependent('#ff0000')).toBe(true)
+    expect(isComputationallyIndependent('100%')).toBe(true)
+  })
+
+  it('returns false for var() references', () => {
+    expect(isComputationallyIndependent('var(--color)')).toBe(false)
+    expect(isComputationallyIndependent('var(--spacing, 1rem)')).toBe(false)
+    expect(isComputationallyIndependent('var(--a0, oklch(76.9% 0.188 70.08))')).toBe(false)
+  })
+
+  it('returns false for env() references', () => {
+    expect(isComputationallyIndependent('env(safe-area-inset-top)')).toBe(false)
+  })
+
+  it('returns false for attr() references', () => {
+    expect(isComputationallyIndependent('attr(data-value)')).toBe(false)
+  })
+
+  it('returns false for values containing var() inside functions', () => {
+    expect(isComputationallyIndependent('color-mix(in srgb, var(--color) 50%, white)')).toBe(false)
+    expect(isComputationallyIndependent('calc(var(--spacing) * 2)')).toBe(false)
+  })
+})
+
 describe('createPropertyMetadata', () => {
   it('creates metadata with correct syntax', () => {
     const metadata = createPropertyMetadata('oklch(76.9% 0.188 70.08)')
@@ -167,13 +196,21 @@ describe('createPropertyMetadata', () => {
   it('sets inherits to false', () => {
     const metadata = createPropertyMetadata('16px')
 
-    expect(metadata.inherits).toBe(false)
+    expect(metadata).not.toBeNull()
+    expect(metadata?.inherits).toBe(false)
   })
 
   it('preserves the original value as initialValue', () => {
     const value = '1rem'
     const metadata = createPropertyMetadata(value)
 
-    expect(metadata.initialValue).toBe(value)
+    expect(metadata).not.toBeNull()
+    expect(metadata?.initialValue).toBe(value)
+  })
+
+  it('returns null for values with var() references', () => {
+    expect(createPropertyMetadata('var(--color)')).toBeNull()
+    expect(createPropertyMetadata('var(--spacing, 1rem)')).toBeNull()
+    expect(createPropertyMetadata('color-mix(in srgb, var(--color) 50%, white)')).toBeNull()
   })
 })

@@ -70,17 +70,22 @@ describe('init', () => {
       })
     })
 
-    it('creates themizer.config.ts', async () => {
+    it('creates themizer.config.ts with named export', async () => {
       const packageJson = { scripts: {} }
       mockReadFileSync.mockReturnValue(JSON.stringify(packageJson))
 
       await initAction({})
 
-      expect(mockWriteFileSync).toHaveBeenCalledWith(
-        expect.stringContaining('themizer.config.ts'),
-        expect.stringContaining('import themizer from'),
-        'utf-8',
+      const configCall = (mockWriteFileSync.mock.calls as unknown[][]).find((call) =>
+        String(call[0]).includes('themizer.config.ts'),
       )
+      expect(configCall).toBeDefined()
+      const [, configContent] = configCall as [string, string, string]
+
+      expect(configContent).toContain('import themizer from')
+      expect(configContent).toContain('export const theme = themizer(')
+      expect(configContent).not.toContain('export default themizer(')
+      expect(configContent).toContain('For complex Design Systems with multiple themes')
       expect(console.log).toHaveBeenCalledWith('themizer: Creating themizer.config.ts...')
       expect(console.log).toHaveBeenCalledWith('themizer: ✓ Created themizer.config.ts')
     })

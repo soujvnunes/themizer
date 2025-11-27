@@ -5,7 +5,7 @@
 
 import { type UnitsConfig, type ExpandedUnits } from './unitTypes'
 import UNIT_SUFFIXES from '../consts/UNIT_SUFFIXES'
-import { createContextError } from './createError'
+import { createError } from './createError'
 
 // Multiplier for rounding to 10 decimal places to avoid floating-point accumulation errors
 const PRECISION_MULTIPLIER = 1e10
@@ -21,12 +21,12 @@ function expandUnitTuple(tuple: [number, number, number], unit: string): Record<
 
   // Validate step is positive
   if (step <= 0) {
-    createContextError('expansion', `Step must be positive, got ${step}`)
+    createError('expansion', `Step must be positive, got ${step}`)
   }
 
   // Validate from <= to
   if (from > to) {
-    createContextError('expansion', `From (${from}) must be less than or equal to To (${to})`)
+    createError('expansion', `From (${from}) must be less than or equal to To (${to})`)
   }
 
   const result: Record<number, string> = {}
@@ -71,7 +71,7 @@ export function expandUnits<T extends UnitsConfig>(config: T): ExpandedUnits<T> 
     // Get the CSS suffix for this unit type
     const suffix = UNIT_SUFFIXES[unitType as keyof typeof UNIT_SUFFIXES]
     if (!suffix) {
-      createContextError('expansion', `Unknown unit type: ${String(unitType)}`)
+      createError('expansion', `Unknown unit type: ${String(unitType)}`)
     }
 
     // Expand the tuple for this unit type

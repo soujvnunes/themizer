@@ -1,7 +1,7 @@
 {
   "type": "module",
   "license": "ISC",
-  "version": "1.7.0",
+  "version": "2.0.0",
   "packageManager": "pnpm@10.8.1",
   "name": "themizer",
   "description": "Generate CSS custom properties based on a given theme with tokens and aliases serving as a reference.",

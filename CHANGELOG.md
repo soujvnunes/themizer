@@ -1,5 +1,62 @@
 # @soujvnunes/themizer
 
+## 2.0.0
+
+### Major Changes
+
+- ddd886a: Add support for multiple theme exports with breaking changes
+
+  **New Features:**
+
+  - Support exporting multiple themes from `themizer.config.ts`
+  - All named exports are automatically detected and combined into a single `theme.css` file
+  - Enhanced CLI logging shows theme count when multiple themes are generated
+  - Each theme uses its own prefix to avoid naming conflicts
+
+  **Breaking Changes:**
+
+  - Only named exports are now supported (default export is ignored)
+  - Users must migrate from `export default themizer(...)` to `export const theme = themizer(...)`
+  - Generated config templates now use named exports
+
+  **Migration Guide:**
+
+  ```ts
+  // Before (no longer works)
+  export default themizer({ prefix: 'theme', ... }, () => ({}))
+
+  // After
+  export const theme = themizer({ prefix: 'theme', ... }, () => ({}))
+  ```
+
+  **Multiple Themes Example:**
+
+  ```ts
+  export const cocaCola = themizer({ prefix: 'coke', tokens: cokeTokens, medias }, () => ({}))
+  export const nike = themizer({ prefix: 'nike', tokens: nikeTokens, medias }, () => ({}))
+  ```
+
+  All themes are combined into a single optimized `theme.css` file with enhanced logging:
+
+  ```
+  themizer: theme.css written to ./src/app (2 themes: cocaCola, nike)
+  ```
+
+### Minor Changes
+
+- d053608: Add dev-friendly error handling: in development mode, errors are logged to console instead of thrown, allowing dev servers to keep running and hot reload to work when users fix config errors. In production, errors are still thrown to fail builds with broken configs.
+
+### Patch Changes
+
+- 90eaf91: refactor: hide rules and variableMap from public API via Symbol
+
+  - Internal properties (`rules`, `variableMap`) are now hidden behind a Symbol
+  - CLI accesses these via the Symbol for theme.css generation
+  - Public API only exposes `aliases`, `tokens`, and `medias`
+  - Removed `RJSS` type from public exports
+
+- 46b262d: Fix: skip @property generation for values containing var() references. CSS @property initial-value must be computationally independent and cannot contain var(), env(), or attr() references. Properties with such values now correctly omit @property rules.
+
 ## Unreleased
 
 ### Documentation

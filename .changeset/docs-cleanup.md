@@ -1,5 +1,5 @@
 ---
-"@soujvnunes/themizer": patch
+"themizer": patch
 ---
 
 docs: remove internal properties from public API documentation

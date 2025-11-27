@@ -492,8 +492,6 @@ Main function to generate design tokens and aliases.
 - `aliases` - Semantic aliases wrapped in `var()` for use in CSS/JS
 - `tokens` - Design tokens wrapped in `var()` for use in CSS/JS (with expansions applied)
 - `medias` - Media queries prefixed with `@media`
-- `rules` - Internal/advanced: generated CSS rules (use `theme.css` file instead)
-- `variableMap` - Internal/advanced: minified variable names map (use `theme.css.map.json` instead)
 
 #### Example
 

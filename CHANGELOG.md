@@ -57,14 +57,6 @@
 
 - 46b262d: Fix: skip @property generation for values containing var() references. CSS @property initial-value must be computationally independent and cannot contain var(), env(), or attr() references. Properties with such values now correctly omit @property rules.
 
-## Unreleased
-
-### Documentation
-
-- Marked `rules` and `variableMap` as internal/advanced usage in API docs
-- Simplified Framework Integration section to lead with `theme.css` import
-- Updated CLI help text to recommend watch mode for development
-
 ## 1.7.0
 
 ### Minor Changes

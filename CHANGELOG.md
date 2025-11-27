@@ -1,5 +1,14 @@
 # @soujvnunes/themizer
 
+## 2.0.1
+
+### Patch Changes
+
+- 4ecdf6e: docs: remove internal properties from public API documentation
+
+  - Remove `rules` and `variableMap` from README API docs (these are internal, hidden behind Symbol)
+  - Remove erroneous "Unreleased" section from CHANGELOG
+
 ## 2.0.0
 
 ### Major Changes

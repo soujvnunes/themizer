@@ -1,5 +1,12 @@
 # themizer
 
+> [!WARNING]
+> **Deprecated and no longer maintained.**
+>
+> themizer is feature-complete and will not receive further updates, including
+> dependency and security patches. Version `2.0.1` remains installable from npm and
+> works as documented below, but new projects should not adopt it.
+
 > Transform verbose CSS utility classes into semantic, maintainable design tokens
 
 [![npm version](https://img.shields.io/npm/v/themizer.svg)](https://www.npmjs.com/package/themizer)
